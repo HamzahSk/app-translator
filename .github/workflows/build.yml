@@ -1,0 +1,66 @@
+name: Android CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # Memungkinkan eksekusi manual
+
+jobs:
+  build:
+    name: Code Check, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. UBAH KE JDK 17 (Sesuai dengan build.gradle.kts kamu)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17' # Langsung tembak versi 17 agar aman
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        # Hapus 'with: gradle-version: wrapper' karena default-nya sudah pakai wrapper
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 2. CATATAN SPOTLESS: Tambahkan continue-on-error agar pipeline tidak mati 
+      # kalau kamu sebenarnya tidak pakai plugin Spotless. 
+      # (Hapus saja 2 step ini kalau memang tidak pakai Spotless).
+      - name: 🧹 Run Spotless Apply
+        run: ./gradlew spotlessApply --no-daemon
+        continue-on-error: true 
+        
+      - name: 🧹 Run Spotless Check
+        run: ./gradlew spotlessCheck --no-daemon
+        continue-on-error: true
+
+      - name: 🧪 Run Unit Tests
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      # 3. SESUAIKAN NAMA STEP (Hanya Debug & Release yang di-build)
+      - name: 📦 Build APK Variants (Debug & Release)
+        run: ./gradlew assembleDebug assembleRelease --stacktrace
+
+      # 4. SESUAIKAN NAMA ARTIFACT
+      - name: 📤 Upload Debug APK
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screen-translator-debug-apk # Diganti ke screen-translator
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
+
+      - name: 📤 Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: screen-translator-release-apk # Diganti ke screen-translator
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
