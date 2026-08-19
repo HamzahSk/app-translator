@@ -38,7 +38,7 @@ jobs:
           model = "auto"
           model_provider = "aitioo"
 
-          [model_providers.agentrouter]
+          [model_providers.aitioo]
           name = "AiTioo"
           base_url = "https://ai.tioo.eu.org/v1"
           wire_api = "responses"
