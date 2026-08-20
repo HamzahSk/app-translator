@@ -38,6 +38,12 @@ class OverlayManager(private val context: Context) {
 
     data class Bubble(val text: String, val bounds: Rect)
 
+    // FASE 6 FIX: Adjustable line-spacing so translated lines don't collide.
+    private companion object {
+        const val LINE_SPACING_ADD = 4f
+        const val LINE_SPACING_MULTIPLIER = 1.2f
+    }
+
     private fun dpToPx(dp: Int): Int {
         return (dp * context.resources.displayMetrics.density).toInt()
     }
@@ -73,7 +79,18 @@ class OverlayManager(private val context: Context) {
                             typeface = paint.typeface
                         }
                         val layout = StaticLayout.Builder.obtain(bubble.text, 0, bubble.text.length, textPaint, r.width().coerceAtLeast(1))
-                            .setAlignment(Layout.Alignment.ALIGN_CENTER).setIncludePad(false).build()
+                            .setAlignment(Layout.Alignment.ALIGN_CENTER)
+                            .setIncludePad(false)
+                            .setLineSpacing(LINE_SPACING_ADD, LINE_SPACING_MULTIPLIER)
+                            .build()
+                        // FASE 6 FIX: If the wrapped text is taller than the original box,
+                        // grow the box symmetrically from its vertical middle instead of
+                        // letting the text spill downward and look off-center.
+                        if (layout.height > r.height()) {
+                            val overflow = (layout.height - r.height()) / 2
+                            r.top -= overflow
+                            r.bottom += overflow
+                        }
                         canvas.save()
                         canvas.translate(r.left.toFloat(), (r.top + ((r.height() - layout.height) / 2).coerceAtLeast(0)).toFloat())
                         layout.draw(canvas)

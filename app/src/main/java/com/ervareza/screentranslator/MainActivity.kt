@@ -80,6 +80,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fabStart: ExtendedFloatingActionButton
     private var lastStartClickAt = 0L
 
+    // FASE 6 FIX: Result holder for the async Start button flow, so heavy
+    // permission/state checks never run on the main thread.
+    private data class StartCheckResult(
+        val overlayGranted: Boolean,
+        val accessibilityEnabled: Boolean,
+        val serviceRunning: Boolean,
+        val captureIntent: Intent,
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         config = ConfigManager(this)
         AppCompatDelegate.setDefaultNightMode(config.appTheme)
@@ -589,31 +598,44 @@ class MainActivity : AppCompatActivity() {
             val now = SystemClock.elapsedRealtime()
             if (now - lastStartClickAt < 500L) return@setOnClickListener
             lastStartClickAt = now
-            if (!Settings.canDrawOverlays(this)) {
-                Snackbar.make(fabStart, "Please grant overlay permission first.", Snackbar.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (!isAccessibilityServiceEnabled()) {
-                Snackbar.make(fabStart, "Please enable accessibility service first.", Snackbar.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (isServiceRunning(ScreenCaptureService::class.java)) {
-                val stopIntent = Intent("com.ervareza.screentranslator.ACTION_STOP")
-                sendBroadcast(stopIntent)
-            } else {
-                fabStart.isEnabled = false // Prevent double clicks
-                fabStart.text = "Preparing..."
-                lifecycleScope.launch {
-                    try {
-                        val captureIntent = withContext(Dispatchers.IO) {
-                            val mgr = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                            mgr.createScreenCaptureIntent()
-                        }
-                        screenCaptureLauncher.launch(captureIntent)
-                    } catch (e: Exception) {
+            fabStart.isEnabled = false
+            fabStart.text = "Preparing..."
+            var launched = false
+            lifecycleScope.launch {
+                try {
+                    // FASE 6 FIX: All heavy checks (overlay/accessibility state,
+                    // isServiceRunning, MediaProjectionManager) run on IO, never on Main.
+                    val result = withContext(Dispatchers.IO) {
+                        StartCheckResult(
+                            overlayGranted = Settings.canDrawOverlays(this@MainActivity),
+                            accessibilityEnabled = isAccessibilityServiceEnabled(),
+                            serviceRunning = isServiceRunning(ScreenCaptureService::class.java),
+                            captureIntent = (getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).createScreenCaptureIntent(),
+                        )
+                    }
+                    if (!result.overlayGranted) {
+                        Snackbar.make(fabStart, "Please grant overlay permission first.", Snackbar.LENGTH_SHORT).show()
+                        return@launch
+                    }
+                    if (!result.accessibilityEnabled) {
+                        Snackbar.make(fabStart, "Please enable accessibility service first.", Snackbar.LENGTH_SHORT).show()
+                        return@launch
+                    }
+                    if (result.serviceRunning) {
+                        val stopIntent = Intent("com.ervareza.screentranslator.ACTION_STOP")
+                        sendBroadcast(stopIntent)
+                        return@launch
+                    }
+                    launched = true
+                    screenCaptureLauncher.launch(result.captureIntent)
+                } catch (e: Exception) {
+                    fabStart.isEnabled = true
+                    fabStart.text = "Start Service"
+                    Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
+                } finally {
+                    if (!launched) {
                         fabStart.isEnabled = true
-                        fabStart.text = "Start Service"
-                        Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
+                        refreshPermissionStatuses()
                     }
                 }
             }

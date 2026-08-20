@@ -24,11 +24,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -65,10 +67,32 @@ class TranslationEngine(private val context: Context) {
 
     init { scope.launch(Dispatchers.IO) { preloadOfflineModel() } }
 
+    // FASE 6 FIX: ML Kit can freeze internally and hang the coroutine forever.
+    // Wrap every on-device .await() call with a bounded timeout so a stuck model
+    // throws TimeoutCancellationException instead of blocking all future captures.
+    private suspend fun <T> mlKitCall(tag: String, block: suspend () -> T): T? = try {
+        withTimeout(ML_KIT_TIMEOUT_MS) { block() }
+    } catch (e: TimeoutCancellationException) {
+        Log.e("Translator", "$tag timed out after ${ML_KIT_TIMEOUT_MS}ms", e)
+        null
+    }
+
     private suspend fun preloadOfflineModel() {
         if (config.translationMode != "offline") return
         val source = config.sourceLanguage.takeUnless { it == "auto" } ?: "en"
         runCatching { getTranslator(source, config.targetLanguage).downloadModelIfNeeded().await() }
+        // FASE 6 FIX: Dummy calls force ML Kit to load OCR + translate models from
+        // storage into RAM while the service starts, avoiding the first-capture freeze.
+        runCatching {
+            val dummy = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+            try {
+                val dummyImage = InputImage.fromBitmap(dummy, 0)
+                mlKitCall("PreloadOCR") { getRecognizer(source).process(dummyImage).await() }
+                mlKitCall("PreloadTranslate") { getTranslator(source, config.targetLanguage).translate("test").await() }
+            } finally {
+                dummy.recycle()
+            }
+        }
     }
 
     private fun getRecognizer(code: String): TextRecognizer {
@@ -130,8 +154,8 @@ class TranslationEngine(private val context: Context) {
         } else {
             val recognizer = getRecognizer(config.sourceLanguage)
             try {
-                val text = recognizer.process(image).await()
-                if (text.text.isNotBlank()) identifyAndTranslate(text)
+                val text = mlKitCall("OCR") { recognizer.process(image).await() }
+                if (text != null && text.text.isNotBlank()) identifyAndTranslate(text)
             } catch (e: Exception) {
                 Log.e("Translator", "OCR Failed", e)
             }
@@ -142,8 +166,8 @@ class TranslationEngine(private val context: Context) {
         if (index >= codes.size) return
         try {
             val recognizer = getRecognizer(codes[index])
-            val text = recognizer.process(image).await()
-            if (text.text.isNotBlank()) {
+            val text = mlKitCall("OCR-${codes[index]}") { recognizer.process(image).await() }
+            if (text != null && text.text.isNotBlank()) {
                 identifyAndTranslate(text)
             } else {
                 runFallbackChain(image, codes, index + 1)
@@ -158,8 +182,8 @@ class TranslationEngine(private val context: Context) {
     private suspend fun identifyAndTranslate(visionText: Text) {
         val fullText = visionText.text
         try {
-            val languageCode = getLanguageIdentifier().identifyLanguage(fullText).await()
-            if (languageCode != "und") {
+            val languageCode = mlKitCall("LanguageIdentify") { getLanguageIdentifier().identifyLanguage(fullText).await() }
+            if (languageCode != null && languageCode != "und") {
                 Log.d("Translator", "Detected language: $languageCode")
                 if (config.translationMode != "offline") {
                     onlineTranslate(visionText)
@@ -190,9 +214,11 @@ class TranslationEngine(private val context: Context) {
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val rect = adjustedBoundingBox(block.boundingBox) ?: continue
                 try {
-                    val translatedText = translator.translate(block.text).await()
+                    val translatedText = mlKitCall("Translate") { translator.translate(block.text).await() }
                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                    translatedBubbles += OverlayManager.Bubble(translatedText, rect)
+                    if (translatedText != null) {
+                        translatedBubbles += OverlayManager.Bubble(translatedText, rect)
+                    }
                     overlayManager.removeLoading("offline_$index")
                 } catch (e: CancellationException) {
                     throw e
@@ -268,6 +294,10 @@ class TranslationEngine(private val context: Context) {
             top = (top - statusBarHeight).coerceAtLeast(0)
             bottom = (bottom - statusBarHeight).coerceAtLeast(top)
         }.takeUnless { it.isEmpty }
+    }
+
+    private companion object {
+        const val ML_KIT_TIMEOUT_MS = 7_000L
     }
 }
 
