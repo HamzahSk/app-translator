@@ -1,14 +1,16 @@
-name: Codex DB Fixer
+name: OpenCode DB Fixer
 
 on:
   workflow_dispatch:
- 
+  push:
+    paths:
+      - "prompt.md"
 
 permissions:
   contents: read
 
 jobs:
-  codex-run:
+  opencode:
     runs-on: ubuntu-24.04
 
     steps:
@@ -25,36 +27,25 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Codex CLI
-        run: npm install -g @openai/codex
+      - name: Install OpenCode
+        run: npm install -g opencode-ai
 
-      - name: Configure Codex
-        # Membangun file config.toml secara dinamis menggunakan GitHub Secrets
+      - name: Check OpenCode
+        run: opencode --version
+
+      - name: Run OpenCode
+        # Mendefinisikan environment variables di sini
+        env:
+          # Pastikan API key disimpan di GitHub Secrets agar aman!
+          API_KEY: "sk-5HXqrBXtQd477fLMICt30OfcNHBlQSyOpQU0gKY7RniiZl5l"
+          # Mengatur custom URL untuk konfigurasi model
+          OPENCODE_MODELS_URL: "https://ai.kscsnkli.site" 
         run: |
-          mkdir -p ~/.codex
-          cat << EOF > ~/.codex/config.toml
-          model = "MiniMax-M3"
-          model_provider = "aitioo"
-
-          [model_providers.aitioo]
-          name = "AiTioo"
-          base_url = "https://ai.kscsnkli.site/v1"
-          wire_api = "responses"
-          experimental_bearer_token = "sk-5HXqrBXtQd477fLMICt30OfcNHBlQSyOpQU0gKY7RniiZl5l"
-          EOF
-
-      - name: Check Codex Version
-        run: codex --version
-
-      - name: Run Codex
-        run: |
-          if [ ! -f prompt.md ]; then
-            echo "Error: prompt.md tidak ditemukan!"
-            exit 1
-          fi
-
-          # Cukup pakai 1 flag pamungkas ini aja sebelum 'exec'
-          codex --dangerously-bypass-approvals-and-sandbox exec "$(cat prompt.md)" 2>&1 | tee ai-response-recap.txt || true
+          # Flag --model digunakan untuk menentukan model kustom
+          opencode run \
+            --model provider/auto \
+            --auto \
+            "$(cat prompt.md)" 2>&1 | tee ai-response-recap.txt || true
 
       - name: Collect changed files and AI recap
         run: |
@@ -77,5 +68,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: codex-output-${{ github.sha }}
+          name: opencode-output-${{ github.sha }}
           path: output_artifact/
