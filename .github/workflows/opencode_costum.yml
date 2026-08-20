@@ -37,13 +37,13 @@ jobs:
         # Mendefinisikan environment variables di sini
         env:
           # Pastikan API key disimpan di GitHub Secrets agar aman!
-          API_KEY: "sk-5HXqrBXtQd477fLMICt30OfcNHBlQSyOpQU0gKY7RniiZl5l"
+          API_KEY: "sk-cScNpCjYpO2SH5QRpoSAkwAJE7uvt4I8GpAj48uQBOLcmBvx"
           # Mengatur custom URL untuk konfigurasi model
-          OPENCODE_MODELS_URL: "https://ai.kscsnkli.site" 
+          OPENCODE_MODELS_URL: "https://ai.tioo.eu.org" 
         run: |
           # Flag --model digunakan untuk menentukan model kustom
           opencode run \
-            --model provider/MiniMax-M3 \
+            --model provider/auto \
             --auto \
             "$(cat prompt.md)" 2>&1 | tee ai-response-recap.txt || true
 
