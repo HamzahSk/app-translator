@@ -1,20 +1,19 @@
 package com.ervareza.screentranslator
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.Rect
-import android.graphics.Paint
 import android.graphics.Typeface
-import android.graphics.Canvas
-import android.text.Layout
-import android.text.StaticLayout
-import android.text.TextPaint
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
@@ -30,6 +29,7 @@ class OverlayManager(private val context: Context) {
     // ISSUE-005 FIX: Thread-safe list to prevent ConcurrentModificationException
     private val activeViews = CopyOnWriteArrayList<View>()
     private val loadingViews = ConcurrentHashMap<String, View>()
+
     @Volatile private var batchId = 0L
     private var batchView: View? = null
     private val customTypeface: Typeface? by lazy {
@@ -71,7 +71,15 @@ class OverlayManager(private val context: Context) {
                             "right" -> r.offset(r.width(), 0)
                         }
                         paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
-                        canvas.drawRoundRect(r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), paint)
+                        canvas.drawRoundRect(
+                            r.left.toFloat(),
+                            r.top.toFloat(),
+                            r.right.toFloat(),
+                            r.bottom.toFloat(),
+                            dpToPx(config.bubbleCornerRadius).toFloat(),
+                            dpToPx(config.bubbleCornerRadius).toFloat(),
+                            paint,
+                        )
                         paint.color = Color.parseColor(config.bubbleTextColor)
                         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                             color = paint.color
@@ -102,19 +110,29 @@ class OverlayManager(private val context: Context) {
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT,
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
             }
             if (id != batchId) return@post
-            runCatching { windowManager.addView(view, params); batchView = view; activeViews.add(view) }
+            runCatching {
+                windowManager.addView(view, params)
+                batchView = view
+                activeViews.add(view)
+            }
 
             val autoClear = config.autoClearSeconds
             if (autoClear > 0) {
                 handler.postDelayed({
                     try {
-                        if (batchId == id) { windowManager.removeView(view); activeViews.remove(view); batchView = null }
+                        if (batchId == id) {
+                            windowManager.removeView(view)
+                            activeViews.remove(view)
+                            batchView = null
+                        }
                     } catch (_: IllegalArgumentException) {}
                 }, autoClear * 1000L)
             }
@@ -179,14 +197,14 @@ class OverlayManager(private val context: Context) {
     }
 
     private fun clearOverlaysInternal() {
-            batchId++
-            for (view in activeViews) {
-                try {
-                    windowManager.removeView(view)
-                } catch (_: IllegalArgumentException) {}
-            }
-            activeViews.clear()
-            loadingViews.clear()
-            batchView = null
+        batchId++
+        for (view in activeViews) {
+            try {
+                windowManager.removeView(view)
+            } catch (_: IllegalArgumentException) {}
+        }
+        activeViews.clear()
+        loadingViews.clear()
+        batchView = null
     }
 }

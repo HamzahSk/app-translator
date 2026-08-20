@@ -23,13 +23,15 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -42,6 +44,12 @@ class TranslationEngine(private val context: Context) {
     // ISSUE-011 FIX: Everything runs off the main thread. Heavy clients are
     // initialized lazily (only on first use) so the service starts instantly.
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    // PHASE 7 FIX: Independent background job (CPU-bound, Default) for the ML Kit
+    // pre-load, fully decoupled from the capture pipeline so a warm-up never
+    // blocks/stalls a real OCR/translate request.
+    private val preloadScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     @Volatile private var activeJob: Job? = null
 
     private val statusBarHeight: Int by lazy {
@@ -65,7 +73,27 @@ class TranslationEngine(private val context: Context) {
     // Lazy: network client is only built when online mode is actually used.
     private val onlineTranslator by lazy { OnlineTranslator(context) }
 
-    init { scope.launch(Dispatchers.IO) { preloadOfflineModel() } }
+    init {
+        preloadScope.launch(Dispatchers.Default) { preloadOfflineModel() }
+    }
+
+    private val scanningIndicatorKey = "phase7_scanning"
+
+    // PHASE 7 FIX: Show a visible loading bubble and force Android to render it
+    // before the CPU-heavy OCR grabs all cores. withContext(Main) flushes the
+    // queued overlay draw onto the UI thread, then delay(50) gives the system
+    // a rendering window.
+    private suspend fun showScanningIndicator() {
+        val metrics = context.resources.displayMetrics
+        val density = metrics.density
+        val width = (metrics.widthPixels * 0.42f).toInt().coerceAtLeast(1)
+        val height = (48 * density).toInt()
+        val left = (metrics.widthPixels - width) / 2
+        val top = metrics.heightPixels / 3
+        overlayManager.drawLoadingBubble(Rect(left, top, left + width, top + height), scanningIndicatorKey)
+        withContext(Dispatchers.Main) { }
+        delay(50)
+    }
 
     // FASE 6 FIX: ML Kit can freeze internally and hang the coroutine forever.
     // Wrap every on-device .await() call with a bounded timeout so a stuck model
@@ -80,45 +108,57 @@ class TranslationEngine(private val context: Context) {
     private suspend fun preloadOfflineModel() {
         if (config.translationMode != "offline") return
         val source = config.sourceLanguage.takeUnless { it == "auto" } ?: "en"
-        runCatching { getTranslator(source, config.targetLanguage).downloadModelIfNeeded().await() }
-        // FASE 6 FIX: Dummy calls force ML Kit to load OCR + translate models from
-        // storage into RAM while the service starts, avoiding the first-capture freeze.
+        val target = config.targetLanguage
+        runCatching { getTranslator(source, target).downloadModelIfNeeded().await() }
+        // PHASE 7 FIX: Warm the OCR + translate models into RAM from inside the
+        // independent preloadScope (Dispatchers.Default, CPU-bound). The clients
+        // are created lock-free (see getRecognizer/getTranslator), so a real
+        // capture can instantiate its own recognizer concurrently without stalls.
         runCatching {
             val dummy = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
             try {
                 val dummyImage = InputImage.fromBitmap(dummy, 0)
                 mlKitCall("PreloadOCR") { getRecognizer(source).process(dummyImage).await() }
-                mlKitCall("PreloadTranslate") { getTranslator(source, config.targetLanguage).translate("test").await() }
+                mlKitCall("PreloadTranslate") { getTranslator(source, target).translate("test").await() }
             } finally {
                 dummy.recycle()
             }
         }
     }
 
+    // PHASE 7 FIX: Client creation happens OUTSIDE the lock. TextRecognition.
+    // getClient() can take time on first call; previously it ran inside a
+    // synchronized block, so a pre-load warm-up could block a real capture's
+    // getRecognizer() and stall the first screenshot.
     private fun getRecognizer(code: String): TextRecognizer {
+        val cached = synchronized(recognizerCache) { recognizerCache[code] }
+        if (cached != null) return cached
+        val created = createRecognizer(code)
         return synchronized(recognizerCache) {
-            recognizerCache.getOrPut(code) {
-                when (code) {
-                    "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
-                    "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
-                    "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-                    "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
-                    else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-                }
-            }
+            recognizerCache[code] ?: created.also { recognizerCache[code] = it }
         }
+    }
+
+    private fun createRecognizer(code: String): TextRecognizer = when (code) {
+        "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
+        "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
+        "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
+        "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
+        else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     }
 
     private fun getTranslator(sourceLang: String, targetLang: String): Translator {
         val key = "${sourceLang}_$targetLang"
+        val cached = synchronized(translatorCache) { translatorCache[key] }
+        if (cached != null) return cached
+        val created = Translation.getClient(
+            TranslatorOptions.Builder()
+                .setSourceLanguage(sourceLang)
+                .setTargetLanguage(targetLang)
+                .build(),
+        )
         return synchronized(translatorCache) {
-            translatorCache.getOrPut(key) {
-                val options = TranslatorOptions.Builder()
-                    .setSourceLanguage(sourceLang)
-                    .setTargetLanguage(targetLang)
-                    .build()
-                Translation.getClient(options)
-            }
+            translatorCache[key] ?: created.also { translatorCache[key] = it }
         }
     }
 
@@ -140,25 +180,30 @@ class TranslationEngine(private val context: Context) {
 
     private suspend fun processImageInternal(bitmap: Bitmap) {
         kotlinx.coroutines.currentCoroutineContext().ensureActive()
+        showScanningIndicator()
         val image = InputImage.fromBitmap(bitmap, 0)
+        try {
+            if (config.sourceLanguage == "auto") {
+                val supportedCodes = listOf("ja", "ko", "zh", "hi", "en")
+                val installedCodes = supportedCodes.filter { config.isModelInstalled(it) }
 
-        if (config.sourceLanguage == "auto") {
-            val supportedCodes = listOf("ja", "ko", "zh", "hi", "en")
-            val installedCodes = supportedCodes.filter { config.isModelInstalled(it) }
-
-            if (installedCodes.isEmpty()) {
-                Log.e("Translator", "Auto-detect failed: No OCR models are installed!")
-                return
+                if (installedCodes.isEmpty()) {
+                    Log.e("Translator", "Auto-detect failed: No OCR models are installed!")
+                    return
+                }
+                runFallbackChain(image, installedCodes, 0)
+            } else {
+                val recognizer = getRecognizer(config.sourceLanguage)
+                try {
+                    val text = mlKitCall("OCR") { recognizer.process(image).await() }
+                    overlayManager.removeLoading(scanningIndicatorKey)
+                    if (text != null && text.text.isNotBlank()) identifyAndTranslate(text)
+                } catch (e: Exception) {
+                    Log.e("Translator", "OCR Failed", e)
+                }
             }
-            runFallbackChain(image, installedCodes, 0)
-        } else {
-            val recognizer = getRecognizer(config.sourceLanguage)
-            try {
-                val text = mlKitCall("OCR") { recognizer.process(image).await() }
-                if (text != null && text.text.isNotBlank()) identifyAndTranslate(text)
-            } catch (e: Exception) {
-                Log.e("Translator", "OCR Failed", e)
-            }
+        } finally {
+            overlayManager.removeLoading(scanningIndicatorKey)
         }
     }
 
@@ -168,6 +213,7 @@ class TranslationEngine(private val context: Context) {
             val recognizer = getRecognizer(codes[index])
             val text = mlKitCall("OCR-${codes[index]}") { recognizer.process(image).await() }
             if (text != null && text.text.isNotBlank()) {
+                overlayManager.removeLoading(scanningIndicatorKey)
                 identifyAndTranslate(text)
             } else {
                 runFallbackChain(image, codes, index + 1)
@@ -273,6 +319,7 @@ class TranslationEngine(private val context: Context) {
     // ISSUE-010 FIX: Clean up all resources
     fun close() {
         scope.cancel()
+        preloadScope.cancel()
         runCatching { languageIdentifier?.close() }
         languageIdentifier = null
         recognizerCache.values.forEach { runCatching { it.close() } }

@@ -11,7 +11,6 @@ import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.SystemClock
 import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
@@ -78,16 +77,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnAccessibility: MaterialButton
     private lateinit var btnNotification: MaterialButton
     private lateinit var fabStart: ExtendedFloatingActionButton
-    private var lastStartClickAt = 0L
 
-    // FASE 6 FIX: Result holder for the async Start button flow, so heavy
-    // permission/state checks never run on the main thread.
-    private data class StartCheckResult(
-        val overlayGranted: Boolean,
-        val accessibilityEnabled: Boolean,
-        val serviceRunning: Boolean,
-        val captureIntent: Intent,
-    )
+    // PHASE 7 FIX: Single source of truth for the Start button. The click
+    // listener is registered exactly once and routes on this state, so one tap
+    // always responds immediately and the "Preparing..." state is never stuck.
+    private enum class StartState { IDLE, PREPARING, RUNNING, BLOCKED }
+
+    @Volatile private var startState = StartState.IDLE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         config = ConfigManager(this)
@@ -100,17 +96,18 @@ class MainActivity : AppCompatActivity() {
         screenCaptureLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult(),
         ) { result ->
-            fabStart.isEnabled = true
             if (result.resultCode == Activity.RESULT_OK && result.data != null) {
                 val serviceIntent = Intent(this, ScreenCaptureService::class.java).apply {
                     putExtra("resultCode", result.resultCode)
                     putExtra("data", result.data)
                 }
                 startForegroundService(serviceIntent)
-                fabStart.text = "Service Running"
-                fabStart.setIconResource(android.R.drawable.ic_media_pause)
+                startState = StartState.RUNNING
+                renderStartButton()
                 Snackbar.make(fabStart, "Service started! You can close this app.", Snackbar.LENGTH_LONG).show()
             } else {
+                startState = StartState.IDLE
+                renderStartButton()
                 Snackbar.make(fabStart, "Screen capture permission denied.", Snackbar.LENGTH_LONG).show()
             }
         }
@@ -140,6 +137,7 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "com.ervareza.screentranslator.SERVICE_STOPPED") {
                 refreshPermissionStatuses()
+                syncServiceState()
             }
         }
     }
@@ -147,34 +145,13 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshPermissionStatuses()
+        syncServiceState()
 
         val filter = android.content.IntentFilter("com.ervareza.screentranslator.SERVICE_STOPPED")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(serviceStopReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
         } else {
             registerReceiver(serviceStopReceiver, filter)
-        }
-
-        // ISSUE-006 FIX: Sync FAB with actual service state
-        if (isServiceRunning(ScreenCaptureService::class.java)) {
-            fabStart.text = "Service Running"
-            fabStart.setIconResource(android.R.drawable.ic_media_pause)
-            fabStart.isEnabled = true
-            fabStart.setOnClickListener {
-                val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
-                stopBroadcast.setPackage(packageName)
-                sendBroadcast(stopBroadcast)
-
-                val stopIntent = Intent(this, ScreenCaptureService::class.java).apply {
-                    action = "ACTION_STOP"
-                }
-                startService(stopIntent)
-            }
-        } else {
-            fabStart.text = "Start Service"
-            fabStart.setIconResource(android.R.drawable.ic_media_play)
-            fabStart.isEnabled = true
-            fabStart.setOnClickListener { setupPermissionsAndStart() }
         }
     }
 
@@ -569,14 +546,36 @@ class MainActivity : AppCompatActivity() {
         )
         btnNotification.isEnabled = !notifOk
 
-        val allReady = overlayOk && accessOk
-        fabStart.isEnabled = allReady
-        if (!allReady) {
-            fabStart.text = "Grant Permissions First"
-            fabStart.setIconResource(android.R.drawable.ic_dialog_alert)
-        } else {
-            fabStart.text = "Start Service"
-            fabStart.setIconResource(android.R.drawable.ic_media_play)
+        // PHASE 7 FIX: Permission changes only affect the button when we are not
+        // busy preparing or already running.
+        if (startState != StartState.RUNNING && startState != StartState.PREPARING) {
+            startState = if (overlayOk && accessOk) StartState.IDLE else StartState.BLOCKED
+        }
+        renderStartButton()
+    }
+
+    private fun renderStartButton() {
+        when (startState) {
+            StartState.BLOCKED -> {
+                fabStart.isEnabled = false
+                fabStart.text = "Grant Permissions First"
+                fabStart.setIconResource(android.R.drawable.ic_dialog_alert)
+            }
+            StartState.IDLE -> {
+                fabStart.isEnabled = true
+                fabStart.text = "Start Service"
+                fabStart.setIconResource(android.R.drawable.ic_media_play)
+            }
+            StartState.PREPARING -> {
+                fabStart.isEnabled = false
+                fabStart.text = "Preparing..."
+                fabStart.setIconResource(android.R.drawable.ic_media_play)
+            }
+            StartState.RUNNING -> {
+                fabStart.isEnabled = true
+                fabStart.text = "Service Running"
+                fabStart.setIconResource(android.R.drawable.ic_media_pause)
+            }
         }
     }
 
@@ -594,57 +593,75 @@ class MainActivity : AppCompatActivity() {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
+        // PHASE 7 FIX: Registered exactly once; state routing lives in the enum.
         fabStart.setOnClickListener {
-            val now = SystemClock.elapsedRealtime()
-            if (now - lastStartClickAt < 500L) return@setOnClickListener
-            lastStartClickAt = now
-            fabStart.isEnabled = false
-            fabStart.text = "Preparing..."
-            var launched = false
-            lifecycleScope.launch {
-                try {
-                    // FASE 6 FIX: All heavy checks (overlay/accessibility state,
-                    // isServiceRunning, MediaProjectionManager) run on IO, never on Main.
-                    val result = withContext(Dispatchers.IO) {
-                        StartCheckResult(
-                            overlayGranted = Settings.canDrawOverlays(this@MainActivity),
-                            accessibilityEnabled = isAccessibilityServiceEnabled(),
-                            serviceRunning = isServiceRunning(ScreenCaptureService::class.java),
-                            captureIntent = (getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).createScreenCaptureIntent(),
-                        )
-                    }
-                    if (!result.overlayGranted) {
-                        Snackbar.make(fabStart, "Please grant overlay permission first.", Snackbar.LENGTH_SHORT).show()
-                        return@launch
-                    }
-                    if (!result.accessibilityEnabled) {
-                        Snackbar.make(fabStart, "Please enable accessibility service first.", Snackbar.LENGTH_SHORT).show()
-                        return@launch
-                    }
-                    if (result.serviceRunning) {
-                        val stopIntent = Intent("com.ervareza.screentranslator.ACTION_STOP")
-                        sendBroadcast(stopIntent)
-                        return@launch
-                    }
-                    launched = true
-                    screenCaptureLauncher.launch(result.captureIntent)
-                } catch (e: Exception) {
-                    fabStart.isEnabled = true
-                    fabStart.text = "Start Service"
-                    Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
-                } finally {
-                    if (!launched) {
-                        fabStart.isEnabled = true
-                        refreshPermissionStatuses()
-                    }
-                }
+            when (startState) {
+                StartState.RUNNING -> stopService()
+                StartState.IDLE -> startServiceFlow()
+                StartState.PREPARING, StartState.BLOCKED -> Unit
             }
         }
         refreshPermissionStatuses()
     }
 
-    private fun startScreenCapture() {
-        val mgr = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        screenCaptureLauncher.launch(mgr.createScreenCaptureIntent())
+    private fun startServiceFlow() {
+        if (startState != StartState.IDLE) return
+        startState = StartState.PREPARING
+        renderStartButton()
+
+        // createScreenCaptureIntent() is cheap; build it instantly so the
+        // permission dialog can open as soon as the async checks complete.
+        val captureIntent = try {
+            (getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).createScreenCaptureIntent()
+        } catch (e: Exception) {
+            null
+        }
+        if (captureIntent == null) {
+            startState = StartState.IDLE
+            renderStartButton()
+            Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        // PHASE 7 FIX: Only the permission evaluation runs off-thread; the UI is
+        // never locked and the button reacts on the first tap.
+        lifecycleScope.launch {
+            val allReady = withContext(Dispatchers.IO) {
+                Settings.canDrawOverlays(this@MainActivity) && isAccessibilityServiceEnabled()
+            }
+            if (!allReady) {
+                startState = StartState.BLOCKED
+                renderStartButton()
+                Snackbar.make(fabStart, "Please grant overlay & accessibility permissions first.", Snackbar.LENGTH_SHORT).show()
+                return@launch
+            }
+            screenCaptureLauncher.launch(captureIntent)
+        }
+    }
+
+    private fun stopService() {
+        val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
+        stopBroadcast.setPackage(packageName)
+        sendBroadcast(stopBroadcast)
+        val stopIntent = Intent(this, ScreenCaptureService::class.java).apply {
+            action = "ACTION_STOP"
+        }
+        startService(stopIntent)
+        startState = StartState.IDLE
+        renderStartButton()
+    }
+
+    private fun syncServiceState() {
+        lifecycleScope.launch {
+            // getRunningServices is deprecated and slow; always run it off-thread.
+            val running = withContext(Dispatchers.IO) { isServiceRunning(ScreenCaptureService::class.java) }
+            if (running) {
+                startState = StartState.RUNNING
+            } else if (startState == StartState.RUNNING) {
+                val ready = Settings.canDrawOverlays(this@MainActivity) && isAccessibilityServiceEnabled()
+                startState = if (ready) StartState.IDLE else StartState.BLOCKED
+            }
+            renderStartButton()
+        }
     }
 }
