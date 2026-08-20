@@ -35,14 +35,14 @@ jobs:
         run: |
           mkdir -p ~/.codex
           cat << EOF > ~/.codex/config.toml
-          model = "gpt-5.6-sol"
+          model = "MiniMaxAI/MiniMax-M2.7"
           model_provider = "agentrouter"
 
           [model_providers.agentrouter]
           name = "AgentRouter"
-          base_url = "https://rocckyai.rockyyrec.workers.dev/v1"
+          base_url = "https://ai.tioo.eu.org/v1"
           wire_api = "responses"
-          experimental_bearer_token = "sk-1BOhosptLV2kztUELb9PhjjvYyIkIhqf7EYFbseS984Kb3FL"
+          experimental_bearer_token = "sk-cScNpCjYpO2SH5QRpoSAkwAJE7uvt4I8GpAj48uQBOLcmBvx"
           EOF
 
       - name: Check Codex Version
