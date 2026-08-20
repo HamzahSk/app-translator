@@ -10,24 +10,32 @@ Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menj
 
 ---
 
-# TUGAS FASE 5: BATCH UI RENDERING, SCREENSHOT CRASH FIX, & CUSTOM FONT
+# TUGAS FASE 5.5: BUG FIX OVERLAY, STATICLAYOUT, OFFLINE LOADING, PRE-LOAD ML KIT & TOMBOL START
 
-Kamu bertugas sebagai Senior Android Developer. Aplikasi mengalami beberapa bug visual terkait UI Overlay (menumpuk, dimuat satu-satu, crash saat screenshot) dan membutuhkan implementasi font kustom. Tolong perbaiki masalah berikut:
+Kamu bertugas memperbaiki bug fatal dari implementasi Fase 5 sebelumnya dan melakukan optimasi waktu muat. Berikut adalah rincian masalah dan solusi yang WAJIB diterapkan:
 
-## 1. Batch Overlay Rendering & Overlap Fix
-*   **Masalah:** Saat ini `TranslationEngine` memanggil `overlayManager.drawTranslationBubble` secara berulang dalam *loop*. Ini membuat *canvas* muncul satu per satu, dan memicu *race condition* yang membuat *bubble* menumpuk jika layar berubah cepat.
+## 1. Layar Tidak Bisa Disentuh (Touch Interception Bug)
+*   **Masalah:** *Custom View* transparan untuk batch render menggunakan `MATCH_PARENT` tanpa meneruskan *touch event* ke bawahnya, membuat layar *freeze*.
+*   **Solusi:** Tambahkan `WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE` pada konfigurasi *layout params* di dalam fungsi `drawTranslationBatch` agar sentuhan tembus ke aplikasi target.
+
+## 2. Teks Memanjang (Text Wrapping Bug)
+*   **Masalah:** Menggunakan `canvas.drawText` membuat teks tidak bisa turun ke baris baru (tidak ada *word wrap*), sehingga teks memanjang keluar *bounding box*.
+*   **Solusi:** Ganti `canvas.drawText` dengan `StaticLayout` (atau `StaticLayout.Builder` untuk API level baru) di dalam `onDraw`. Atur lebar `StaticLayout` sesuai lebar *bounding box*, lalu gunakan `canvas.translate()` untuk memposisikan teks dengan benar sebelum menggambarnya.
+
+## 3. Missing Loading Bubble di Mode Offline
+*   **Masalah:** Mode offline terlihat tidak responsif karena tidak ada *loading canvas*.
+*   **Solusi:** Modifikasi fungsi `translateBlocks` pada `TranslationEngine`. Panggil `overlayManager.drawLoadingBubble` untuk semua blok teks yang terdeteksi *sebelum* memanggil `translator.translate()`, lalu hapus *loading* tersebut saat menggantinya dengan hasil terjemahan (*batch*).
+
+## 4. Optimasi Cold Start (Lambat saat pertama kali dipakai)
+*   **Masalah:** Pada penggunaan pertama, proses bisa memakan waktu belasan detik karena `downloadModelIfNeeded()` baru dijalankan saat layar di- *capture*.
+*   **Solusi:** Buat mekanisme *pre-load* atau inisialisasi awal. Pindahkan/tambahkan pemicu `downloadModelIfNeeded()` ke latar belakang saat aplikasi pertama kali dibuka (misalnya di `MainActivity` atau saat `Service` menyala) agar model bahasa dan OCR *Client* sudah siap sebelum pengguna melakukan *capture* pertama kali.
+
+## 5. Tombol Start Tidak Responsif (Unresponsive Button)
+*   **Masalah:** Tombol "Start" di aplikasi terkadang tidak merespons saat ditekan akibat *Main Thread* yang terblokir atau masalah pencegahan klik beruntun.
 *   **Solusi:** 
-    *   Ubah pendekatan `OverlayManager` agar **mengumpulkan semua data** (*translated text* dan *bounding box*) terlebih dahulu, lalu menggambarnya **secara serentak** (bisa dengan membuat satu *Custom View* transparan *fullscreen* yang menggambar banyak *bubble* menggunakan `Canvas`, atau memastikan penambahan `WindowManager.addView` divalidasi dengan satu `batchId` unik).
-    *   Pastikan jika `batchId` berubah (karena ada *request* baru), semua *view* dari *batch* sebelumnya langsung dihancurkan untuk mencegah penumpukan.
+    *   Terapkan mekanisme *debounce* pada *listener* tombol Start (abaikan klik lanjutan selama ~500ms).
+    *   Pastikan aksi yang dipicu tombol ini diproses di *background thread* (menggunakan Coroutines `Dispatchers.IO`) agar tidak memblokir UI.
+    *   Berikan indikator visual (*loading spinner* atau perubahan state tombol) saat memproses.
 
-## 2. Instant Clear & Screenshot Bug Fix
-*   **Masalah:** Mengambil *screenshot* menyebabkan aplikasi *crash* (kemungkinan karena `IllegalArgumentException` dari `WindowManager.removeView`). Selain itu, *scroll* tidak langsung membersihkan layar dengan bersih.
-*   **Solusi:**
-    *   Pastikan `clearOverlays()` dipanggil **seketika itu juga** saat `InactivityAccessibilityService` mendeteksi `TYPE_VIEW_SCROLLED`.
-    *   Bungkus perintah `windowManager.removeView(view)` di dalam blok `try-catch` yang spesifik menangani `IllegalArgumentException` (terjadi jika *view* sudah tidak *attached* ke *window*, seperti saat *screenshot* diambil).
-
-## 3. Implementasi Custom Font (.ttf)
-*   **Masalah:** Aplikasi masih menggunakan *font system default*. Ada file `.ttf` di *root directory*.
-*   **Solusi:**
-    *   Arahkan skrip Gradle atau asumsikan file `.ttf` tersebut dipindahkan ke direktori `app/src/main/assets/fonts/` (misalnya bernama `comic_font.ttf`).
-    *   Muat *font* tersebut menggunakan `Typeface.createFromAsset(context.assets, "fonts/comic_font.ttf")` di dalam `OverlayManager` dan terapkan ke `TextView` atau `Canvas` menggunakan `setTypeface()`.
+## 6. Verifikasi & Build
+*   Pastikan selalu menjalankan `./gradlew :app:compileDebugKotlin` atau `./gradlew assembleDebug` setelah melakukan perubahan untuk memverifikasi tidak ada *error* kompilasi.
