@@ -157,7 +157,6 @@
                         android:id="@+id/sliderDelay"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:stepSize="1.0"
                         android:valueFrom="1.0"
                         android:valueTo="10.0"
                         android:value="3.0" />
@@ -361,7 +360,6 @@
                         android:id="@+id/sliderOpacity"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:stepSize="5.0"
                         android:valueFrom="10.0"
                         android:valueTo="100.0"
                         android:value="90.0" />
@@ -379,7 +377,6 @@
                         android:id="@+id/sliderCorner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:stepSize="2.0"
                         android:valueFrom="0.0"
                         android:valueTo="32.0"
                         android:value="16.0" />
@@ -397,7 +394,6 @@
                         android:id="@+id/sliderTextSize"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:stepSize="1.0"
                         android:valueFrom="8.0"
                         android:valueTo="28.0"
                         android:value="14.0" />
@@ -466,7 +462,6 @@
                         android:id="@+id/sliderAutoClear"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:stepSize="1.0"
                         android:valueFrom="0.0"
                         android:valueTo="30.0"
                         android:value="0.0" />
