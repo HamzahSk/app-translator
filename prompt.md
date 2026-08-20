@@ -1,24 +1,27 @@
 
-**TUGAS FASE 6: REFINEMENT UI/UX, TOMBOL START, OFFLINE HANG/STUCK FIX & CUSTOM SPACING FONT**
-Kamu bertugas melakukan *polishing* dan membereskan bug *blocker* dari Fase 5.5 sebelumnya. Terdapat masalah *hanging* pada proses *offline* dan *styling* teks yang masih perlu disempurnakan. Terapkan perbaikan berikut:
-## 1. Perbaikan Proses Nyangkut (*Hanging/Stuck*) di Mode Offline
- * **Masalah:** Terkadang *loading bubble* (...) muncul di layar, tapi proses terjemahan berhenti total (*stuck*). Jika sudah begini, *request* selanjutnya tidak akan merespons kecuali *service* dimatikan lalu dinyalakan ulang.
+**TUGAS FASE 7: REWRITE TOMBOL START & RE-OPTIMASI ML KIT**
+# SYSTEM INSTRUCTION: MEMORY MANAGEMENT SYSTEM
+Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menjaga kesinambungan pekerjaan tanpa membuat context window (token) overload, kamu WAJIB mematuhi protokol memori berikut:
+## 1. Protokol Membaca & Menulis Konteks
+ * **Cek Master Index:** Selalu baca file ai_memory/00_INDEX.md terlebih dahulu.
+ * **Cek Log Terbaru:** Baca maksimal 2 file log terbaru di dalam folder ai_memory/ bila butuh detail tambahan.
+ * **Buat File Log Baru:** Setelah selesai melakukan tugas, buat log task_YYYYMMDD_HHMM_[nama_task].md (maksimal 200 kata).
+ * **Perbarui 00_INDEX.md:** Tambahkan referensi log baru ke dalam file index utama dan perbarui status proyek.
+# INSTRUKSI PERBAIKAN BUG KODE
+Kamu bertugas untuk membereskan sisa *bug* performa dari fase sebelumnya dengan melakukan *rewrite* total pada logika tombol Start dan merombak cara inisialisasi ML Kit agar aplikasi benar-benar responsif tanpa jeda.
+## 1. Rewrite Total Logika Tombol Start
+ * **Masalah:** Penambalan kode sebelumnya masih menyisakan *delay*, tombol harus diklik dua kali agar merespons, dan sangat lambat saat dimatikan.
  * **Solusi:**
-   * Bungkus pemanggilan .await() pada OCR (recognizer.process) dan Translator (translator.translate) di dalam blok withTimeout(7000L) atau durasi yang wajar (7 detik). Jika ML Kit mengalami *freeze* secara internal, TimeoutCancellationException akan dilempar sehingga coroutine tidak menggantung selamanya.
-   * Pastikan blok try-catch menangkap *exception* *timeout* tersebut, lalu pastikan overlayManager.removeLoading(key) dan pembersihan *state* dieksekusi agar sistem siap memproses *capture* layar selanjutnya.
-   * Guna mengurangi potensi *freeze* di awal, buat mekanisme **Pre-load (Dummy Call)**. Di dalam blok preloadOfflineModel(), selain memanggil downloadModelIfNeeded(), buat pemanggilan semu ke OCR menggunakan bitmap kosong (1x1 pixel) dan jalankan translate("test"). Ini memaksa ML Kit untuk memuat model dari *storage* ke RAM (memori) sejak *service* pertama kali aktif.
-## 2. Perbaikan Ekstrem Delay Tombol Start (Multi-Click & ANR Fix)
- * **Masalah:** Tombol "Start" kadang butuh diklik berkali-kali, aplikasinya *freeze* (notifikasi persetujuan layar lama muncul), dan saat *service* dimatikan juga responnya lambat.
+   * Hapus seluruh *listener* dan logika *state* tombol Start yang lama di MainActivity.
+   * Buat ulang logika tombol dari nol menggunakan pendekatan *State* yang bersih (misal mengandalkan enum atau sealed class: IDLE, PREPARING, RUNNING).
+   * Pastikan tidak ada blok kode runBlocking, Thread.sleep, atau operasi berat yang terselip. Pembuatan MediaProjectionManager.createScreenCaptureIntent() sebenarnya cukup cepat, pastikan pemanggilannya instan, dan evaluasi *permission* dilakukan via Coroutine yang tidak mengunci antarmuka utama (UI Thread).
+## 2. Re-Optimasi Pre-load & Eksekusi ML Kit
+ * **Masalah:** ML Kit masih sangat lambat saat *capture* pertama kali, dan indikator *loading* sering kali gagal muncul. Mekanisme *dummy call* sebelumnya sepertinya menyebabkan *bottleneck*.
  * **Solusi:**
-   * Hapus / pindahkan pengecekan inisialisasi sistem yang memberatkan di *Main Thread* sebelum MediaProjectionManager.createScreenCaptureIntent() dipanggil.
-   * Pastikan status *Permission* (Overlay & Accessibility) hanya di-*cache* atau dicek secara *asynchronous*.
-   * Gunakan lifecycleScope.launch(Dispatchers.Main) untuk mengubah UI (teks tombol, *spinner*), namun pindahkan eksekusi berat sepenuhnya ke Dispatchers.IO. Jangan lupa berikan logika penahan klik ganda (*debounce*).
-## 3. Custom Line Spacing & Padding Teks (StaticLayout Refinement)
- * **Masalah:** Jarak antar baris teks (*line spacing*) di terjemahan terlalu mepet. Saat teks melebihi ukuran *bounding box* aslinya, kotak *bubble* hanya memanjang ke bawah sehingga posisinya menjadi tidak sentris terhadap teks asli.
- * **Solusi:**
-   * Pada StaticLayout.Builder di OverlayManager, tambahkan .setLineSpacing(4f, 1.2f) (nilai *add* dan *multiplier* dibuat *adjustable*) agar baris teks tidak saling bertabrakan.
-   * **Perhitungan Bounding Box Vertikal (Center Expansion):** Setelah StaticLayout selesai di-*build*, hitung total tinggi teks (layout.height). Jika tinggi teks lebih besar dari bounding_box.height(), jangan hanya membiarkannya tumpah ke bawah. Geser koordinat Y (*top*) awal ke arah **atas** sebesar setengah dari selisih tingginya: new_Y = original_Y - ((layout.height - original_height) / 2). Ini membuat kotak teks memuai dari titik tengah.
-## 4. Verifikasi Memori & Build
- * Terapkan perubahan ini tanpa merusak fitur Fase 5.
- * Setelah selesai, buat file log task_YYYYMMDD_HHMM_phase6_refinement.md sesuai protokol memori dan perbarui 00_INDEX.md.
- * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi tidak ada *error* kompilasi.
+   * Evaluasi ulang metode preloadOfflineModel(). Pindahkan inisialisasi ML Kit ke Dispatchers.Default (karena OCR dan Translator adalah operasi CPU-*bound*, bukan I/O-*bound*).
+   * Pastikan proses *pre-load* atau *dummy call* berjalan di *background job* yang independen dan **tidak mengunci** (lock/mutex) instansiasi TextRecognizer saat proses *capture* layar sesungguhnya dipanggil.
+   * Untuk memastikan *loading bubble* selalu muncul, paksa UI thread untuk menggambar *bubble* terlebih dahulu (Handler.post atau withContext(Dispatchers.Main)), lalu panggil delay(50) atau yield() agar sistem Android punya waktu *rendering* sebelum coroutine OCR mengambil alih resource secara masif.
+## 3. Verifikasi & Build
+ * Pastikan fitur perbaikan *Line Spacing* dan *Center Expansion Box* dari Fase 6 di OverlayManager tidak terhapus.
+ * Setelah selesai, buat file log task_YYYYMMDD_HHMM_phase7_rewrite.md dan perbarui 00_INDEX.md.
+ * Wajib jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memastikan tidak ada error kompilasi.

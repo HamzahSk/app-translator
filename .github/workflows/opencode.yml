@@ -48,21 +48,23 @@ jobs:
           git add -A
 
           mkdir -p output_artifact
+          
+          # Buat file kosong untuk mencatat file yang dihapus
+          touch output_artifact/deleted_files.txt
 
-          # Menyalin semua file proyek yang diubah oleh AI
+          # Loop semua file yang berubah, ditambah, atau dihapus
           for file in $(git diff --cached --name-only); do
             if [ -f "$file" ]; then
+              # Jika file ada (ditambah/diubah), copy ke artifact
               mkdir -p "output_artifact/$(dirname "$file")"
               cp "$file" "output_artifact/$file"
+            else
+              # Jika file tidak ada (dihapus), catat namanya
+              echo "$file" >> output_artifact/deleted_files.txt
             fi
           done
 
-          # Memasukkan file recap respons AI ke dalam artifact baru
+          # Memasukkan file recap respons AI
           if [ -f ai-response-recap.txt ]; then
             cp ai-response-recap.txt output_artifact/ai-response-recap.txt
           fi
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: opencode-output-${{ github.sha }}
-          path: output_artifact/
