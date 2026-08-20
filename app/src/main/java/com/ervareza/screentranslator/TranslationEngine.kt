@@ -181,16 +181,24 @@ class TranslationEngine(private val context: Context) {
         blocks.forEachIndexed { index, block -> overlayManager.drawLoadingBubble(block.boundingBox!!, index.toString()) }
         try {
             val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage, delimiter)
-            if (translated == null) return
-            blocks.forEachIndexed { index, block ->
-                overlayManager.replaceLoading(
-                    index.toString(),
-                    translated[index],
-                    block.boundingBox!!,
-                )
+            if (translated == null) {
+                blocks.indices.forEach { overlayManager.removeLoading(it.toString()) }
+                return
             }
+            blocks.forEachIndexed { index, block ->
+                val text = translated.getOrNull(index) ?: return@forEachIndexed
+                block.boundingBox?.let { box ->
+                    overlayManager.replaceLoading(index.toString(), text, box)
+                }
+            }
+        } catch (e: NullPointerException) {
+            Log.e("Translator", "Online batch contained null data", e)
+        } catch (e: IndexOutOfBoundsException) {
+            Log.e("Translator", "Online batch segment count mismatch", e)
         } catch (e: Exception) {
             Log.e("Translator", "Online batch translation failed", e)
+        } finally {
+            blocks.indices.forEach { overlayManager.removeLoading(it.toString()) }
         }
     }
 

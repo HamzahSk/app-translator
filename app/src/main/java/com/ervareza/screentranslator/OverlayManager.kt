@@ -31,6 +31,7 @@ class OverlayManager(private val context: Context) {
 
     fun drawTranslationBubble(translatedText: String, boundingBox: Rect) {
         handler.post {
+            if (boundingBox.isEmpty) return@post
             val textView = TextView(context).apply {
                 text = translatedText
                 setTextColor(Color.parseColor(config.bubbleTextColor))
@@ -108,8 +109,10 @@ class OverlayManager(private val context: Context) {
                 }
             }
 
-            windowManager.addView(textView, params)
-            activeViews.add(textView)
+            runCatching {
+                windowManager.addView(textView, params)
+                activeViews.add(textView)
+            }
 
             val autoClear = config.autoClearSeconds
             if (autoClear > 0) {
@@ -125,6 +128,7 @@ class OverlayManager(private val context: Context) {
 
     fun drawLoadingBubble(boundingBox: Rect, key: String) {
         handler.post {
+            if (boundingBox.isEmpty) return@post
             val view = TextView(context).apply {
                 text = "…"
                 setTextColor(Color.WHITE)
@@ -146,9 +150,11 @@ class OverlayManager(private val context: Context) {
                 x = boundingBox.left
                 y = boundingBox.top
             }
-            windowManager.addView(view, params)
-            activeViews.add(view)
-            loadingViews[key] = view
+            runCatching {
+                windowManager.addView(view, params)
+                activeViews.add(view)
+                loadingViews[key] = view
+            }
         }
     }
 
@@ -159,6 +165,15 @@ class OverlayManager(private val context: Context) {
                 activeViews.remove(view)
             }
             drawTranslationBubble(translatedText, boundingBox)
+        }
+    }
+
+    fun removeLoading(key: String) {
+        handler.post {
+            loadingViews.remove(key)?.let { view ->
+                runCatching { windowManager.removeView(view) }
+                activeViews.remove(view)
+            }
         }
     }
 

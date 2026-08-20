@@ -60,7 +60,12 @@ class OnlineTranslator(context: Context) {
                 "Delimiter: $delimiter\n\n$joined",
             targetLang,
         ) ?: return null
-        return result.split(delimiter).map { it.trim() }.takeIf { it.size == texts.size }
+        return try {
+            result.split(delimiter).map { it.trim() }.takeIf { it.size == texts.size }
+        } catch (e: RuntimeException) {
+            Log.e("OnlineTranslator", "Failed to parse batch response", e)
+            null
+        }
     }
 
     private suspend fun translateWithOpenAi(model: String, prompt: String): String? {
