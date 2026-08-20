@@ -83,3 +83,9 @@ jobs:
           if [ -f ai-response-recap.txt ]; then
             cp ai-response-recap.txt output_artifact/ai-response-recap.txt
           fi
+
+      # --- INI ADALAH BAGIAN YANG SEBELUMNYA HILANG ---
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opencode-output-${{ github.sha }}
+          path: output_artifact/
