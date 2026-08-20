@@ -1,0 +1,83 @@
+name: Aider AI Fixer
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "prompt.md"
+
+permissions:
+  contents: write
+
+jobs:
+  aider:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Aider membutuhkan riwayat Git secara lengkap
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version-file: .github/.java-version
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Aider
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install aider-chat
+
+      - name: Configure Git User
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run Aider
+        env:
+          # Disarankan menyimpan API Key di GitHub Secrets dengan nama OPENAI_API_KEY
+          OPENAI_API_KEY: "sk-cScNpCjYpO2SH5QRpoSAkwAJE7uvt4I8GpAj48uQBOLcmBvx"
+          OPENAI_API_BASE: "https://ai.tioo.eu.org/v1"
+        run: |
+          aider \
+            --model openai/auto \
+            --message-file prompt.md \
+            --yes-always \
+            --no-auto-commits \
+            2>&1 | tee ai-response-recap.txt || true
+
+      - name: Collect changed files and AI recap
+        run: |
+          git add -A
+
+          mkdir -p output_artifact
+
+          # Menyalin semua file proyek yang diubah oleh AI
+          for file in $(git diff --cached --name-only); do
+            if [ -f "$file" ]; then
+              mkdir -p "output_artifact/$(dirname "$file")"
+              cp "$file" "output_artifact/$file"
+            fi
+          done
+
+          # Memasukkan file recap respons AI ke dalam artifact
+          if [ -f ai-response-recap.txt ]; then
+            cp ai-response-recap.txt output_artifact/ai-response-recap.txt
+          fi
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aider-output-${{ github.sha }}
+          path: output_artifact/
+          

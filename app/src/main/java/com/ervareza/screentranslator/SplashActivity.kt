@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 class SplashActivity : AppCompatActivity() {
 
     private var navigated = false
+    private val navigationRunnable = Runnable { goToMain() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +27,7 @@ class SplashActivity : AppCompatActivity() {
         findViewById<View>(R.id.splashRoot).setOnClickListener { goToMain() }
 
         // Auto-navigate once the animation finishes
-        logo.postDelayed({ goToMain() }, 1800L)
+        logo.postDelayed(navigationRunnable, 1800L)
     }
 
     private fun goToMain() {
@@ -35,5 +36,10 @@ class SplashActivity : AppCompatActivity() {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
+    }
+
+    override fun onDestroy() {
+        findViewById<View>(R.id.splashLogo)?.removeCallbacks(navigationRunnable)
+        super.onDestroy()
     }
 }

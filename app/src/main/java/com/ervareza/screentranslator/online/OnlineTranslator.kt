@@ -13,16 +13,21 @@ class OnlineTranslator(context: Context) {
 
     private val config = ConfigManager(context)
     private var service: AiApiService? = null
+    private var serviceFingerprint: String? = null
 
     private fun getService(): AiApiService {
+        val provider = AiProvider.fromId(config.apiProvider)
+        val baseUrl = config.apiBaseUrl.trim()
+        val fingerprint = "${provider.name}|${config.apiKey}|$baseUrl"
         val cached = service
-        if (cached != null) return cached
+        if (cached != null && serviceFingerprint == fingerprint) return cached
         val created = AiApiClient.create(
-            provider = AiProvider.fromId(config.apiProvider),
+            provider = provider,
             apiKey = config.apiKey,
-            customBaseUrl = config.apiBaseUrl.ifBlank { null }
+            customBaseUrl = baseUrl.ifBlank { null }
         )
         service = created
+        serviceFingerprint = fingerprint
         return created
     }
 

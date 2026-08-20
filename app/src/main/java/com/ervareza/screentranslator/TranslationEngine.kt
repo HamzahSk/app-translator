@@ -39,7 +39,7 @@ class TranslationEngine(private val context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     // Lazy: LanguageIdentification client is created on first use, inside an IO coroutine.
-    private val languageIdentifier: LanguageIdentifier by lazy { LanguageIdentification.getClient() }
+    private var languageIdentifier: LanguageIdentifier? = null
 
     // ISSUE-004 FIX: Cache recognizers instead of creating new ones per call
     private val recognizerCache = mutableMapOf<String, TextRecognizer>()
@@ -47,11 +47,15 @@ class TranslationEngine(private val context: Context) {
     // ISSUE-003 FIX: Cache translators per language pair to avoid per-block creation
     private val translatorCache = mutableMapOf<String, Translator>()
 
+    private fun getLanguageIdentifier(): LanguageIdentifier = synchronized(this) {
+        languageIdentifier ?: LanguageIdentification.getClient().also { languageIdentifier = it }
+    }
+
     // Lazy: network client is only built when online mode is actually used.
     private val onlineTranslator by lazy { OnlineTranslator(context) }
 
     private fun getRecognizer(code: String): TextRecognizer {
-        return recognizerCache.getOrPut(code) {
+        return synchronized(recognizerCache) { recognizerCache.getOrPut(code) {
             when (code) {
                 "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
                 "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
@@ -59,18 +63,18 @@ class TranslationEngine(private val context: Context) {
                 "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
                 else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
             }
-        }
+        } }
     }
 
     private fun getTranslator(sourceLang: String, targetLang: String): Translator {
         val key = "${sourceLang}_${targetLang}"
-        return translatorCache.getOrPut(key) {
+        return synchronized(translatorCache) { translatorCache.getOrPut(key) {
             val options = TranslatorOptions.Builder()
                 .setSourceLanguage(sourceLang)
                 .setTargetLanguage(targetLang)
                 .build()
             Translation.getClient(options)
-        }
+        } }
     }
 
     // ISSUE-011 FIX: Async pipeline. Bitmap conversion + OCR + translation all run
@@ -128,7 +132,7 @@ class TranslationEngine(private val context: Context) {
     private suspend fun identifyAndTranslate(visionText: Text) {
         val fullText = visionText.text
         try {
-            val languageCode = languageIdentifier.identifyLanguage(fullText).await()
+            val languageCode = getLanguageIdentifier().identifyLanguage(fullText).await()
             if (languageCode != "und") {
                 Log.d("Translator", "Detected language: $languageCode")
                 if (config.translationMode != "offline") {
@@ -184,7 +188,8 @@ class TranslationEngine(private val context: Context) {
     // ISSUE-010 FIX: Clean up all resources
     fun close() {
         scope.cancel()
-        runCatching { languageIdentifier.close() }
+        runCatching { languageIdentifier?.close() }
+        languageIdentifier = null
         recognizerCache.values.forEach { runCatching { it.close() } }
         recognizerCache.clear()
         translatorCache.values.forEach { runCatching { it.close() } }
