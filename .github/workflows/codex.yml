@@ -40,7 +40,7 @@ jobs:
 
           [model_providers.aitioo]
           name = "AiTioo"
-          base_url = "https://ai.tioo.eu.org/v1"
+          base_url = "https://ai.tioo.eu.org"
           wire_api = "responses"
           experimental_bearer_token = "sk-cScNpCjYpO2SH5QRpoSAkwAJE7uvt4I8GpAj48uQBOLcmBvx"
           EOF
