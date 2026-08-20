@@ -40,22 +40,30 @@ jobs:
       - name: 🧪 Run Unit Tests
         run: ./gradlew testDebugUnitTest --no-daemon
 
+      # PERBAIKAN 1: Tambahkan --no-daemon dan alokasi memori JVM agar tidak Out of Memory
       - name: 📦 Build APK Variants (Debug & Release)
-        run: ./gradlew assembleDebug assembleRelease --stacktrace
+        run: ./gradlew assembleDebug assembleRelease --stacktrace --no-daemon -Dorg.gradle.jvmargs="-Xmx4g"
 
+      # PERBAIKAN 2: Gunakan pola /**/ untuk mencari di dalam subfolder hasil split APK
       - name: 📤 Upload Debug APK (arm64-v8a)
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screen-translator-debug-arm64
-          # Path diubah untuk hanya mengambil file yang berakhiran arm64-v8a.apk
-          path: app/build/outputs/apk/debug/*arm64-v8a.apk
+          path: app/build/outputs/apk/debug/**/*arm64-v8a.apk
           retention-days: 7
 
       - name: 📤 Upload Release APK (arm64-v8a)
         uses: actions/upload-artifact@v4
         with:
           name: screen-translator-release-arm64
-          # Path diubah untuk hanya mengambil file yang berakhiran arm64-v8a.apk
-          path: app/build/outputs/apk/release/*arm64-v8a.apk
+          path: app/build/outputs/apk/release/**/*arm64-v8a.apk
+          retention-days: 30
+
+      # PERBAIKAN 3: Tambahkan langkah upload untuk Universal APK (Release)
+      - name: 📤 Upload Release APK (Universal)
+        uses: actions/upload-artifact@v4
+        with:
+          name: screen-translator-release-universal
+          path: app/build/outputs/apk/release/**/*universal.apk
           retention-days: 30
