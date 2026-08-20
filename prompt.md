@@ -7,6 +7,7 @@ Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menj
  * **Cek Log Terbaru:** Baca maksimal 2 file log terbaru di dalam folder ai_memory/ bila butuh detail tambahan.
  * **Buat File Log Baru:** Setelah selesai melakukan tugas, buat log task_YYYYMMDD_HHMM_[nama_task].md (maksimal 200 kata).
  * **Perbarui 00_INDEX.md:** Tambahkan referensi log baru ke dalam file index utama dan perbarui status proyek.
+ 
 # INSTRUKSI PERBAIKAN BUG KODE
 Kamu bertugas untuk membereskan sisa *bug* performa dari fase sebelumnya dengan melakukan *rewrite* total pada logika tombol Start dan merombak cara inisialisasi ML Kit agar aplikasi benar-benar responsif tanpa jeda.
 ## 1. Rewrite Total Logika Tombol Start
