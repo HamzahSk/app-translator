@@ -1,4 +1,4 @@
-name: OpenCode DB Fixer
+name: OpenCode Fixer
 
 on:
   workflow_dispatch:
@@ -43,7 +43,7 @@ jobs:
         run: |
           # Flag --model digunakan untuk menentukan model kustom
           opencode run \
-            --model provider/auto \
+            --model provider/MiniMax-M3 \
             --auto \
             "$(cat prompt.md)" 2>&1 | tee ai-response-recap.txt || true
 
