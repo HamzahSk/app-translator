@@ -174,19 +174,21 @@ class TranslationEngine(private val context: Context) {
 
         try {
             translator.downloadModelIfNeeded().await()
+            val translatedBubbles = mutableListOf<OverlayManager.Bubble>()
             for (block in visionText.textBlocks) {
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val rect = adjustedBoundingBox(block.boundingBox) ?: continue
                 try {
                     val translatedText = translator.translate(block.text).await()
                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                    overlayManager.drawTranslationBubble(translatedText, rect)
+                    translatedBubbles += OverlayManager.Bubble(translatedText, rect)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
                     Log.e("Translator", "Block translation failed", e)
                 }
             }
+            if (translatedBubbles.isNotEmpty()) overlayManager.drawTranslationBatch(translatedBubbles)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

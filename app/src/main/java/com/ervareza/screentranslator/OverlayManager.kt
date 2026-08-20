@@ -4,6 +4,9 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Rect
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.graphics.Canvas
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
@@ -24,103 +27,68 @@ class OverlayManager(private val context: Context) {
     // ISSUE-005 FIX: Thread-safe list to prevent ConcurrentModificationException
     private val activeViews = CopyOnWriteArrayList<View>()
     private val loadingViews = ConcurrentHashMap<String, View>()
+    @Volatile private var batchId = 0L
+    private var batchView: View? = null
+    private val customTypeface: Typeface? by lazy {
+        runCatching { Typeface.createFromAsset(context.assets, "fonts/comic_font.ttf") }.getOrNull()
+    }
+
+    data class Bubble(val text: String, val bounds: Rect)
 
     private fun dpToPx(dp: Int): Int {
         return (dp * context.resources.displayMetrics.density).toInt()
     }
 
     fun drawTranslationBubble(translatedText: String, boundingBox: Rect) {
+        drawTranslationBatch(listOf(Bubble(translatedText, boundingBox)))
+    }
+
+    fun drawTranslationBatch(bubbles: List<Bubble>) {
         handler.post {
-            if (boundingBox.isEmpty) return@post
-            val textView = TextView(context).apply {
-                text = translatedText
-                setTextColor(Color.parseColor(config.bubbleTextColor))
-                textSize = config.overlayTextSize.toFloat()
-                gravity = Gravity.CENTER
-                val pad = dpToPx(8)
-                setPadding(pad, pad, pad, pad)
-            }
-
-            val alpha = config.overlayOpacity
-            val bgColor = Color.parseColor(config.bubbleBgColor)
-            val bgDrawable = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadius = dpToPx(config.bubbleCornerRadius).toFloat()
-
-                setColor(
-                    Color.argb(
-                        alpha,
-                        Color.red(bgColor),
-                        Color.green(bgColor),
-                        Color.blue(bgColor),
-                    ),
-                )
-
-                if (config.bubbleBorderEnabled) {
-                    val borderColor = Color.parseColor(config.bubbleTextColor)
-                    setStroke(2, Color.argb(alpha, Color.red(borderColor), Color.green(borderColor), Color.blue(borderColor)))
+            val valid = bubbles.filter { !it.bounds.isEmpty }
+            if (valid.isEmpty()) return@post
+            clearOverlaysInternal()
+            val id = ++batchId
+            val view = object : View(context) {
+                private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+                override fun onDraw(canvas: Canvas) {
+                    val bg = Color.parseColor(config.bubbleBgColor)
+                    paint.typeface = customTypeface
+                    paint.textSize = config.overlayTextSize.toFloat() * resources.displayMetrics.scaledDensity
+                    valid.forEach { bubble ->
+                        val r = Rect(bubble.bounds)
+                        when (config.placementMode) {
+                            "left" -> r.offset(-(r.width()), 0)
+                            "right" -> r.offset(r.width(), 0)
+                        }
+                        paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
+                        canvas.drawRoundRect(r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), paint)
+                        paint.color = Color.parseColor(config.bubbleTextColor)
+                        paint.textAlign = Paint.Align.CENTER
+                        val fm = paint.fontMetrics
+                        val baseline = r.centerY() - (fm.ascent + fm.descent) / 2
+                        canvas.drawText(bubble.text, r.centerX().toFloat(), baseline, paint)
+                    }
                 }
             }
-            textView.background = bgDrawable
-
-            var xPos = boundingBox.left
-            var yPos = boundingBox.top
-
-            when (config.placementMode) {
-                "left" -> xPos = (boundingBox.left - boundingBox.width()).coerceAtLeast(0)
-                "right" -> xPos = boundingBox.right
-            }
-
-            // ISSUE-007 FIX: Use dp-based minimum width instead of raw pixels
-            val minWidthPx = dpToPx(100)
             val params = WindowManager.LayoutParams(
-                boundingBox.width().coerceAtLeast(minWidthPx),
-                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT,
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
-                x = xPos
-                y = yPos
             }
-
-            var initialX = 0
-            var initialY = 0
-            var initialTouchX = 0f
-            var initialTouchY = 0f
-
-            textView.setOnTouchListener { view, event ->
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        initialX = params.x
-                        initialY = params.y
-                        initialTouchX = event.rawX
-                        initialTouchY = event.rawY
-                        true
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        params.x = initialX + (event.rawX - initialTouchX).toInt()
-                        params.y = initialY + (event.rawY - initialTouchY).toInt()
-                        windowManager.updateViewLayout(view, params)
-                        true
-                    }
-                    else -> false
-                }
-            }
-
-            runCatching {
-                windowManager.addView(textView, params)
-                activeViews.add(textView)
-            }
+            if (id != batchId) return@post
+            runCatching { windowManager.addView(view, params); batchView = view; activeViews.add(view) }
 
             val autoClear = config.autoClearSeconds
             if (autoClear > 0) {
                 handler.postDelayed({
                     try {
-                        windowManager.removeView(textView)
-                        activeViews.remove(textView)
-                    } catch (_: Exception) {}
+                        if (batchId == id) { windowManager.removeView(view); activeViews.remove(view); batchView = null }
+                    } catch (_: IllegalArgumentException) {}
                 }, autoClear * 1000L)
             }
         }
@@ -179,13 +147,19 @@ class OverlayManager(private val context: Context) {
 
     fun clearOverlays() {
         handler.post {
+            clearOverlaysInternal()
+        }
+    }
+
+    private fun clearOverlaysInternal() {
+            batchId++
             for (view in activeViews) {
                 try {
                     windowManager.removeView(view)
-                } catch (_: Exception) {}
+                } catch (_: IllegalArgumentException) {}
             }
             activeViews.clear()
             loadingViews.clear()
-        }
+            batchView = null
     }
 }
