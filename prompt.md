@@ -18,27 +18,23 @@ Setiap kali kamu selesai melakukan suatu tugas/commit, lakukan 2 hal berikut[spa
 
 ---
 
-# TUGAS FASE 2: OPTIMASI TRANSLASI, UI LOADING, DAN SPOTLESS
+# TUGAS FASE 2.5: PERBAIKAN BUG DAN SISTEM PENANGANAN CRASH GLOBAL
 
-Kamu bertugas sebagai Senior Android Developer. Lanjutkan pengembangan aplikasi Screen Translator dengan mengimplementasikan tugas-tugas berikut:
+Kamu bertugas sebagai Senior Android Developer. Saat ini, aplikasi mengalami *Force Close* secara acak (diduga akibat *thread handling* pada UI Overlay atau kegagalan *parsing* dari batch translation API). Tolong kerjakan tugas berikut:
 
-## 1. Implementasi Plugin Spotless
-*   Tambahkan plugin `com.diffplug.spotless` ke dalam file `build.gradle.kts` tingkat aplikasi.
-*   Buatkan konfigurasi blok `spotless { ... }` untuk memastikan format kode Kotlin (misalnya menggunakan `ktlint`) tervalidasi saat CI/CD menjalankan task `spotlessCheck`.
+## 1. Analisis dan Perbaiki Penyebab Crash
+*   Tinjau kembali logika di `OverlayManager` dan `TranslationEngine`. Pastikan semua modifikasi UI (menambah/menghapus *loading bubble* dan *translation bubble*) HANYA dijalankan di *Main Thread* (UI Thread).
+*   Pastikan blok `try-catch` menangani *NullPointerException* atau *IndexOutOfBoundsException* saat memecah *string* berdasarkan *delimiter*.
 
-## 2. Optimasi Batch Translation (Network Request)
-*   **Masalah Saat Ini:** Aplikasi mengirimkan teks ke API (OpenAI/Gemini) satu per satu per *bounding box* hasil OCR. Ini memakan waktu terlalu lama dan boros *request*.
-*   **Solusi yang Diharapkan:** 
-    *   Kumpulkan semua teks hasil OCR dari layar.
-    *   Gabungkan semua teks tersebut ke dalam satu *string* panjang, dipisahkan dengan *delimiter* atau pemisah yang unik (misalnya `|||` atau `\n---\n`).
-    *   Kirimkan HANYA SATU *request* ke API AI untuk menerjemahkan teks gabungan tersebut.
-    *   Setelah *response* diterima, pecah kembali hasilnya menggunakan *delimiter* yang sama dan petakan kembali ke *bounding box* aslinya.
-*   Berikan pembaruan pada logika `TranslationEngine` atau *network client* untuk menangani *batch processing* ini.
+## 2. Implementasi Global Crash Handler
+*   Buat kelas `GlobalExceptionHandler` yang mengimplementasikan `Thread.UncaughtExceptionHandler`.
+*   Tangkap semua *error* fatal yang tidak tertangani agar aplikasi tidak langsung terhenti paksa oleh OS.
 
-## 3. Penambahan Indikator Loading (Skeleton/Empty Canvas) UI
-*   **Masalah Saat Ini:** Saat proses OCR dan translasi berjalan via *network*, layar tidak memberikan *feedback* visual, sehingga *user* bingung apakah aplikasi sedang memproses atau tidak.
-*   **Solusi yang Diharapkan:**
-    *   Segera setelah proses OCR selesai mendeteksi posisi *bounding box* (sebelum *request* translasi selesai), gambar *bubble* atau kanvas kosong berwarna solid transparan (seperti *skeleton loading*) di atas posisi teks asli.
-    *   Tambahkan animasi *shimmer* atau indikator *loading* sederhana di dalam kanvas kosong tersebut.
-    *   Setelah hasil translasi dari API diterima, timpa kanvas kosong tersebut dengan teks hasil terjemahan.
-*   Berikan kode implementasi untuk pembaruan UI *overlay* ini.
+## 3. Buat UI Layar Error (CrashActivity)
+*   Jika *crash* terdeteksi, arahkan pengguna ke `CrashActivity` baru.
+*   Layar ini harus menampilkan pesan *stack trace error* secara lengkap.
+*   Sediakan tombol "Salin Error" (Copy to Clipboard) dan tombol "Bagikan" (Share Intent) agar pengguna bisa dengan mudah melaporkan *bug* tersebut.
+
+## 4. Sistem Log Error Lokal (Android/data/...)
+*   Simpan setiap *stack trace crash* (beserta info *timestamp* dan spesifikasi *device*) ke dalam file `.txt`.
+*   Simpan file ini di direktori eksternal aplikasi, yaitu menggunakan `context.getExternalFilesDir(null)` sehingga file tersimpan rapi di `Android/data/com.ervareza.screentranslator/files/` dan mudah diakses pengguna via File Manager.
