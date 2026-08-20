@@ -17,7 +17,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Aider membutuhkan riwayat Git secara lengkap
+          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -27,7 +27,7 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -43,9 +43,14 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # 1. SIMPAN HASH COMMIT AWAL UNTUK DIBANDINGKAN NANTI
+      - name: Save initial commit SHA
+        run: echo "START_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      # 2. JALANKAN AIDER DENGAN CONTINUE-ON-ERROR
       - name: Run Aider
+        continue-on-error: true # Memastikan workflow tetap lanjut walaupun Aider kena limit 3 refleksi
         env:
-          # Disarankan menyimpan API Key di GitHub Secrets dengan nama OPENAI_API_KEY
           OPENAI_API_KEY: "sk-cScNpCjYpO2SH5QRpoSAkwAJE7uvt4I8GpAj48uQBOLcmBvx"
           OPENAI_API_BASE: "https://ai.tioo.eu.org/v1"
         run: |
@@ -54,23 +59,34 @@ jobs:
             --message-file prompt.md \
             --yes-always \
             --no-auto-commits \
-            2>&1 | tee ai-response-recap.txt || true
+            2>&1 | tee ai-response-recap.txt
 
+      # 3. AMBIL SEMUA FILE YANG BERUBAH SEJAK START_COMMIT
       - name: Collect changed files and AI recap
         run: |
+          # Amankan file yang mungkin belum di-commit Aider ke staging area
           git add -A
 
           mkdir -p output_artifact
 
-          # Menyalin semua file proyek yang diubah oleh AI
-          for file in $(git diff --cached --name-only); do
+          # Bandingkan file saat ini dengan commit awal sebelum Aider jalan
+          for file in $(git diff --name-only ${{ env.START_COMMIT }} HEAD); do
+            # Cek apakah file benar-benar ada (bukan file yang dihapus)
             if [ -f "$file" ]; then
               mkdir -p "output_artifact/$(dirname "$file")"
               cp "$file" "output_artifact/$file"
             fi
           done
 
-          # Memasukkan file recap respons AI ke dalam artifact
+          # Jika Aider membuat uncommitted changes, kita tangkap juga
+          for file in $(git diff --name-only --cached); do
+            if [ -f "$file" ]; then
+              mkdir -p "output_artifact/$(dirname "$file")"
+              cp "$file" "output_artifact/$file"
+            fi
+          done
+
+          # Pastikan file recap juga masuk
           if [ -f ai-response-recap.txt ]; then
             cp ai-response-recap.txt output_artifact/ai-response-recap.txt
           fi
@@ -80,4 +96,3 @@ jobs:
         with:
           name: aider-output-${{ github.sha }}
           path: output_artifact/
-          
