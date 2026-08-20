@@ -34,7 +34,8 @@ No more manually cropping screenshots or switching apps! Just read, pause, and l
 *   **Dynamic Bubble Overlay**: Translations feature rounded corners mapped directly over the original text bubbles.
 *   **Draggable UI**: If a translation bubble covers a character's face, simply touch and drag it out of the way!
 *   **100% On-Device & Offline**: Uses Google ML Kit's on-device models. Fast, private, and requires no internet connection once the models are downloaded.
-*   **Splash Screen**: Beautiful animated splash screen on app launch.
+*   **Online Mode (Custom AI API)**: Optional online translation via OpenAI or Google Gemini APIs (any OpenAI-compatible endpoint supported) for higher quality translations.
+*   **Splash Screen**: Lightweight VectorDrawable-based animated splash screen on app launch.
 
 ## Technology Stack
 

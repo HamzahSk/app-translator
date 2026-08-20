@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [v1.0.7] - 2026-08-20
+### Added
+- Mode "Online" untuk terjemahan menggunakan Custom AI API (OpenAI & Google Gemini) via Retrofit/OkHttp. Mendukung endpoint dan payload format OpenAI Chat Completions (`/chat/completions`) dan Gemini `generateContent` (`/v1beta/models/{model}:generateContent`), termasuk custom base URL untuk endpoint yang kompatibel (OpenRouter, Groq, Ollama, dll).
+- Konfigurasi Split APK berbasis ABI di Gradle: menghasilkan APK `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`, dan `universal`.
+
+### Changed
+- Splash screen diganti dari video MP4 menjadi **VectorDrawable** + AnimatedVectorDrawable (SVG-style) sehingga APK lebih ringan dan startup lebih cepat. Dukungan Android 12+ SplashScreen API ditambahkan di `values-v31`.
+- Inisialisasi berat (ML Kit Language Identification, recognizer, translator, dan network client) kini **lazy** dan dipindahkan ke background thread menggunakan **Kotlin Coroutines** (`Dispatchers.IO`/`Default`).
+- Proses screen capture & bitmap conversion dipindahkan ke background thread.
+
 ## [v1.0.6] - 2026-07-08
 ### Fixed
 - Memperbaiki bug Screen Capture yang tidak bekerja di v1.0.5 (bubbles langsung terhapus saat baru muncul karena event overlay memicu pembersihan).

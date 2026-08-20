@@ -34,11 +34,22 @@ android {
         jvmTarget = "17"
     }
 
+    // ISSUE-014 FIX: Split APK by CPU ABI (arm64-v8a, armeabi-v7a, x86, x86_64) + universal APK.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+            isUniversalApk = true
+        }
+    }
+
     applicationVariants.all {
         val variant = this
         variant.outputs.all {
             val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output.outputFileName = "Screen-Translator-v${variant.versionName}.apk"
+            val abi = output.filters.find { it.filterType == "ABI" }?.identifier ?: "universal"
+            output.outputFileName = "Screen-Translator-v${variant.versionName}-${abi}.apk"
         }
     }
 }
@@ -47,7 +58,10 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
-    
+
+    // Coroutines for off-main-thread (lazy/async) heavy initialization
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
     // ML Kit Language Identification
     implementation("com.google.mlkit:language-id:17.0.4")
     
@@ -63,4 +77,10 @@ dependencies {
     
     // ML Kit Translation
     implementation("com.google.mlkit:translate:17.0.2")
+
+    // Online Translation Mode (OpenAI / Gemini compatible APIs)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }

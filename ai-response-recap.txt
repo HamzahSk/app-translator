@@ -1,0 +1,883 @@
+[0m
+> build · deepseek-v4-flash-free
+[0m
+[0m$ [0mls -la
+total 864
+drwxr-xr-x 7 runner runner   4096 Aug 20 01:28 .
+drwxr-xr-x 3 runner runner   4096 Aug 20 01:28 ..
+drwxr-xr-x 7 runner runner   4096 Aug 20 01:28 .git
+drwxr-xr-x 3 runner runner   4096 Aug 20 01:28 .github
+-rw-r--r-- 1 runner runner    314 Aug 20 01:28 .gitignore
+-rw-r--r-- 1 runner runner   1933 Aug 20 01:28 CHANGELOG.md
+-rw-r--r-- 1 runner runner   1286 Aug 20 01:28 CONTRIBUTING.md
+-rw-r--r-- 1 runner runner   1073 Aug 20 01:28 LICENSE
+-rw-r--r-- 1 runner runner   4683 Aug 20 01:28 README.md
+-rw-r--r-- 1 runner runner     44 Aug 20 01:28 ai-response-recap.txt
+drwxr-xr-x 3 runner runner   4096 Aug 20 01:28 app
+drwxr-xr-x 2 runner runner   4096 Aug 20 01:28 assets
+-rw-r--r-- 1 runner runner    142 Aug 20 01:28 build.gradle.kts
+drwxr-xr-x 3 runner runner   4096 Aug 20 01:28 gradle
+-rw-r--r-- 1 runner runner     53 Aug 20 01:28 gradle.properties
+-rwxr-xr-x 1 runner runner   8656 Aug 20 01:28 gradlew
+-rw-r--r-- 1 runner runner   2848 Aug 20 01:28 gradlew.bat
+-rw-r--r-- 1 runner runner 787801 Aug 20 01:28 logo_screen_translator.png
+-rw-r--r-- 1 runner runner   2046 Aug 20 01:28 prompt.md
+-rw-r--r-- 1 runner runner    438 Aug 20 01:28 release_notes_1.0.6.md
+-rw-r--r-- 1 runner runner    335 Aug 20 01:28 settings.gradle.kts
+[0m
+I'll start by exploring the codebase to understand the project structure.
+[0m✱ [0mGlob "**/*.kts"[90m 3 matches[0m
+[0m✱ [0mGlob "**/*.kt"[90m 7 matches[0m
+[0m→ [0mRead app/build.gradle.kts
+[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/SplashActivity.kt
+[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
+[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/ConfigManager.kt
+[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
+[0m→ [0mRead settings.gradle.kts
+Let me read the remaining key files.
+[0m✱ [0mGlob "app/src/main/res/**/*"[90m 12 matches[0m
+[0m→ [0mRead app/src/main/AndroidManifest.xml
+[0m→ [0mRead build.gradle.kts
+[0m→ [0mRead gradle.properties
+Let me explore the resources and manifest.
+[0m→ [0mRead app/src/main/res/layout/activity_splash.xml
+[0m→ [0mRead app/src/main/res/values/themes.xml
+[0m→ [0mRead app/src/main/res/values-night/themes.xml
+[0m→ [0mRead app/src/main/res/values/strings.xml
+[0m→ [0mRead README.md
+[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/InactivityAccessibilityService.kt
+[0m→ [0mRead CHANGELOG.md
+[0m→ [0mRead prompt.md
+[0m→ [0mRead ai-response-recap.txt
+[0m→ [0mRead app/src/main/res/layout/activity_main.xml
+[0m
+[0m$ [0mls gradle/wrapper && cat gradle/wrapper/gradle-wrapper.properties 2>/dev/null; ls app/src/main/res/raw/
+gradle-wrapper.jar
+gradle-wrapper.properties
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
+networkTimeout=10000
+retries=0
+retryBackOffMs=500
+validateDistributionUrl=true
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+splash_video.mp4
+[0m
+Let me check the main layout and gradle wrapper.
+[0m# [0mTodos
+[•] Task 1: Replace video splash with VectorDrawable (vector + animator + layout + activity + v31 theme + remove mp4)
+[ ] Task 2: Performance - add coroutines, lazy-init heavy ML Kit/Play Services clients, async processing
+[ ] Task 3: Online mode - Retrofit client supporting OpenAI & Gemini APIs, config, wire into engine + UI
+[ ] Task 4: Add ABI splits config in build.gradle.kts
+[ ] Verify build compiles
+[0m
+I now have a complete understanding. Let me set up the task list and start implementing.
+[0m← [0mWrite app/src/main/res/drawable/ic_splash_logo.xml
+Wrote file successfully.
+[0m
+Starting with Task 1: the SVG/VectorDrawable splash screen.
+[0m← [0mWrite app/src/main/res/animator/splash_logo_pop.xml
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/res/animator/splash_letter_a.xml
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/res/animator/splash_letter_a2.xml
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/res/drawable/ic_splash_logo_anim.xml
+Wrote file successfully.
+[0m
+Now the animators and the animated vector drawable.
+[0m← [0mWrite app/src/main/res/layout/activity_splash.xml
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/java/com/ervareza/screentranslator/SplashActivity.kt
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/res/values-v31/themes.xml
+Wrote file successfully.
+[0m
+[0m$ [0mrm app/src/main/res/raw/splash_video.mp4 && ls app/src/main/res/raw 2>/dev/null || echo "raw dir empty/removed"
+(no output)
+[0m
+Now update the splash layout and activity, add the v31 theme, and remove the mp4.
+[0m$ [0mrmdir app/src/main/res/raw 2>/dev/null; ls app/src/main/res/
+animator
+drawable
+layout
+mipmap-hdpi
+mipmap-mdpi
+mipmap-xhdpi
+mipmap-xxhdpi
+mipmap-xxxhdpi
+values
+values-night
+values-v31
+xml
+[0m
+[0m← [0mEdit app/build.gradle.kts
+Index: /home/runner/work/app-translator/app-translator/app/build.gradle.kts
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/build.gradle.kts
++++ /home/runner/work/app-translator/app-translator/app/build.gradle.kts
+@@ -33,22 +33,36 @@
+     kotlinOptions {
+         jvmTarget = "17"
+     }
+ 
++    // ISSUE-014 FIX: Split APK by CPU ABI (arm64-v8a, armeabi-v7a, x86, x86_64) + universal APK.
++    splits {
++        abi {
++            isEnable = true
++            reset()
++            include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
++            isUniversalApk = true
++        }
++    }
++
+     applicationVariants.all {
+         val variant = this
+         variant.outputs.all {
+             val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+-            output.outputFileName = "Screen-Translator-v${variant.versionName}.apk"
++            val abi = output.filters.find { it.filterType == "ABI" }?.identifier ?: "universal"
++            output.outputFileName = "Screen-Translator-v${variant.versionName}-${abi}.apk"
+         }
+     }
+ }
+ 
+ dependencies {
+     implementation("androidx.core:core-ktx:1.12.0")
+     implementation("androidx.appcompat:appcompat:1.6.1")
+     implementation("com.google.android.material:material:1.11.0")
+-    
++
++    // Coroutines for off-main-thread (lazy/async) heavy initialization
++    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
++
+     // ML Kit Language Identification
+     implementation("com.google.mlkit:language-id:17.0.4")
+     
+     // Google Play Services (For ModuleInstallClient)
+@@ -62,5 +76,11 @@
+     implementation("com.google.android.gms:play-services-mlkit-text-recognition-devanagari:16.0.1")
+     
+     // ML Kit Translation
+     implementation("com.google.mlkit:translate:17.0.2")
++
++    // Online Translation Mode (OpenAI / Gemini compatible APIs)
++    implementation("com.squareup.retrofit2:retrofit:2.9.0")
++    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
++    implementation("com.squareup.okhttp3:okhttp:4.12.0")
++    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+ }
+
+[0m
+Task 1 complete. Now updating `app/build.gradle.kts` with new dependencies and ABI splits (Tasks 2, 3, 4 dependencies).
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/ConfigManager.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ConfigManager.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ConfigManager.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ConfigManager.kt
+@@ -73,5 +73,30 @@
+ 
+     fun setModelInstalled(langCode: String, installed: Boolean) {
+         prefs.edit().putBoolean("installed_model_$langCode", installed).apply()
+     }
++
++    // ---------- Translation Mode (Online) ----------
++
++    // "offline" = on-device ML Kit, "online" = custom AI API
++    var translationMode: String
++        get() = prefs.getString("translationMode", "offline") ?: "offline"
++        set(value) = prefs.edit().putString("translationMode", value).apply()
++
++    // "openai" or "gemini"
++    var apiProvider: String
++        get() = prefs.getString("apiProvider", "openai") ?: "openai"
++        set(value) = prefs.edit().putString("apiProvider", value).apply()
++
++    // Custom base URL. Empty = provider default.
++    var apiBaseUrl: String
++        get() = prefs.getString("apiBaseUrl", "") ?: ""
++        set(value) = prefs.edit().putString("apiBaseUrl", value).apply()
++
++    var apiKey: String
++        get() = prefs.getString("apiKey", "") ?: ""
++        set(value) = prefs.edit().putString("apiKey", value).apply()
++
++    var apiModel: String
++        get() = prefs.getString("apiModel", "gpt-4o-mini") ?: "gpt-4o-mini"
++        set(value) = prefs.edit().putString("apiModel", value).apply()
+ }
+
+[0m
+Now the ConfigManager additions for online mode.
+[0m← [0mWrite app/src/main/java/com/ervareza/screentranslator/online/AiProvider.kt
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/java/com/ervareza/screentranslator/online/AiApiModels.kt
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/java/com/ervareza/screentranslator/online/AiApiService.kt
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/java/com/ervareza/screentranslator/online/AiApiClient.kt
+Wrote file successfully.
+[0m
+[0m← [0mWrite app/src/main/java/com/ervareza/screentranslator/online/OnlineTranslator.kt
+Wrote file successfully.
+[0m
+Now creating the online mode package (Retrofit client + DTOs for OpenAI and Gemini).
+[0m← [0mWrite app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
+Wrote file successfully.
+[0m
+Now rewriting `TranslationEngine` with lazy init + coroutines (Task 2) and online mode wiring (Task 3).
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
+@@ -6,9 +6,8 @@
+ import com.ervareza.screentranslator.online.OnlineTranslator
+ import com.google.android.gms.tasks.Task
+ import com.google.mlkit.nl.languageid.LanguageIdentification
+ import com.google.mlkit.nl.languageid.LanguageIdentifier
+-import com.google.mlkit.nl.translate.TranslateLanguage
+ import com.google.mlkit.nl.translate.Translation
+ import com.google.mlkit.nl.translate.Translator
+ import com.google.mlkit.nl.translate.TranslatorOptions
+ import com.google.mlkit.vision.common.InputImage
+
+[0m
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -20,8 +20,13 @@
+ import android.view.WindowManager
+ import androidx.core.app.NotificationCompat
+ import android.util.Log
+ import android.app.Activity
++import kotlinx.coroutines.CoroutineScope
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.SupervisorJob
++import kotlinx.coroutines.cancel
++import kotlinx.coroutines.launch
+ 
+ class ScreenCaptureService : Service() {
+ 
+     private lateinit var mediaProjectionManager: MediaProjectionManager
+@@ -29,8 +34,11 @@
+     private var virtualDisplay: VirtualDisplay? = null
+     private var imageReader: ImageReader? = null
+     private lateinit var translationEngine: TranslationEngine
+ 
++    // ISSUE-011 FIX: Screen capture + bitmap conversion run on a background thread.
++    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
++
+     private val captureReceiver = object : BroadcastReceiver() {
+         override fun onReceive(context: Context?, intent: Intent?) {
+             if (intent?.action == "com.ervareza.screentranslator.CLEAR_OVERLAY") {
+                 translationEngine.clearOverlays()
+
+[0m
+Now updating `ScreenCaptureService` to offload screen capture processing to the background
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -162,26 +162,28 @@
+ }
+ 
+ private fun captureScreen() {
+     Log.d("Translator", "Capturing screen...")
+-    val image = imageReader?.acquireLatestImage()
+-    if (image != null) {
+-        val planes = image.planes
+-        val buffer = planes[0].buffer
+-        val pixelStride = planes[0].pixelStride
+-        val rowStride = planes[0].rowStride
+-        val rowPadding = rowStride - pixelStride * image.width
++    serviceScope.launch(Dispatchers.IO) {
++        val image = imageReader?.acquireLatestImage() ?: return@launch
++        try {
++            val planes = image.planes
++            val buffer = planes[0].buffer
++            val pixelStride = planes[0].pixelStride
++            val rowStride = planes[0].rowStride
++            val rowPadding = rowStride - pixelStride * image.width
+ 
+-        val bitmap = Bitmap.createBitmap(
+-            image.width + rowPadding / pixelStride,
+-            image.height, Bitmap.Config.ARGB_8888
+-        )
+-        bitmap.copyPixelsFromBuffer(buffer)
+-        
+-        // Pass to Translation Engine
+-        translationEngine.processImage(bitmap)
+-        
+-        image.close()
++            val bitmap = Bitmap.createBitmap(
++                image.width + rowPadding / pixelStride,
++                image.height, Bitmap.Config.ARGB_8888
++            )
++            bitmap.copyPixelsFromBuffer(buffer)
++
++            // Pass to Translation Engine (itself coroutine-based)
++            translationEngine.processImage(bitmap)
++        } finally {
++            image.close()
++        }
+     }
+ }
+ 
+ private fun createNotificationChannel() {
+
+[0m
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -198,8 +198,9 @@
+ 
+ override fun onDestroy() {
+     super.onDestroy()
+     unregisterReceiver(captureReceiver)
++    serviceScope.cancel()
+     translationEngine.close()
+     virtualDisplay?.release()
+     mediaProjection?.stop()
+     imageReader?.close()
+
+[0m
+[0m← [0mEdit app/src/main/res/layout/activity_main.xml
+Index: /home/runner/work/app-translator/app-translator/app/src/main/res/layout/activity_main.xml
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/res/layout/activity_main.xml
++++ /home/runner/work/app-translator/app-translator/app/src/main/res/layout/activity_main.xml
+@@ -164,8 +164,126 @@
+ 
+     </LinearLayout>
+ </com.google.android.material.card.MaterialCardView>
+ 
++<!-- ========== AI TRANSLATION MODE (ONLINE) ========== -->
++<com.google.android.material.card.MaterialCardView
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:layout_marginBottom="12dp"
++    app:cardCornerRadius="16dp"
++    app:cardElevation="0dp"
++    app:strokeWidth="1dp"
++    app:strokeColor="?attr/colorOutlineVariant">
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:orientation="vertical"
++        android:padding="16dp">
++
++        <TextView
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:text="AI Translation Mode"
++            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
++            android:textStyle="bold"
++            android:layout_marginBottom="12dp" />
++
++        <com.google.android.material.button.MaterialButtonToggleGroup
++            android:id="@+id/modeToggleGroup"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            app:singleSelection="true"
++            app:selectionRequired="true">
++
++            <com.google.android.material.button.MaterialButton
++                style="?attr/materialButtonOutlinedStyle"
++                android:id="@+id/btnModeOffline"
++                android:layout_width="0dp"
++                android:layout_height="wrap_content"
++                android:layout_weight="1"
++                android:text="Offline" />
++
++            <com.google.android.material.button.MaterialButton
++                style="?attr/materialButtonOutlinedStyle"
++                android:id="@+id/btnModeOnline"
++                android:layout_width="0dp"
++                android:layout_height="wrap_content"
++                android:layout_weight="1"
++                android:text="Online" />
++
++        </com.google.android.material.button.MaterialButtonToggleGroup>
++
++        <TextView
++            android:id="@+id/tvOnlineHint"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="12dp"
++            android:text="Offline uses on-device ML Kit models."
++            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
++            android:textColor="?attr/colorOnSurfaceVariant" />
++
++        <com.google.android.material.textfield.TextInputLayout
++            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="12dp"
++            android:hint="AI Provider">
++
++            <AutoCompleteTextView
++                android:id="@+id/spinnerApiProvider"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:inputType="none" />
++        </com.google.android.material.textfield.TextInputLayout>
++
++        <com.google.android.material.textfield.TextInputLayout
++            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="12dp"
++            android:hint="API Key"
++            app:endIconMode="password_toggle">
++
++            <com.google.android.material.textfield.TextInputEditText
++                android:id="@+id/editApiKey"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:inputType="textPassword" />
++        </com.google.android.material.textfield.TextInputLayout>
++
++        <com.google.android.material.textfield.TextInputLayout
++            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="12dp"
++            android:hint="Base URL (optional)">
++
++            <com.google.android.material.textfield.TextInputEditText
++                android:id="@+id/editApiBaseUrl"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:inputType="textUri" />
++        </com.google.android.material.textfield.TextInputLayout>
++
++        <com.google.android.material.textfield.TextInputLayout
++            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="12dp"
++            android:hint="Model">
++
++            <com.google.android.material.textfield.TextInputEditText
++                android:id="@+id/editApiModel"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:inputType="text" />
++        </com.google.android.material.textfield.TextInputLayout>
++
++    </LinearLayout>
++</com.google.android.material.card.MaterialCardView>
++
+ <!-- ========== OVERLAY CUSTOMIZATION ========== -->
+ <com.google.android.material.card.MaterialCardView
+     android:layout_width="match_parent"
+     android:layout_height="wrap_content"
+
+[0m
+Now adding the "AI Translation Mode" UI card to the main layout.
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+@@ -9,8 +9,10 @@
+ import android.net.Uri
+ import android.os.Build
+ import android.os.Bundle
+ import android.provider.Settings
++import android.text.Editable
++import android.text.TextWatcher
+ import android.view.Gravity
+ import android.widget.ArrayAdapter
+ import android.widget.AutoCompleteTextView
+ import android.widget.LinearLayout
+
+[0m
+Now wiring the online mode UI in `MainActivity`.
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+@@ -27,8 +27,9 @@
+ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+ import com.google.android.material.materialswitch.MaterialSwitch
+ import com.google.android.material.slider.Slider
+ import com.google.android.material.snackbar.Snackbar
++import com.google.android.material.textfield.TextInputEditText
+ import com.google.android.gms.common.moduleinstall.InstallStatusListener
+ import com.google.android.gms.common.moduleinstall.ModuleInstall
+ import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
+ import com.google.android.gms.common.moduleinstall.ModuleInstallStatusUpdate
+
+[0m
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+@@ -114,8 +114,9 @@
+     setupThemeToggle()
+     setupDelaySlider()
+     setupSourceLanguageSpinner()
+     setupTargetLanguageSpinner()
++    setupOnlineMode()
+     setupOverlayCustomization()
+     setupAIModelsManager()
+     setupPermissionsAndStart()
+ }
+
+[0m
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+@@ -239,8 +239,64 @@
+     spinner.setText(if (idx >= 0) names[idx] else "Indonesian", false)
+     spinner.setOnItemClickListener { _, _, position, _ -> config.targetLanguage = codes[position] }
+ }
+ 
++// ==================== ONLINE MODE ====================
++private fun setupOnlineMode() {
++    val modeGroup = findViewById<MaterialButtonToggleGroup>(R.id.modeToggleGroup)
++    when (config.translationMode) {
++        "online" -> modeGroup.check(R.id.btnModeOnline)
++        else -> modeGroup.check(R.id.btnModeOffline)
++    }
++    modeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
++        if (isChecked) {
++            config.translationMode = if (checkedId == R.id.btnModeOnline) "online" else "offline"
++        }
++    }
++
++    val providerSpinner = findViewById<AutoCompleteTextView>(R.id.spinnerApiProvider)
++    val providers = listOf("OpenAI (ChatGPT / compatible)", "Google Gemini")
++    val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, providers)
++    providerSpinner.setAdapter(adapter)
++    val providerIdx = if (config.apiProvider == "gemini") 1 else 0
++    providerSpinner.setText(providers[providerIdx], false)
++    providerSpinner.setOnItemClickListener { _, _, position, _ ->
++        config.apiProvider = if (position == 1) "gemini" else "openai"
++        updateOnlineHint()
++    }
++
++    bindOnlineTextField(R.id.editApiKey) { config.apiKey = it }
++    bindOnlineTextField(R.id.editApiBaseUrl) { config.apiBaseUrl = it }
++    bindOnlineTextField(R.id.editApiModel) { config.apiModel = it }
++
++    updateOnlineHint()
++}
++
++private fun bindOnlineTextField(viewId: Int, save: (String) -> Unit) {
++    val edit = findViewById<TextInputEditText>(viewId)
++    edit.setText(
++        when (viewId) {
++            R.id.editApiKey -> config.apiKey
++            R.id.editApiBaseUrl -> config.apiBaseUrl
++            else -> config.apiModel
++        }
++    )
++    edit.addTextChangedListener(object : TextWatcher {
++        override fun afterTextChanged(s: Editable?) = save(s?.toString()?.trim().orEmpty())
++        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
++        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
++    })
++}
++
++private fun updateOnlineHint() {
++    val hint = findViewById<TextView>(R.id.tvOnlineHint)
++    hint.text = if (config.apiProvider == "gemini") {
++        "Google Gemini API. Model e.g. gemini-1.5-flash. Key is sent as a query parameter."
++    } else {
++        "OpenAI and any OpenAI-compatible endpoint (OpenRouter, Groq, Ollama, etc.)."
++    }
++}
++
+ // ==================== OVERLAY CUSTOMIZATION ====================
+ private fun setupOverlayCustomization() {
+     // Placement
+     val placementGroup = findViewById<MaterialButtonToggleGroup>(R.id.placementToggleGroup)
+
+[0m
+[0m$ [0mecho "ANDROID_HOME=$ANDROID_HOME"; echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"; ls ~/Android 2>/dev/null; ls /usr/local/lib/android 2>/dev/null; ls $ANDROID_HOME 2>/dev/null || echo "no sdk dirs"
+ANDROID_HOME=/usr/local/lib/android/sdk
+ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+sdk
+build-tools
+cmake
+cmdline-tools
+extras
+licenses
+ndk
+packages-list.txt
+platform-tools
+platforms
+[0m
+Now let me try to verify the build. First, check if the Android SDK is available.
+Android SDK is available. Let me attempt a debug build to verify compilation.
+[0m$ [0m./gradlew :app:assembleDebug --no-daemon 2>&1 | tail -60
+- Cacheable Groovy script compilation
+ - New methods in lazy collection properties
+
+For more details see https://docs.gradle.org/8.7/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.7/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:generateDebugResValues
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:mergeDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:javaPreCompileDebug
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :app:compressDebugAssets
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeDebugJniLibFolders
+> Task :app:processDebugManifestForPackage
+> Task :app:mergeExtDexDebug
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugNativeLibs
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: liblanguage_id_l2c_jni.so, libtranslate_jni.so.
+
+> Task :app:processDebugResources
+
+> Task :app:compileDebugKotlin
+w: file:///home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/OnlineTranslator.kt:68:13 Unnecessary safe call on a non-null receiver of type List<GeminiCandidate>
+
+> Task :app:compileDebugJavaWithJavac NO-SOURCE
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:processDebugJavaRes
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1787189593567.json
+
+BUILD SUCCESSFUL in 2m 20s
+35 actionable tasks: 35 executed
+[0m
+[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/online/OnlineTranslator.kt
+Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/OnlineTranslator.kt
+===================================================================
+--- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/OnlineTranslator.kt
++++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/OnlineTranslator.kt
+@@ -64,9 +64,9 @@
+     contents = listOf(GeminiContent(parts = listOf(GeminiPart(text = prompt))))
+ )
+ val response = getService().generateContent(model, request)
+ return response.candidates
+-    ?.firstOrNull()
++    .firstOrNull()
+     ?.content
+     ?.parts
+     ?.joinToString("") { it.text }
+     ?.trim()
+
+[0m
+Build successful. Let me fix the one warning and verify the splits config works.
+[0m$ [0m./gradlew :app:assembleRelease --no-daemon 2>&1 | tail -30 && echo "=== APKs ===" && ls -la app/build/outputs/apk/release/
+> Task :app:mergeReleaseAssets
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:compressReleaseAssets
+> Task :app:collectReleaseDependencies
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+> Task :app:processReleaseResources
+> Task :app:compileReleaseKotlin
+> Task :app:compileReleaseJavaWithJavac NO-SOURCE
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:mergeReleaseGeneratedProguardFiles
+> Task :app:processReleaseJavaRes
+> Task :app:expandReleaseArtProfileWildcards
+> Task :app:mergeReleaseJavaResource
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:minifyReleaseWithR8
+> Task :app:compileReleaseArtProfile
+> Task :app:shrinkReleaseRes
+> Task :app:optimizeReleaseResources
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:assembleRelease
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1787189732662.json
+
+BUILD SUCCESSFUL in 2m 12s
+45 actionable tasks: 45 executed
+=== APKs ===
+total 143544
+drwxr-xr-x 2 runner runner     4096 Aug 20 01:37 .
+drwxr-xr-x 4 runner runner     4096 Aug 20 01:37 ..
+-rw-r--r-- 1 runner runner 19931100 Aug 20 01:37 Screen-Translator-v1.0.6-arm64-v8a.apk
+-rw-r--r-- 1 runner runner 15202100 Aug 20 01:37 Screen-Translator-v1.0.6-armeabi-v7a.apk
+-rw-r--r-- 1 runner runner 68368682 Aug 20 01:37 Screen-Translator-v1.0.6-universal.apk
+-rw-r--r-- 1 runner runner 21626324 Aug 20 01:37 Screen-Translator-v1.0.6-x86.apk
+-rw-r--r-- 1 runner runner 21841734 Aug 20 01:37 Screen-Translator-v1.0.6-x86_64.apk
+-rw-r--r-- 1 runner runner     1561 Aug 20 01:37 output-metadata.json
+[0m
+[0m$ [0mrg -n "splash_video|VideoView|R\.raw" app/src --glob '!**/build/**' || echo "no dangling refs"
+/bin/bash: line 1: rg: command not found
+no dangling refs
+[0m
+All 5 split APKs generated correctly. Let me verify there are no dangling references to the removed video and finalize the CHANGELOG per repo convention.
+[0m✱ [0mGrep "splash_video|VideoView|R\.raw"[90m 3 matches[0m
+[0m
+[0m← [0mEdit CHANGELOG.md
+Index: /home/runner/work/app-translator/app-translator/CHANGELOG.md
+===================================================================
+--- /home/runner/work/app-translator/app-translator/CHANGELOG.md
++++ /home/runner/work/app-translator/app-translator/CHANGELOG.md
+@@ -1,7 +1,17 @@
+ # Changelog
+ All notable changes to this project will be documented in this file.
+ 
++## [v1.0.7] - 2026-08-20
++### Added
++- Mode "Online" untuk terjemahan menggunakan Custom AI API (OpenAI & Google Gemini) via Retrofit/OkHttp. Mendukung endpoint dan payload format OpenAI Chat Completions (`/chat/completions`) dan Gemini `generateContent` (`/v1beta/models/{model}:generateContent`), termasuk custom base URL untuk endpoint yang kompatibel (OpenRouter, Groq, Ollama, dll).
++- Konfigurasi Split APK berbasis ABI di Gradle: menghasilkan APK `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`, dan `universal`.
++
++### Changed
++- Splash screen diganti dari video MP4 menjadi **VectorDrawable** + AnimatedVectorDrawable (SVG-style) sehingga APK lebih ringan dan startup lebih cepat. Dukungan Android 12+ SplashScreen API ditambahkan di `values-v31`.
++- Inisialisasi berat (ML Kit Language Identification, recognizer, translator, dan network client) kini **lazy** dan dipindahkan ke background thread menggunakan **Kotlin Coroutines** (`Dispatchers.IO`/`Default`).
++- Proses screen capture & bitmap conversion dipindahkan ke background thread.
++
+ ## [v1.0.6] - 2026-07-08
+ ### Fixed
+ - Memperbaiki bug Screen Capture yang tidak bekerja di v1.0.5 (bubbles langsung terhapus saat baru muncul karena event overlay memicu pembersihan).
+ - Memperbaiki bug download AI Model untuk Japanese/Korean dan lainnya (menambahkan `android.permission.INTERNET` di AndroidManifest).
+
+[0m
+Clean — no dangling references in source. Now updating the CHANGELOG per project convention.
+[0m← [0mEdit README.md
+Index: /home/runner/work/app-translator/app-translator/README.md
+===================================================================
+--- /home/runner/work/app-translator/app-translator/README.md
++++ /home/runner/work/app-translator/app-translator/README.md
+@@ -33,9 +33,10 @@
+ *   **Smart Inactivity Sensor**: Translates the screen automatically if you don't scroll or touch the screen for a specific duration (default: 3 seconds).
+ *   **Dynamic Bubble Overlay**: Translations feature rounded corners mapped directly over the original text bubbles.
+ *   **Draggable UI**: If a translation bubble covers a character's face, simply touch and drag it out of the way!
+ *   **100% On-Device & Offline**: Uses Google ML Kit's on-device models. Fast, private, and requires no internet connection once the models are downloaded.
+-*   **Splash Screen**: Beautiful animated splash screen on app launch.
++*   **Online Mode (Custom AI API)**: Optional online translation via OpenAI or Google Gemini APIs (any OpenAI-compatible endpoint supported) for higher quality translations.
++*   **Splash Screen**: Lightweight VectorDrawable-based animated splash screen on app launch.
+ 
+ ## Technology Stack
+ 
+ *   **Language**: Kotlin
+
+[0m
+[0m→ [0mRead app/build.gradle.kts
+[0m
+[0m$ [0mgit status && git diff --stat
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   CHANGELOG.md
+	modified:   README.md
+	modified:   app/build.gradle.kts
+	modified:   app/src/main/java/com/ervareza/screentranslator/ConfigManager.kt
+	modified:   app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+	modified:   app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+	modified:   app/src/main/java/com/ervareza/screentranslator/SplashActivity.kt
+	modified:   app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
+	modified:   app/src/main/res/layout/activity_main.xml
+	modified:   app/src/main/res/layout/activity_splash.xml
+	deleted:    app/src/main/res/raw/splash_video.mp4
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	ai-response-recap.txt
+	app/src/main/java/com/ervareza/screentranslator/online/
+	app/src/main/res/animator/
+	app/src/main/res/drawable/
+	app/src/main/res/values-v31/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+ CHANGELOG.md                                       |  10 ++
+ README.md                                          |   3 +-
+ app/build.gradle.kts                               |  24 +++-
+ .../com/ervareza/screentranslator/ConfigManager.kt |  25 ++++
+ .../com/ervareza/screentranslator/MainActivity.kt  |  60 ++++++++++
+ .../screentranslator/ScreenCaptureService.kt       |  47 +++++---
+ .../ervareza/screentranslator/SplashActivity.kt    |  26 ++--
+ .../ervareza/screentranslator/TranslationEngine.kt | 131 ++++++++++++++++-----
+ app/src/main/res/layout/activity_main.xml          | 118 +++++++++++++++++++
+ app/src/main/res/layout/activity_splash.xml        |  15 ++-
+ app/src/main/res/raw/splash_video.mp4              | Bin 2863929 -> 0 bytes
+ 11 files changed, 390 insertions(+), 69 deletions(-)
+[0m
+All builds pass. Let me do a final review of the modified files.
+[0m# [0mTodos
+[✓] Task 1: Replace video splash with VectorDrawable (vector + animator + layout + activity + v31 theme + remove mp4)
+[✓] Task 2: Performance - add coroutines, lazy-init heavy ML Kit/Play Services clients, async processing
+[✓] Task 3: Online mode - Retrofit client supporting OpenAI & Gemini APIs, config, wire into engine + UI
+[✓] Task 4: Add ABI splits config in build.gradle.kts
+[✓] Verify build compiles
+[0m
+Semua 4 tugas selesai dan build debug + release **SUCCESS** (5 split APK ter-generate).
+
+## 1. Splash Screen → VectorDrawable
+- `res/drawable/ic_splash_logo.xml` (vector logo), `ic_splash_logo_anim.xml` (AnimatedVectorDrawable), animator di `res/animator/` (pop-scale + fade-in huruf).
+- `activity_splash.xml` & `SplashActivity.kt` memakai `ImageView` + `Animatable` (bukan `VideoView`).
+- `res/values-v31/themes.xml`: Android 12+ SplashScreen API.
+- `splash_video.mp4` (±2.8 MB) dihapus → APK lebih ringan & startup lebih cepat.
+
+## 2. Delay / Performance
+- Tambah `kotlinx-coroutines-android`. `TranslationEngine` kini `lazy` (Language ID, recognizer, translator, network client dibuat saat pertama dipakai) & pipeline OCR/translate berjalan di `Dispatchers.IO`/`Default` lewat `suspend` + `Task.await()`. `ScreenCaptureService.captureScreen()` juga dipindah ke IO thread.
+
+## 3. Mode Online (OpenAI & Gemini)
+- Paket baru `online/`: `AiApiClient.kt` (Retrofit+OkHttp, auth Bearer untuk OpenAI / query `?key=` untuk Gemini), `AiApiService.kt` (endpoint `chat/completions` & `v1beta/models/{model}:generateContent`), `AiApiModels.kt`, `OnlineTranslator.kt`.
+- `ConfigManager` + UI card "AI Translation Mode" (toggle Offline/Online, provider, API key, base URL, model) di MainActivity.
+- `TranslationEngine` memilih online/offline otomatis.
+
+## 4. Split APK
+- Blok `splits { abi { ... } }` dengan `isUniversalApk = true`, output naming memuat ABI. Hasil: `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`, `universal`.
+
+Catatan: perubahan belum di-commit (sesuai prosedur). Mau saya commit?

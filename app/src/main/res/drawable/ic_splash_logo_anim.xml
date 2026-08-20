@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_splash_logo">
+
+    <target
+        android:name="popGroup"
+        android:animation="@animator/splash_logo_pop" />
+
+    <target
+        android:name="letterAGroup"
+        android:animation="@animator/splash_letter_a" />
+
+    <target
+        android:name="letterA2Group"
+        android:animation="@animator/splash_letter_a2" />
+
+</animated-vector>

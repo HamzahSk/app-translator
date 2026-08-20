@@ -74,4 +74,29 @@ class ConfigManager(context: Context) {
     fun setModelInstalled(langCode: String, installed: Boolean) {
         prefs.edit().putBoolean("installed_model_$langCode", installed).apply()
     }
+
+    // ---------- Translation Mode (Online) ----------
+
+    // "offline" = on-device ML Kit, "online" = custom AI API
+    var translationMode: String
+        get() = prefs.getString("translationMode", "offline") ?: "offline"
+        set(value) = prefs.edit().putString("translationMode", value).apply()
+
+    // "openai" or "gemini"
+    var apiProvider: String
+        get() = prefs.getString("apiProvider", "openai") ?: "openai"
+        set(value) = prefs.edit().putString("apiProvider", value).apply()
+
+    // Custom base URL. Empty = provider default.
+    var apiBaseUrl: String
+        get() = prefs.getString("apiBaseUrl", "") ?: ""
+        set(value) = prefs.edit().putString("apiBaseUrl", value).apply()
+
+    var apiKey: String
+        get() = prefs.getString("apiKey", "") ?: ""
+        set(value) = prefs.edit().putString("apiKey", value).apply()
+
+    var apiModel: String
+        get() = prefs.getString("apiModel", "gpt-4o-mini") ?: "gpt-4o-mini"
+        set(value) = prefs.edit().putString("apiModel", value).apply()
 }

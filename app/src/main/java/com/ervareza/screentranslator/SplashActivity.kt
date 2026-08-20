@@ -1,10 +1,12 @@
 package com.ervareza.screentranslator
 
 import android.content.Intent
-import android.net.Uri
+import android.graphics.drawable.Animatable
 import android.os.Bundle
-import android.widget.VideoView
+import android.view.View
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 
 class SplashActivity : AppCompatActivity() {
 
@@ -14,17 +16,17 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        val videoView = findViewById<VideoView>(R.id.splashVideo)
-        val videoUri = Uri.parse("android.resource://$packageName/${R.raw.splash_video}")
-        videoView.setVideoURI(videoUri)
+        // ISSUE-013 FIX: Lightweight VectorDrawable-based splash instead of a heavy MP4.
+        val logo = findViewById<ImageView>(R.id.splashLogo)
+        val animDrawable = ContextCompat.getDrawable(this, R.drawable.ic_splash_logo_anim)
+        logo.setImageDrawable(animDrawable)
+        (animDrawable as? Animatable)?.start()
 
-        videoView.setOnCompletionListener { goToMain() }
-        videoView.setOnErrorListener { _, _, _ -> goToMain(); true }
+        // Tap anywhere to skip splash
+        findViewById<View>(R.id.splashRoot).setOnClickListener { goToMain() }
 
-        // ISSUE-009 FIX: Tap anywhere to skip splash
-        videoView.setOnClickListener { goToMain() }
-
-        videoView.start()
+        // Auto-navigate once the animation finishes
+        logo.postDelayed({ goToMain() }, 1800L)
     }
 
     private fun goToMain() {

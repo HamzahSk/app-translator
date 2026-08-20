@@ -21,6 +21,11 @@ import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import android.util.Log
 import android.app.Activity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class ScreenCaptureService : Service() {
 
@@ -29,6 +34,9 @@ class ScreenCaptureService : Service() {
     private var virtualDisplay: VirtualDisplay? = null
     private var imageReader: ImageReader? = null
     private lateinit var translationEngine: TranslationEngine
+
+    // ISSUE-011 FIX: Screen capture + bitmap conversion run on a background thread.
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val captureReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -155,24 +163,26 @@ class ScreenCaptureService : Service() {
 
     private fun captureScreen() {
         Log.d("Translator", "Capturing screen...")
-        val image = imageReader?.acquireLatestImage()
-        if (image != null) {
-            val planes = image.planes
-            val buffer = planes[0].buffer
-            val pixelStride = planes[0].pixelStride
-            val rowStride = planes[0].rowStride
-            val rowPadding = rowStride - pixelStride * image.width
+        serviceScope.launch(Dispatchers.IO) {
+            val image = imageReader?.acquireLatestImage() ?: return@launch
+            try {
+                val planes = image.planes
+                val buffer = planes[0].buffer
+                val pixelStride = planes[0].pixelStride
+                val rowStride = planes[0].rowStride
+                val rowPadding = rowStride - pixelStride * image.width
 
-            val bitmap = Bitmap.createBitmap(
-                image.width + rowPadding / pixelStride,
-                image.height, Bitmap.Config.ARGB_8888
-            )
-            bitmap.copyPixelsFromBuffer(buffer)
-            
-            // Pass to Translation Engine
-            translationEngine.processImage(bitmap)
-            
-            image.close()
+                val bitmap = Bitmap.createBitmap(
+                    image.width + rowPadding / pixelStride,
+                    image.height, Bitmap.Config.ARGB_8888
+                )
+                bitmap.copyPixelsFromBuffer(buffer)
+
+                // Pass to Translation Engine (itself coroutine-based)
+                translationEngine.processImage(bitmap)
+            } finally {
+                image.close()
+            }
         }
     }
 
@@ -189,6 +199,7 @@ class ScreenCaptureService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(captureReceiver)
+        serviceScope.cancel()
         translationEngine.close()
         virtualDisplay?.release()
         mediaProjection?.stop()

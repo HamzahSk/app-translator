@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Outer circle (brand color) -->
+    <group
+        android:name="popGroup"
+        android:pivotX="100"
+        android:pivotY="100">
+
+        <path
+            android:name="circle"
+            android:pathData="M100,14 a86,86 0 1,0 0,172 a86,86 0 0,0 0,-172 Z"
+            android:fillColor="#6750A4" />
+
+        <!-- Big "A" letter -->
+        <group
+            android:name="letterAGroup"
+            android:translateY="0">
+
+            <path
+                android:name="letterA"
+                android:pathData="M98,50 L60,140 M98,50 L136,140 M76,110 L120,110"
+                android:strokeColor="#FFFFFF"
+                android:strokeWidth="12"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:fillColor="#00000000" />
+        </group>
+
+        <!-- Second-language card -->
+        <path
+            android:name="card"
+            android:pathData="M130,112 h34 a14,14 0 0,1 14,14 v34 a14,14 0 0,1 -14,14 h-34 a14,14 0 0,1 -14,-14 v-34 a14,14 0 0,1 14,-14 Z"
+            android:fillColor="#FFFFFF" />
+
+        <!-- Small "A" inside card -->
+        <group
+            android:name="letterA2Group"
+            android:translateY="0">
+
+            <path
+                android:name="letterA2"
+                android:pathData="M137,128 L129,146 M137,128 L145,146 M133,139 L141,139"
+                android:strokeColor="#6750A4"
+                android:strokeWidth="7"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:fillColor="#00000000" />
+        </group>
+    </group>
+</vector>

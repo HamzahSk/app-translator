@@ -10,6 +10,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Gravity
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
@@ -26,6 +28,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 import com.google.android.gms.common.moduleinstall.InstallStatusListener
 import com.google.android.gms.common.moduleinstall.ModuleInstall
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
@@ -112,6 +115,7 @@ class MainActivity : AppCompatActivity() {
         setupDelaySlider()
         setupSourceLanguageSpinner()
         setupTargetLanguageSpinner()
+        setupOnlineMode()
         setupOverlayCustomization()
         setupAIModelsManager()
         setupPermissionsAndStart()
@@ -234,6 +238,62 @@ class MainActivity : AppCompatActivity() {
         val idx = codes.indexOf(config.targetLanguage)
         spinner.setText(if (idx >= 0) names[idx] else "Indonesian", false)
         spinner.setOnItemClickListener { _, _, position, _ -> config.targetLanguage = codes[position] }
+    }
+
+    // ==================== ONLINE MODE ====================
+    private fun setupOnlineMode() {
+        val modeGroup = findViewById<MaterialButtonToggleGroup>(R.id.modeToggleGroup)
+        when (config.translationMode) {
+            "online" -> modeGroup.check(R.id.btnModeOnline)
+            else -> modeGroup.check(R.id.btnModeOffline)
+        }
+        modeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                config.translationMode = if (checkedId == R.id.btnModeOnline) "online" else "offline"
+            }
+        }
+
+        val providerSpinner = findViewById<AutoCompleteTextView>(R.id.spinnerApiProvider)
+        val providers = listOf("OpenAI (ChatGPT / compatible)", "Google Gemini")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, providers)
+        providerSpinner.setAdapter(adapter)
+        val providerIdx = if (config.apiProvider == "gemini") 1 else 0
+        providerSpinner.setText(providers[providerIdx], false)
+        providerSpinner.setOnItemClickListener { _, _, position, _ ->
+            config.apiProvider = if (position == 1) "gemini" else "openai"
+            updateOnlineHint()
+        }
+
+        bindOnlineTextField(R.id.editApiKey) { config.apiKey = it }
+        bindOnlineTextField(R.id.editApiBaseUrl) { config.apiBaseUrl = it }
+        bindOnlineTextField(R.id.editApiModel) { config.apiModel = it }
+
+        updateOnlineHint()
+    }
+
+    private fun bindOnlineTextField(viewId: Int, save: (String) -> Unit) {
+        val edit = findViewById<TextInputEditText>(viewId)
+        edit.setText(
+            when (viewId) {
+                R.id.editApiKey -> config.apiKey
+                R.id.editApiBaseUrl -> config.apiBaseUrl
+                else -> config.apiModel
+            }
+        )
+        edit.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) = save(s?.toString()?.trim().orEmpty())
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+    }
+
+    private fun updateOnlineHint() {
+        val hint = findViewById<TextView>(R.id.tvOnlineHint)
+        hint.text = if (config.apiProvider == "gemini") {
+            "Google Gemini API. Model e.g. gemini-1.5-flash. Key is sent as a query parameter."
+        } else {
+            "OpenAI and any OpenAI-compatible endpoint (OpenRouter, Groq, Ollama, etc.)."
+        }
     }
 
     // ==================== OVERLAY CUSTOMIZATION ====================
