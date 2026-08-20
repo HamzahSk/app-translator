@@ -11,6 +11,7 @@ import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
@@ -25,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -43,6 +45,9 @@ import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -73,6 +78,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnAccessibility: MaterialButton
     private lateinit var btnNotification: MaterialButton
     private lateinit var fabStart: ExtendedFloatingActionButton
+    private var lastStartClickAt = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         config = ConfigManager(this)
@@ -580,6 +586,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         fabStart.setOnClickListener {
+            val now = SystemClock.elapsedRealtime()
+            if (now - lastStartClickAt < 500L) return@setOnClickListener
+            lastStartClickAt = now
             if (!Settings.canDrawOverlays(this)) {
                 Snackbar.make(fabStart, "Please grant overlay permission first.", Snackbar.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -593,12 +602,19 @@ class MainActivity : AppCompatActivity() {
                 sendBroadcast(stopIntent)
             } else {
                 fabStart.isEnabled = false // Prevent double clicks
-                val mgr = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                try {
-                    screenCaptureLauncher.launch(mgr.createScreenCaptureIntent())
-                } catch (e: Exception) {
-                    fabStart.isEnabled = true
-                    Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
+                fabStart.text = "Preparing..."
+                lifecycleScope.launch {
+                    try {
+                        val captureIntent = withContext(Dispatchers.IO) {
+                            val mgr = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                            mgr.createScreenCaptureIntent()
+                        }
+                        screenCaptureLauncher.launch(captureIntent)
+                    } catch (e: Exception) {
+                        fabStart.isEnabled = true
+                        fabStart.text = "Start Service"
+                        Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
+                    }
                 }
             }
         }

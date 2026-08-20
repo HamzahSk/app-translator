@@ -1,0 +1,3 @@
+# Phase 5.5 Bug Fix
+
+Memperbaiki overlay batch agar memakai `FLAG_NOT_TOUCHABLE`, sehingga sentuhan diteruskan ke aplikasi target. Rendering teks kini menggunakan `StaticLayout` dengan lebar bounding box untuk word wrapping. Mode offline menampilkan loading bubble sebelum model/terjemahan diproses dan membersihkannya setelah batch selesai. `TranslationEngine` melakukan preload model offline di background saat dibuat oleh service. Tombol Start diberi debounce 500 ms, state "Preparing...", dan pembuatan intent capture dijalankan melalui coroutine IO. `./gradlew :app:compileDebugKotlin` berhasil; hanya ada warning deprecated `scaledDensity`.

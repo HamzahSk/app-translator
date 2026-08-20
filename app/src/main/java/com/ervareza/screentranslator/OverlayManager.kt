@@ -7,6 +7,9 @@ import android.graphics.Rect
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.Canvas
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
@@ -64,10 +67,17 @@ class OverlayManager(private val context: Context) {
                         paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
                         canvas.drawRoundRect(r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), paint)
                         paint.color = Color.parseColor(config.bubbleTextColor)
-                        paint.textAlign = Paint.Align.CENTER
-                        val fm = paint.fontMetrics
-                        val baseline = r.centerY() - (fm.ascent + fm.descent) / 2
-                        canvas.drawText(bubble.text, r.centerX().toFloat(), baseline, paint)
+                        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+                            color = paint.color
+                            textSize = paint.textSize
+                            typeface = paint.typeface
+                        }
+                        val layout = StaticLayout.Builder.obtain(bubble.text, 0, bubble.text.length, textPaint, r.width().coerceAtLeast(1))
+                            .setAlignment(Layout.Alignment.ALIGN_CENTER).setIncludePad(false).build()
+                        canvas.save()
+                        canvas.translate(r.left.toFloat(), (r.top + ((r.height() - layout.height) / 2).coerceAtLeast(0)).toFloat())
+                        layout.draw(canvas)
+                        canvas.restore()
                     }
                 }
             }
@@ -75,7 +85,7 @@ class OverlayManager(private val context: Context) {
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT,
             ).apply {
                 gravity = Gravity.TOP or Gravity.START

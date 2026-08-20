@@ -10,6 +10,7 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 | Tanggal | File Log | Ringkasan |
 |---------|----------|-----------|
 | 2026-08-20 08:15 | [task_20260820_0815_phase5_batch_overlay_font.md](task_20260820_0815_phase5_batch_overlay_font.md) | Batch fullscreen overlay, clear aman saat scroll/screenshot, dan custom font Comic dipasang. Compile debug sukses. |
+| 2026-08-20 09:00 | [task_20260820_0900_phase55_overlay_preload_start.md](task_20260820_0900_phase55_overlay_preload_start.md) | Fix touch interception, StaticLayout wrapping, offline loading bubble, preload model, debounce/state tombol Start. Compile debug sukses. |
 | 2026-08-20 07:46 | [task_20260820_0746_phase4_overlay_debounce_cancellation.md](task_20260820_0746_phase4_overlay_debounce_cancellation.md) | Koreksi/filter status bar, debounce 1,5 detik, dan pembatalan OCR/network aktif saat scroll/touch; build debug sukses. |
 | 2026-08-20 05:53 | [task_20260820_0553_phase3_material_slider_fix.md](task_20260820_0553_phase3_material_slider_fix.md) | Menghapus stepSize dari seluruh Material Slider dan memvalidasi konversi nilai listener; build debug sukses. |
 | 2026-08-20 05:28 | [task_20260820_0528_phase25_global_crash_handler.md](task_20260820_0528_phase25_global_crash_handler.md) | Perbaikan thread overlay dan parsing batch, GlobalExceptionHandler, CrashActivity, serta log crash lokal. |

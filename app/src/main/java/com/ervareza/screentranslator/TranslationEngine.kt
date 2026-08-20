@@ -63,6 +63,14 @@ class TranslationEngine(private val context: Context) {
     // Lazy: network client is only built when online mode is actually used.
     private val onlineTranslator by lazy { OnlineTranslator(context) }
 
+    init { scope.launch(Dispatchers.IO) { preloadOfflineModel() } }
+
+    private suspend fun preloadOfflineModel() {
+        if (config.translationMode != "offline") return
+        val source = config.sourceLanguage.takeUnless { it == "auto" } ?: "en"
+        runCatching { getTranslator(source, config.targetLanguage).downloadModelIfNeeded().await() }
+    }
+
     private fun getRecognizer(code: String): TextRecognizer {
         return synchronized(recognizerCache) {
             recognizerCache.getOrPut(code) {
@@ -171,17 +179,21 @@ class TranslationEngine(private val context: Context) {
 
         // ISSUE-003 FIX: Reuse a single translator for the entire batch
         val translator = getTranslator(sourceLangCode, targetLangCode)
+        visionText.textBlocks.forEachIndexed { index, block ->
+            adjustedBoundingBox(block.boundingBox)?.let { overlayManager.drawLoadingBubble(it, "offline_$index") }
+        }
 
         try {
             translator.downloadModelIfNeeded().await()
             val translatedBubbles = mutableListOf<OverlayManager.Bubble>()
-            for (block in visionText.textBlocks) {
+            for ((index, block) in visionText.textBlocks.withIndex()) {
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val rect = adjustedBoundingBox(block.boundingBox) ?: continue
                 try {
                     val translatedText = translator.translate(block.text).await()
                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
                     translatedBubbles += OverlayManager.Bubble(translatedText, rect)
+                    overlayManager.removeLoading("offline_$index")
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
@@ -193,6 +205,8 @@ class TranslationEngine(private val context: Context) {
             throw e
         } catch (e: Exception) {
             Log.e("Translator", "Model download failed", e)
+        } finally {
+            visionText.textBlocks.indices.forEach { overlayManager.removeLoading("offline_$it") }
         }
     }
 
