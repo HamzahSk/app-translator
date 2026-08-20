@@ -39,7 +39,7 @@ jobs:
           # Pastikan API key disimpan di GitHub Secrets agar aman!
           API_KEY: "sk-cScNpCjYpO2SH5QRpoSAkwAJE7uvt4I8GpAj48uQBOLcmBvx"
           # Mengatur custom URL untuk konfigurasi model
-          OPENCODE_MODELS_URL: "https://ai.tioo.eu.org" 
+          OPENCODE_MODELS_URL: "https://ai.tioo.eu.org/v1" 
         run: |
           # Flag --model digunakan untuk menentukan model kustom
           opencode run \
