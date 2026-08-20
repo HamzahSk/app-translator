@@ -35,14 +35,14 @@ jobs:
         run: |
           mkdir -p ~/.codex
           cat << EOF > ~/.codex/config.toml
-          model = "DeepSeek-V4-Pro"
+          model = "MiniMax-M3"
           model_provider = "aitioo"
 
           [model_providers.aitioo]
           name = "AiTioo"
-          base_url = "https://ai.tioo.eu.org"
+          base_url = "https://ai.kscsnkli.site/v1"
           wire_api = "responses"
-          experimental_bearer_token = "sk-cScNpCjYpO2SH5QRpoSAkwAJE7uvt4I8GpAj48uQBOLcmBvx"
+          experimental_bearer_token = "sk-5HXqrBXtQd477fLMICt30OfcNHBlQSyOpQU0gKY7RniiZl5l"
           EOF
 
       - name: Check Codex Version
