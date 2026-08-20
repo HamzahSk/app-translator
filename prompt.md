@@ -25,4 +25,3 @@ Kamu bertugas untuk membereskan sisa *bug* performa dari fase sebelumnya dengan 
  * Pastikan fitur perbaikan *Line Spacing* dan *Center Expansion Box* dari Fase 6 di OverlayManager tidak terhapus.
  * Setelah selesai, buat file log task_YYYYMMDD_HHMM_phase7_rewrite.md dan perbarui 00_INDEX.md.
  * Wajib jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memastikan tidak ada error kompilasi.
- 

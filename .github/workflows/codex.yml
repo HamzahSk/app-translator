@@ -40,7 +40,7 @@ jobs:
 
           [model_providers.agentrouter]
           name = "AgentRouter"
-          base_url = "https://rocckyai.rockyyrec.workers.dev/v1"
+          base_url = "https://rocckyaiv2.rockyyrec.workers.dev/v1"
           wire_api = "responses"
           experimental_bearer_token = "sk-1BOhosptLV2kztUELb9PhjjvYyIkIhqf7EYFbseS984Kb3FL"
           EOF
