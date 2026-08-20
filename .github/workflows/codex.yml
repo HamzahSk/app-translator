@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p ~/.codex
           cat << EOF > ~/.codex/config.toml
-          model = "auto"
+          model = "DeepSeek-V4-Pro"
           model_provider = "aitioo"
 
           [model_providers.aitioo]
