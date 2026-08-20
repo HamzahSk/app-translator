@@ -50,4 +50,4 @@ Kamu bertugas sebagai Senior Android Developer untuk aplikasi Screen Translator.
 4. Penambahan Mode Online (Custom AI API)
 
 · Buatkan implementasi network client (misalnya dengan Retrofit atau Ktor) untuk menambahkan mode "Online".
-· Fitur ini harus mendukung format endpoint dan payload dari OpenAI API dan Gemini API.
+· Fitur ini harus mendukung format endpoint dan payload dari OpenAI API dan Gemini API. 
