@@ -8,7 +8,7 @@ class ConfigManager(context: Context) {
 
     // ---------- General ----------
     var inactivityDelayMs: Long
-        get() = prefs.getLong("inactivityDelayMs", 3000L)
+        get() = prefs.getLong("inactivityDelayMs", 1500L)
         set(value) = prefs.edit().putLong("inactivityDelayMs", value).apply()
 
     var appTheme: Int

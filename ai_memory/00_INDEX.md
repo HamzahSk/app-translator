@@ -3,12 +3,13 @@
 ## Status Proyek Terkini
 Aplikasi **Screen Translator** (Android, Kotlin, AGP 8.2.1, targetSdk 34, minSdk 26).
 Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit via Coroutines, Screen Capture Service, Accessibility trigger, Overlay translation bubble, OCR multi-bahasa (ja/ko/zh/hi/en), mode terjemahan offline (ML Kit) dan online (OpenAI/Gemini via Retrofit), serta Split APK per ABI.
-**Build debug SUCCESS; release R8 terhenti karena heap daemon 512 MiB.** Runtime cache online/ML Kit, overlay thread handling, batch parsing, dan global crash reporting sudah di-hardening. Seluruh Material Slider kini continuous sehingga nilai konfigurasi non-kelipatan tidak menyebabkan crash.
+**Build debug SUCCESS; release R8 terhenti karena heap daemon 512 MiB.** Runtime cache online/ML Kit, overlay thread handling, batch parsing, dan global crash reporting sudah di-hardening. Seluruh Material Slider kini continuous. Fase 4 selesai: offset status bar/filter OCR, debounce default 1,5 detik, dan cancellation job saat aktivitas layar sudah diterapkan.
 
 ## Riwayat (terbaru di atas)
 
 | Tanggal | File Log | Ringkasan |
 |---------|----------|-----------|
+| 2026-08-20 07:46 | [task_20260820_0746_phase4_overlay_debounce_cancellation.md](task_20260820_0746_phase4_overlay_debounce_cancellation.md) | Koreksi/filter status bar, debounce 1,5 detik, dan pembatalan OCR/network aktif saat scroll/touch; build debug sukses. |
 | 2026-08-20 05:53 | [task_20260820_0553_phase3_material_slider_fix.md](task_20260820_0553_phase3_material_slider_fix.md) | Menghapus stepSize dari seluruh Material Slider dan memvalidasi konversi nilai listener; build debug sukses. |
 | 2026-08-20 05:28 | [task_20260820_0528_phase25_global_crash_handler.md](task_20260820_0528_phase25_global_crash_handler.md) | Perbaikan thread overlay dan parsing batch, GlobalExceptionHandler, CrashActivity, serta log crash lokal. |
 | 2026-08-20 02:27 | [task_20260820_0227_build_release_fix.md](task_20260820_0227_build_release_fix.md) | Fix ProGuard/R8 untuk mode online (Gson/Retrofit keep rules), verifikasi build debug+release sukses, verifikasi 5 Split APK ABI. |

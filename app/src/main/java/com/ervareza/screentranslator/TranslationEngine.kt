@@ -2,6 +2,7 @@ package com.ervareza.screentranslator
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.util.Log
 import com.ervareza.screentranslator.online.OnlineTranslator
 import com.google.android.gms.tasks.Task
@@ -25,6 +26,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -37,6 +40,12 @@ class TranslationEngine(private val context: Context) {
     // ISSUE-011 FIX: Everything runs off the main thread. Heavy clients are
     // initialized lazily (only on first use) so the service starts instantly.
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    @Volatile private var activeJob: Job? = null
+
+    private val statusBarHeight: Int by lazy {
+        val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) context.resources.getDimensionPixelSize(resourceId) else 0
+    }
 
     // Lazy: LanguageIdentification client is created on first use, inside an IO coroutine.
     private var languageIdentifier: LanguageIdentifier? = null
@@ -84,10 +93,12 @@ class TranslationEngine(private val context: Context) {
     // ISSUE-011 FIX: Async pipeline. Bitmap conversion + OCR + translation all run
     // on Dispatchers.IO, so the main thread is never blocked.
     fun processImage(bitmap: Bitmap) {
-        scope.launch(Dispatchers.IO) {
+        activeJob?.cancel()
+        activeJob = scope.launch(Dispatchers.IO) {
             try {
                 processImageInternal(bitmap)
             } catch (ce: CancellationException) {
+                overlayManager.clearOverlays()
                 throw ce
             } catch (e: Exception) {
                 Log.e("Translator", "Processing failed", e)
@@ -96,6 +107,7 @@ class TranslationEngine(private val context: Context) {
     }
 
     private suspend fun processImageInternal(bitmap: Bitmap) {
+        kotlinx.coroutines.currentCoroutineContext().ensureActive()
         val image = InputImage.fromBitmap(bitmap, 0)
 
         if (config.sourceLanguage == "auto") {
@@ -128,6 +140,8 @@ class TranslationEngine(private val context: Context) {
             } else {
                 runFallbackChain(image, codes, index + 1)
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             runFallbackChain(image, codes, index + 1)
         }
@@ -145,6 +159,8 @@ class TranslationEngine(private val context: Context) {
                     translateBlocks(visionText, languageCode)
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e("Translator", "Language identification failed", e)
         }
@@ -159,15 +175,20 @@ class TranslationEngine(private val context: Context) {
         try {
             translator.downloadModelIfNeeded().await()
             for (block in visionText.textBlocks) {
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                val rect = adjustedBoundingBox(block.boundingBox) ?: continue
                 try {
                     val translatedText = translator.translate(block.text).await()
-                    block.boundingBox?.let { rect ->
-                        overlayManager.drawTranslationBubble(translatedText, rect)
-                    }
+                    kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                    overlayManager.drawTranslationBubble(translatedText, rect)
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     Log.e("Translator", "Block translation failed", e)
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e("Translator", "Model download failed", e)
         }
@@ -175,10 +196,13 @@ class TranslationEngine(private val context: Context) {
 
     // ISSUE-012 FIX: Online translation mode (OpenAI / Gemini compatible APIs).
     private suspend fun onlineTranslate(visionText: Text) {
-        val blocks = visionText.textBlocks.filter { it.text.isNotBlank() && it.boundingBox != null }
+        val blocks = visionText.textBlocks.filter { it.text.isNotBlank() && adjustedBoundingBox(it.boundingBox) != null }
         if (blocks.isEmpty()) return
         val delimiter = "\n<<<SCREEN_TRANSLATOR_SEGMENT>>>\n"
-        blocks.forEachIndexed { index, block -> overlayManager.drawLoadingBubble(block.boundingBox!!, index.toString()) }
+        blocks.forEachIndexed { index, block ->
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            overlayManager.drawLoadingBubble(adjustedBoundingBox(block.boundingBox)!!, index.toString())
+        }
         try {
             val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage, delimiter)
             if (translated == null) {
@@ -186,11 +210,13 @@ class TranslationEngine(private val context: Context) {
                 return
             }
             blocks.forEachIndexed { index, block ->
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val text = translated.getOrNull(index) ?: return@forEachIndexed
-                block.boundingBox?.let { box ->
-                    overlayManager.replaceLoading(index.toString(), text, box)
-                }
+                adjustedBoundingBox(block.boundingBox)?.let { box -> overlayManager.replaceLoading(index.toString(), text, box) }
             }
+        } catch (e: CancellationException) {
+            overlayManager.clearOverlays()
+            throw e
         } catch (e: NullPointerException) {
             Log.e("Translator", "Online batch contained null data", e)
         } catch (e: IndexOutOfBoundsException) {
@@ -215,7 +241,17 @@ class TranslationEngine(private val context: Context) {
     }
 
     fun clearOverlays() {
+        activeJob?.cancel()
+        activeJob = null
         overlayManager.clearOverlays()
+    }
+
+    private fun adjustedBoundingBox(original: Rect?): Rect? {
+        if (original == null || original.bottom <= statusBarHeight) return null
+        return Rect(original).apply {
+            top = (top - statusBarHeight).coerceAtLeast(0)
+            bottom = (bottom - statusBarHeight).coerceAtLeast(top)
+        }.takeUnless { it.isEmpty }
     }
 }
 
