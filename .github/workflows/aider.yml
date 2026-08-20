@@ -57,6 +57,7 @@ jobs:
           aider \
             --model openai/auto \
             --message-file prompt.md \
+            --test-cmd "./gradlew assembleDebug" \
             --yes-always \
             --no-auto-commits \
             2>&1 | tee ai-response-recap.txt
