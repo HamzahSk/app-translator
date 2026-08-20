@@ -23,6 +23,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // CI-friendly signing: no release keystore is checked into the repo,
+            // so the release APK is signed with the local debug key. For Play Store
+            // distribution, replace with a real keystore-backed signingConfig.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
