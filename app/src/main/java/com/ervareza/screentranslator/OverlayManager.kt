@@ -12,6 +12,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
 class OverlayManager(private val context: Context) {
@@ -22,6 +23,7 @@ class OverlayManager(private val context: Context) {
 
     // ISSUE-005 FIX: Thread-safe list to prevent ConcurrentModificationException
     private val activeViews = CopyOnWriteArrayList<View>()
+    private val loadingViews = ConcurrentHashMap<String, View>()
 
     private fun dpToPx(dp: Int): Int {
         return (dp * context.resources.displayMetrics.density).toInt()
@@ -44,12 +46,14 @@ class OverlayManager(private val context: Context) {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = dpToPx(config.bubbleCornerRadius).toFloat()
 
-                setColor(Color.argb(
-                    alpha,
-                    Color.red(bgColor),
-                    Color.green(bgColor),
-                    Color.blue(bgColor)
-                ))
+                setColor(
+                    Color.argb(
+                        alpha,
+                        Color.red(bgColor),
+                        Color.green(bgColor),
+                        Color.blue(bgColor),
+                    ),
+                )
 
                 if (config.bubbleBorderEnabled) {
                     val borderColor = Color.parseColor(config.bubbleTextColor)
@@ -73,7 +77,7 @@ class OverlayManager(private val context: Context) {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                PixelFormat.TRANSLUCENT
+                PixelFormat.TRANSLUCENT,
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
                 x = xPos
@@ -119,6 +123,45 @@ class OverlayManager(private val context: Context) {
         }
     }
 
+    fun drawLoadingBubble(boundingBox: Rect, key: String) {
+        handler.post {
+            val view = TextView(context).apply {
+                text = "…"
+                setTextColor(Color.WHITE)
+                textSize = 18f
+                gravity = Gravity.CENTER
+                background = GradientDrawable().apply {
+                    setColor(Color.argb(150, 80, 80, 80))
+                    cornerRadius = dpToPx(config.bubbleCornerRadius).toFloat()
+                }
+            }
+            val params = WindowManager.LayoutParams(
+                boundingBox.width().coerceAtLeast(dpToPx(100)),
+                boundingBox.height().coerceAtLeast(dpToPx(32)),
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT,
+            ).apply {
+                gravity = Gravity.TOP or Gravity.START
+                x = boundingBox.left
+                y = boundingBox.top
+            }
+            windowManager.addView(view, params)
+            activeViews.add(view)
+            loadingViews[key] = view
+        }
+    }
+
+    fun replaceLoading(key: String, translatedText: String, boundingBox: Rect) {
+        handler.post {
+            loadingViews.remove(key)?.let { view ->
+                runCatching { windowManager.removeView(view) }
+                activeViews.remove(view)
+            }
+            drawTranslationBubble(translatedText, boundingBox)
+        }
+    }
+
     fun clearOverlays() {
         handler.post {
             for (view in activeViews) {
@@ -127,6 +170,7 @@ class OverlayManager(private val context: Context) {
                 } catch (_: Exception) {}
             }
             activeViews.clear()
+            loadingViews.clear()
         }
     }
 }

@@ -1,6 +1,16 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.diffplug.spotless")
+}
+
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+        ktlint("1.2.1").editorConfigOverride(mapOf("max_line_length" to "140"))
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 android {

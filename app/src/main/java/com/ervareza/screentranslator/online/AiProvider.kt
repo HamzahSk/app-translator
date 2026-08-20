@@ -5,7 +5,8 @@ package com.ervareza.screentranslator.online
  */
 enum class AiProvider {
     OPENAI,
-    GEMINI;
+    GEMINI,
+    ;
 
     companion object {
         fun fromId(id: String): AiProvider = when (id) {

@@ -14,9 +14,7 @@ interface AiApiService {
      * Base URL: https://api.openai.com/v1/
      */
     @POST("chat/completions")
-    suspend fun chatCompletion(
-        @Body request: OpenAiChatRequest
-    ): OpenAiChatResponse
+    suspend fun chatCompletion(@Body request: OpenAiChatRequest): OpenAiChatResponse
 
     /**
      * Google Gemini generateContent.
@@ -24,8 +22,5 @@ interface AiApiService {
      * The API key is appended as a query parameter by [AiApiClient].
      */
     @POST("v1beta/models/{model}:generateContent")
-    suspend fun generateContent(
-        @Path("model") model: String,
-        @Body request: GeminiRequest
-    ): GeminiResponse
+    suspend fun generateContent(@Path("model") model: String, @Body request: GeminiRequest): GeminiResponse
 }

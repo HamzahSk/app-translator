@@ -24,7 +24,7 @@ class OnlineTranslator(context: Context) {
         val created = AiApiClient.create(
             provider = provider,
             apiKey = config.apiKey,
-            customBaseUrl = baseUrl.ifBlank { null }
+            customBaseUrl = baseUrl.ifBlank { null },
         )
         service = created
         serviceFingerprint = fingerprint
@@ -52,13 +52,24 @@ class OnlineTranslator(context: Context) {
         }
     }
 
+    suspend fun translateBatch(texts: List<String>, targetLang: String, delimiter: String): List<String>? {
+        if (texts.isEmpty()) return emptyList()
+        val joined = texts.joinToString(delimiter)
+        val result = translate(
+            "Translate each segment independently. Preserve the delimiter exactly and return the same number of segments.\n" +
+                "Delimiter: $delimiter\n\n$joined",
+            targetLang,
+        ) ?: return null
+        return result.split(delimiter).map { it.trim() }.takeIf { it.size == texts.size }
+    }
+
     private suspend fun translateWithOpenAi(model: String, prompt: String): String? {
         val request = OpenAiChatRequest(
             model = model,
             messages = listOf(
                 OpenAiMessage(role = "system", content = "You are a precise manga translation engine."),
-                OpenAiMessage(role = "user", content = prompt)
-            )
+                OpenAiMessage(role = "user", content = prompt),
+            ),
         )
         val response = getService().chatCompletion(request)
         return response.choices.firstOrNull()?.message?.content?.trim()?.takeIf { it.isNotBlank() }
@@ -66,7 +77,7 @@ class OnlineTranslator(context: Context) {
 
     private suspend fun translateWithGemini(model: String, prompt: String): String? {
         val request = GeminiRequest(
-            contents = listOf(GeminiContent(parts = listOf(GeminiPart(text = prompt))))
+            contents = listOf(GeminiContent(parts = listOf(GeminiPart(text = prompt)))),
         )
         val response = getService().generateContent(model, request)
         return response.candidates

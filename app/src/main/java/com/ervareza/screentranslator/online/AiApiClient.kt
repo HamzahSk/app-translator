@@ -1,9 +1,9 @@
 package com.ervareza.screentranslator.online
 
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 /**
  * Builds a lazily-created Retrofit client. The client is created only when
@@ -57,6 +57,5 @@ object AiApiClient {
             .create(AiApiService::class.java)
     }
 
-    private fun ensureTrailingSlash(url: String): String =
-        if (url.endsWith("/")) url else "$url/"
+    private fun ensureTrailingSlash(url: String): String = if (url.endsWith("/")) url else "$url/"
 }

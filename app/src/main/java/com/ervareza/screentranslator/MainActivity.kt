@@ -2,6 +2,8 @@ package com.ervareza.screentranslator
 
 import android.Manifest
 import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -21,6 +23,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -29,10 +32,10 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.gms.common.moduleinstall.InstallStatusListener
-import com.google.android.gms.common.moduleinstall.ModuleInstall
-import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
-import com.google.android.gms.common.moduleinstall.ModuleInstallStatusUpdate
+import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.common.model.RemoteModelManager
+import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.TranslateRemoteModel
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
@@ -40,13 +43,6 @@ import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.google.mlkit.common.model.DownloadConditions
-import com.google.mlkit.common.model.RemoteModelManager
-import com.google.mlkit.nl.translate.TranslateLanguage
-import com.google.mlkit.nl.translate.TranslateRemoteModel
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import androidx.core.app.NotificationCompat
 
 class MainActivity : AppCompatActivity() {
 
@@ -60,12 +56,16 @@ class MainActivity : AppCompatActivity() {
             "ko" to TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build()),
             "zh" to TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build()),
             "hi" to TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build()),
-            "en" to TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+            "en" to TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS),
         )
     }
 
     private val langNames = mapOf(
-        "ja" to "Japanese", "ko" to "Korean", "zh" to "Chinese", "hi" to "Devanagari", "en" to "Latin/English"
+        "ja" to "Japanese",
+        "ko" to "Korean",
+        "zh" to "Chinese",
+        "hi" to "Devanagari",
+        "en" to "Latin/English",
     )
 
     private val statusViews = mutableMapOf<String, TextView>()
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
         // Register launchers before lifecycle starts
         screenCaptureLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
+            ActivityResultContracts.StartActivityForResult(),
         ) { result ->
             fabStart.isEnabled = true
             if (result.resultCode == Activity.RESULT_OK && result.data != null) {
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         notificationPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
+            ActivityResultContracts.RequestPermission(),
         ) { _ ->
             refreshPermissionStatuses()
         }
@@ -149,7 +149,7 @@ class MainActivity : AppCompatActivity() {
                 val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
                 stopBroadcast.setPackage(packageName)
                 sendBroadcast(stopBroadcast)
-                
+
                 val stopIntent = Intent(this, ScreenCaptureService::class.java).apply {
                     action = "ACTION_STOP"
                 }
@@ -278,7 +278,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.editApiKey -> config.apiKey
                 R.id.editApiBaseUrl -> config.apiBaseUrl
                 else -> config.apiModel
-            }
+            },
         )
         edit.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) = save(s?.toString()?.trim().orEmpty())
@@ -430,14 +430,14 @@ class MainActivity : AppCompatActivity() {
         "ko" to TranslateLanguage.KOREAN,
         "zh" to TranslateLanguage.CHINESE,
         "hi" to TranslateLanguage.HINDI,
-        "en" to TranslateLanguage.ENGLISH
+        "en" to TranslateLanguage.ENGLISH,
     )
 
     private fun checkModelStatuses() {
         val modelManager = RemoteModelManager.getInstance()
         modelManager.getDownloadedModels(TranslateRemoteModel::class.java).addOnSuccessListener { models ->
             val downloadedTags = models.map { it.language }
-            
+
             for ((code, langTag) in translateModelCodes) {
                 val isInstalled = downloadedTags.contains(langTag)
                 config.setModelInstalled(code, isInstalled)
@@ -454,15 +454,18 @@ class MainActivity : AppCompatActivity() {
     private fun updateModelStatusUI(code: String, installed: Boolean) {
         statusViews[code]?.text = if (installed) "Installed" else "Not Installed"
         statusViews[code]?.setTextColor(
-            if (installed) ContextCompat.getColor(this, android.R.color.holo_green_dark)
-            else ContextCompat.getColor(this, android.R.color.holo_red_light)
+            if (installed) {
+                ContextCompat.getColor(this, android.R.color.holo_green_dark)
+            } else {
+                ContextCompat.getColor(this, android.R.color.holo_red_light)
+            },
         )
     }
 
     private fun downloadAllMissingModels() {
         val modelManager = RemoteModelManager.getInstance()
         val conditions = DownloadConditions.Builder().build()
-        
+
         Snackbar.make(fabStart, "Downloading missing translation models...", Snackbar.LENGTH_LONG).show()
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -476,14 +479,14 @@ class MainActivity : AppCompatActivity() {
             if (!config.isModelInstalled(code)) {
                 statusViews[code]?.text = "Downloading..."
                 statusViews[code]?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
-                
+
                 val notificationId = 200 + code.hashCode()
                 val notificationBuilder = NotificationCompat.Builder(this, channelId)
                     .setSmallIcon(android.R.drawable.stat_sys_download)
                     .setContentTitle("Downloading ${langNames[code]} Translation Model")
                     .setProgress(0, 0, true)
                     .setOngoing(true)
-                
+
                 notificationManager.notify(notificationId, notificationBuilder.build())
 
                 val model = TranslateRemoteModel.Builder(langTag).build()
@@ -491,7 +494,7 @@ class MainActivity : AppCompatActivity() {
                     .addOnSuccessListener {
                         config.setModelInstalled(code, true)
                         updateModelStatusUI(code, true)
-                        
+
                         notificationBuilder.setContentText("Download complete")
                             .setProgress(0, 0, false)
                             .setOngoing(false)
@@ -501,7 +504,7 @@ class MainActivity : AppCompatActivity() {
                     .addOnFailureListener {
                         statusViews[code]?.text = "Failed"
                         statusViews[code]?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
-                        
+
                         notificationBuilder.setContentText("Download failed")
                             .setProgress(0, 0, false)
                             .setOngoing(false)
@@ -518,7 +521,7 @@ class MainActivity : AppCompatActivity() {
         val expectedId = "$packageName/${InactivityAccessibilityService::class.java.name}"
         val enabledServices = Settings.Secure.getString(
             contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
         ) ?: return false
         return enabledServices.split(':').any { it.equals(expectedId, ignoreCase = true) }
     }
@@ -526,7 +529,9 @@ class MainActivity : AppCompatActivity() {
     private fun isNotificationPermissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-        } else true
+        } else {
+            true
+        }
     }
 
     private fun refreshPermissionStatuses() {
@@ -537,12 +542,16 @@ class MainActivity : AppCompatActivity() {
 
         val accessOk = isAccessibilityServiceEnabled()
         btnAccessibility.text = if (accessOk) "Accessibility  --  Enabled" else "Enable Accessibility Service"
-        btnAccessibility.setIconResource(if (accessOk) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background)
+        btnAccessibility.setIconResource(
+            if (accessOk) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background,
+        )
         btnAccessibility.isEnabled = !accessOk
 
         val notifOk = isNotificationPermissionGranted()
         btnNotification.text = if (notifOk) "Notification  --  Granted" else "Grant Notification Permission"
-        btnNotification.setIconResource(if (notifOk) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background)
+        btnNotification.setIconResource(
+            if (notifOk) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background,
+        )
         btnNotification.isEnabled = !notifOk
 
         val allReady = overlayOk && accessOk

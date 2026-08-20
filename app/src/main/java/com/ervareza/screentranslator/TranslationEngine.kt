@@ -55,26 +55,30 @@ class TranslationEngine(private val context: Context) {
     private val onlineTranslator by lazy { OnlineTranslator(context) }
 
     private fun getRecognizer(code: String): TextRecognizer {
-        return synchronized(recognizerCache) { recognizerCache.getOrPut(code) {
-            when (code) {
-                "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
-                "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
-                "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-                "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
-                else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        return synchronized(recognizerCache) {
+            recognizerCache.getOrPut(code) {
+                when (code) {
+                    "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
+                    "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
+                    "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
+                    "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
+                    else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+                }
             }
-        } }
+        }
     }
 
     private fun getTranslator(sourceLang: String, targetLang: String): Translator {
-        val key = "${sourceLang}_${targetLang}"
-        return synchronized(translatorCache) { translatorCache.getOrPut(key) {
-            val options = TranslatorOptions.Builder()
-                .setSourceLanguage(sourceLang)
-                .setTargetLanguage(targetLang)
-                .build()
-            Translation.getClient(options)
-        } }
+        val key = "${sourceLang}_$targetLang"
+        return synchronized(translatorCache) {
+            translatorCache.getOrPut(key) {
+                val options = TranslatorOptions.Builder()
+                    .setSourceLanguage(sourceLang)
+                    .setTargetLanguage(targetLang)
+                    .build()
+                Translation.getClient(options)
+            }
+        }
     }
 
     // ISSUE-011 FIX: Async pipeline. Bitmap conversion + OCR + translation all run
@@ -171,17 +175,22 @@ class TranslationEngine(private val context: Context) {
 
     // ISSUE-012 FIX: Online translation mode (OpenAI / Gemini compatible APIs).
     private suspend fun onlineTranslate(visionText: Text) {
-        for (block in visionText.textBlocks) {
-            try {
-                val translatedText = onlineTranslator.translate(block.text, config.targetLanguage)
-                if (!translatedText.isNullOrBlank()) {
-                    block.boundingBox?.let { rect ->
-                        overlayManager.drawTranslationBubble(translatedText, rect)
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("Translator", "Online translation failed", e)
+        val blocks = visionText.textBlocks.filter { it.text.isNotBlank() && it.boundingBox != null }
+        if (blocks.isEmpty()) return
+        val delimiter = "\n<<<SCREEN_TRANSLATOR_SEGMENT>>>\n"
+        blocks.forEachIndexed { index, block -> overlayManager.drawLoadingBubble(block.boundingBox!!, index.toString()) }
+        try {
+            val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage, delimiter)
+            if (translated == null) return
+            blocks.forEachIndexed { index, block ->
+                overlayManager.replaceLoading(
+                    index.toString(),
+                    translated[index],
+                    block.boundingBox!!,
+                )
             }
+        } catch (e: Exception) {
+            Log.e("Translator", "Online batch translation failed", e)
         }
     }
 

@@ -4,8 +4,8 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
-import android.view.accessibility.AccessibilityEvent
 import android.util.Log
+import android.view.accessibility.AccessibilityEvent
 
 class InactivityAccessibilityService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
@@ -47,13 +47,13 @@ class InactivityAccessibilityService : AccessibilityService() {
         if (event.packageName == "com.ervareza.screentranslator") return
 
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED ||
-            event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            
+            event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        ) {
             // Clear current overlays immediately upon movement or app switch
             val clearIntent = Intent("com.ervareza.screentranslator.CLEAR_OVERLAY")
             clearIntent.setPackage("com.ervareza.screentranslator")
             sendBroadcast(clearIntent)
-            
+
             resetTimer()
         }
     }

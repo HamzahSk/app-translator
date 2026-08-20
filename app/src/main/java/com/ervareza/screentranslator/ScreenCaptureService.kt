@@ -1,5 +1,6 @@
 package com.ervareza.screentranslator
 
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -17,10 +18,9 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
-import android.util.Log
-import android.app.Activity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -52,7 +52,7 @@ class ScreenCaptureService : Service() {
         super.onCreate()
         createNotificationChannel()
         translationEngine = TranslationEngine(this)
-        
+
         // Register broadcast receiver for the Accessibility Service trigger
         val filter = IntentFilter().apply {
             addAction("com.ervareza.screentranslator.TRIGGER_CAPTURE")
@@ -69,12 +69,12 @@ class ScreenCaptureService : Service() {
         if (intent?.action == "ACTION_STOP") {
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
-            
+
             // Notify MainActivity to update FAB UI
             val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
             stopBroadcast.setPackage(packageName)
             sendBroadcast(stopBroadcast)
-            
+
             return START_NOT_STICKY
         }
 
@@ -82,8 +82,10 @@ class ScreenCaptureService : Service() {
             action = "ACTION_STOP"
         }
         val stopPendingIntent = android.app.PendingIntent.getService(
-            this, 0, stopIntent, 
-            android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT
+            this,
+            0,
+            stopIntent,
+            android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
         val notification = NotificationCompat.Builder(this, "ScreenTranslatorChannel")
@@ -93,7 +95,7 @@ class ScreenCaptureService : Service() {
             .setOngoing(true)
             .addAction(android.R.drawable.ic_media_pause, "Stop", stopPendingIntent)
             .build()
-            
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(1, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
         } else {
@@ -107,33 +109,36 @@ class ScreenCaptureService : Service() {
             @Suppress("DEPRECATION")
             intent?.getParcelableExtra("data")
         }
-        
+
         if (resultCode == Activity.RESULT_OK && data != null) {
             mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data)
-            
+
             // FIX: Android 14+ requires registering a callback before createVirtualDisplay
-            mediaProjection?.registerCallback(object : android.media.projection.MediaProjection.Callback() {
-                override fun onStop() {
-                    super.onStop()
-                    stopForeground(STOP_FOREGROUND_REMOVE)
-                    stopSelf()
-                    val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
-                    stopBroadcast.setPackage(packageName)
-                    sendBroadcast(stopBroadcast)
-                }
-            }, android.os.Handler(android.os.Looper.getMainLooper()))
-            
+            mediaProjection?.registerCallback(
+                object : android.media.projection.MediaProjection.Callback() {
+                    override fun onStop() {
+                        super.onStop()
+                        stopForeground(STOP_FOREGROUND_REMOVE)
+                        stopSelf()
+                        val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
+                        stopBroadcast.setPackage(packageName)
+                        sendBroadcast(stopBroadcast)
+                    }
+                },
+                android.os.Handler(android.os.Looper.getMainLooper()),
+            )
+
             setupVirtualDisplay()
         }
-        
+
         return START_NOT_STICKY
     }
 
     private fun setupVirtualDisplay() {
         val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         val metrics = DisplayMetrics()
-        
+
         val width: Int
         val height: Int
         val density: Int
@@ -152,12 +157,16 @@ class ScreenCaptureService : Service() {
         }
 
         imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2)
-        
+
         virtualDisplay = mediaProjection?.createVirtualDisplay(
             "ScreenTranslatorCapture",
-            width, height, density,
+            width,
+            height,
+            density,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-            imageReader?.surface, null, null
+            imageReader?.surface,
+            null,
+            null,
         )
     }
 
@@ -174,7 +183,8 @@ class ScreenCaptureService : Service() {
 
                 val bitmap = Bitmap.createBitmap(
                     image.width + rowPadding / pixelStride,
-                    image.height, Bitmap.Config.ARGB_8888
+                    image.height,
+                    Bitmap.Config.ARGB_8888,
                 )
                 bitmap.copyPixelsFromBuffer(buffer)
 
@@ -190,7 +200,7 @@ class ScreenCaptureService : Service() {
         val channel = NotificationChannel(
             "ScreenTranslatorChannel",
             "Screen Translator Service",
-            NotificationManager.IMPORTANCE_LOW
+            NotificationManager.IMPORTANCE_LOW,
         )
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(channel)
