@@ -36,6 +36,21 @@ import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+/**
+ * PHASE 8 FIX: Smart merged block produced by [TranslationEngine.mergeBlocks].
+ *
+ * ML Kit tends to fragment a single speech bubble into multiple [Text.TextBlock]
+ * entries. When drawn naively, each fragment shows its own overlay and they stack
+ * on top of each other. To fix that we pre-merge neighbouring fragments into a
+ * single bubble that:
+ *  - has a combined bounding box ([rect])
+ *  - holds the concatenated original text ([text], joined with `\n`)
+ *  - remembers the average line height ([lineHeight]) of its source block(s), so
+ *    downstream code (and the merge heuristic itself) can compare font sizes and
+ *    refuse to fuse a tiny dialogue line with a giant SFX burst.
+ */
+data class MergedBlock(val text: String, val rect: Rect, val lineHeight: Float)
+
 class TranslationEngine(private val context: Context) {
 
     private val overlayManager = OverlayManager(context)
@@ -243,22 +258,24 @@ class TranslationEngine(private val context: Context) {
             Log.e("Translator", "Language identification failed", e)
         }
     }
-
     private suspend fun translateBlocks(visionText: Text, sourceLangCode: String) {
         val targetLangCode = config.targetLanguage
 
         // ISSUE-003 FIX: Reuse a single translator for the entire batch
         val translator = getTranslator(sourceLangCode, targetLangCode)
-        visionText.textBlocks.forEachIndexed { index, block ->
-            adjustedBoundingBox(block.boundingBox)?.let { overlayManager.drawLoadingBubble(it, "offline_$index") }
+        // PHASE 8 FIX: Use merged blocks so neighbouring fragments of the same
+        // speech bubble share one translation request and one bubble overlay.
+        val mergedBlocks = mergeBlocks(visionText.textBlocks)
+        mergedBlocks.forEachIndexed { index, block ->
+            adjustedBoundingBox(block.rect)?.let { overlayManager.drawLoadingBubble(it, "offline_$index") }
         }
 
         try {
             translator.downloadModelIfNeeded().await()
             val translatedBubbles = mutableListOf<OverlayManager.Bubble>()
-            for ((index, block) in visionText.textBlocks.withIndex()) {
+            for ((index, block) in mergedBlocks.withIndex()) {
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                val rect = adjustedBoundingBox(block.boundingBox) ?: continue
+                val rect = adjustedBoundingBox(block.rect) ?: continue
                 try {
                     val translatedText = mlKitCall("Translate") { translator.translate(block.text).await() }
                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
@@ -278,18 +295,22 @@ class TranslationEngine(private val context: Context) {
         } catch (e: Exception) {
             Log.e("Translator", "Model download failed", e)
         } finally {
-            visionText.textBlocks.indices.forEach { overlayManager.removeLoading("offline_$it") }
+            mergedBlocks.indices.forEach { overlayManager.removeLoading("offline_$it") }
         }
     }
 
     // ISSUE-012 FIX: Online translation mode (OpenAI / Gemini compatible APIs).
     private suspend fun onlineTranslate(visionText: Text) {
-        val blocks = visionText.textBlocks.filter { it.text.isNotBlank() && adjustedBoundingBox(it.boundingBox) != null }
+        // PHASE 8 FIX: Merge neighbouring fragments into single bubbles before
+        // sending them to the API so we get one translated result per bubble
+        // and one overlay per bubble instead of overlapping duplicates.
+        val blocks = mergeBlocks(visionText.textBlocks)
+            .filter { it.text.isNotBlank() && adjustedBoundingBox(it.rect) != null }
         if (blocks.isEmpty()) return
         val delimiter = "\n<<<SCREEN_TRANSLATOR_SEGMENT>>>\n"
         blocks.forEachIndexed { index, block ->
             kotlinx.coroutines.currentCoroutineContext().ensureActive()
-            overlayManager.drawLoadingBubble(adjustedBoundingBox(block.boundingBox)!!, index.toString())
+            overlayManager.drawLoadingBubble(adjustedBoundingBox(block.rect)!!, index.toString())
         }
         try {
             val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage, delimiter)
@@ -300,7 +321,7 @@ class TranslationEngine(private val context: Context) {
             blocks.forEachIndexed { index, block ->
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val text = translated.getOrNull(index) ?: return@forEachIndexed
-                adjustedBoundingBox(block.boundingBox)?.let { box -> overlayManager.replaceLoading(index.toString(), text, box) }
+                adjustedBoundingBox(block.rect)?.let { box -> overlayManager.replaceLoading(index.toString(), text, box) }
             }
         } catch (e: CancellationException) {
             overlayManager.clearOverlays()
@@ -335,6 +356,83 @@ class TranslationEngine(private val context: Context) {
         overlayManager.clearOverlays()
     }
 
+    // PHASE 8 FIX: Smart OCR block merging.
+    //
+    // ML Kit often returns one speech bubble as several [Text.TextBlock] entries
+    // (each line is sometimes its own block). Drawing each one separately
+    // produces overlapping stacked overlays. We greedily walk the blocks in
+    // top-to-bottom order and fuse them into a [MergedBlock] when all three
+    // conditions hold:
+    //
+    //  1. Vertical proximity — the gap between the previous block's bottom and
+    //     the next block's top is less than [MERGE_VERTICAL_GAP_MULTIPLIER]
+    //     times the average line height. This prevents fusing bubbles that are
+    //     several lines apart.
+    //  2. Same column — the horizontal ranges overlap or sit very close
+    //     together ([MERGE_HORIZONTAL_GAP_RATIO] of the wider block). Blocks
+    //     that sit in clearly different columns stay separate.
+    //  3. Similar font size — the per-line height of both blocks differs by at
+    //     most [MERGE_SIZE_TOLERANCE]. A tiny dialogue line next to a giant SFX
+    //     burst therefore stays separated even when their boxes touch.
+    //
+    // If merged, the text is joined with `\n` and the bounding box becomes the
+    // union of both rectangles.
+    private fun mergeBlocks(blocks: List<Text.TextBlock>): List<MergedBlock> {
+        val fragments = blocks.mapNotNull { src ->
+            val rect = src.boundingBox ?: return@mapNotNull null
+            if (src.text.isBlank() || rect.isEmpty) return@mapNotNull null
+            val lineHeight = rect.height().toFloat() / src.lines.size.coerceAtLeast(1)
+            MergedBlock(src.text.trim(), Rect(rect), lineHeight)
+        }
+        if (fragments.isEmpty()) return emptyList()
+
+        // Sort top-to-bottom; for blocks sharing a row, left-to-right. This keeps
+        // a single bubble's fragments in the right read order before fusing.
+        val sorted = fragments.sortedWith(
+            compareBy<MergedBlock> { it.rect.top }
+                .thenBy { it.rect.left },
+        )
+
+        val merged = mutableListOf<MergedBlock>()
+        var current = sorted.first()
+        for (i in 1 until sorted.size) {
+            val next = sorted[i]
+            val avgLineHeight = maxOf(current.lineHeight, next.lineHeight)
+            val verticalGap = next.rect.top - current.rect.bottom
+            val closeVertically = verticalGap >= 0 &&
+                verticalGap < MERGE_VERTICAL_GAP_MULTIPLIER * avgLineHeight
+            val overlapHorizontally = next.rect.left <= current.rect.right &&
+                next.rect.right >= current.rect.left
+            val widthA = current.rect.width()
+            val widthB = next.rect.width()
+            val maxWidth = maxOf(widthA, widthB).coerceAtLeast(1)
+            val horizontalGap = when {
+                overlapHorizontally -> 0
+                next.rect.left > current.rect.right -> next.rect.left - current.rect.right
+                else -> current.rect.left - next.rect.right
+            }
+            val closeHorizontally = horizontalGap < MERGE_HORIZONTAL_GAP_RATIO * maxWidth
+            val sizeTolerance = maxOf(current.lineHeight, next.lineHeight) * MERGE_SIZE_TOLERANCE
+            val similarSize = kotlin.math.abs(current.lineHeight - next.lineHeight) <= sizeTolerance
+
+            if (closeVertically && closeHorizontally && similarSize) {
+                val union = Rect(current.rect).apply { union(next.rect) }
+                current = MergedBlock(
+                    text = current.text + "\n" + next.text,
+                    rect = union,
+                    // Use the larger line height so a tall fragment keeps the
+                    // merge window generous for any subsequent nearby block.
+                    lineHeight = avgLineHeight,
+                )
+            } else {
+                merged += current
+                current = next
+            }
+        }
+        merged += current
+        return merged
+    }
+
     private fun adjustedBoundingBox(original: Rect?): Rect? {
         if (original == null || original.bottom <= statusBarHeight) return null
         return Rect(original).apply {
@@ -345,6 +443,13 @@ class TranslationEngine(private val context: Context) {
 
     private companion object {
         const val ML_KIT_TIMEOUT_MS = 7_000L
+
+        // PHASE 8 FIX: Smart merge tuning. Tuned empirically for manga/comic
+        // dialogue vs SFX, but conservative enough to keep clearly distinct
+        // bubbles separate.
+        const val MERGE_VERTICAL_GAP_MULTIPLIER = 1.5f
+        const val MERGE_HORIZONTAL_GAP_RATIO = 0.25f
+        const val MERGE_SIZE_TOLERANCE = 0.30f
     }
 }
 
