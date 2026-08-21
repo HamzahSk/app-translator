@@ -1,8 +1,7 @@
-name: OpenCode DB Fixer
+name: OpenCode AI & Build Pipeline
 
 on:
   workflow_dispatch:
-  
   push:
     paths:
       - "prompt.md"
@@ -11,19 +10,16 @@ permissions:
   contents: read
 
 jobs:
+  # JOB 1: Menjalankan AI dan membuat artifact
   opencode:
     runs-on: ubuntu-24.04
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           java-version-file: .github/.java-version
           distribution: temurin
-
       - uses: gradle/actions/setup-gradle@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -31,46 +27,83 @@ jobs:
       - name: Install OpenCode
         run: npm install -g opencode-ai
 
-      - name: Check OpenCode
-        run: |
-          opencode --version
-
       - name: Run OpenCode
         run: |
-          # Menjalankan OpenCode dan menyimpan log terminal ke file
           opencode run \
             --model opencode/deepseek-v4-flash-free \
             --auto \
             "$(cat prompt.md)" 2>&1 | tee ai-response-recap.txt || true
 
-      - name: Collect changed files and AI recap
+      - name: Collect changed files
         run: |
           git add -A
-
           mkdir -p output_artifact
-          
-          # Buat file kosong untuk mencatat file yang dihapus
           touch output_artifact/deleted_files.txt
 
-          # Loop semua file yang berubah, ditambah, atau dihapus
           for file in $(git diff --cached --name-only); do
             if [ -f "$file" ]; then
-              # Jika file ada (ditambah/diubah), copy ke artifact
               mkdir -p "output_artifact/$(dirname "$file")"
               cp "$file" "output_artifact/$file"
             else
-              # Jika file tidak ada (dihapus), catat namanya
               echo "$file" >> output_artifact/deleted_files.txt
             fi
           done
 
-          # Memasukkan file recap respons AI
           if [ -f ai-response-recap.txt ]; then
             cp ai-response-recap.txt output_artifact/ai-response-recap.txt
           fi
 
-      # --- INI ADALAH BAGIAN YANG SEBELUMNYA HILANG ---
-      - uses: actions/upload-artifact@v4
+      - name: Upload AI Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: opencode-output-${{ github.sha }}
           path: output_artifact/
+
+  # JOB 2: Mengunduh artifact dan melakukan build
+  build_app:
+    needs: opencode # Memastikan berjalan SETELAH job opencode selesai
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Base Code
+        uses: actions/checkout@v4
+
+      - name: Download AI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: opencode-output-${{ github.sha }}
+          path: ai_changes
+
+      - name: Apply AI Changes to Code
+        run: |
+          # 1. Menghapus file yang dihapus oleh AI
+          if [ -f ai_changes/deleted_files.txt ]; then
+            while IFS= read -r file; do
+              rm -f "$file"
+            done < ai_changes/deleted_files.txt
+            rm ai_changes/deleted_files.txt
+          fi
+          
+          # 2. Menimpa file lama dengan file baru dari AI
+          cp -a ai_changes/. ./
+          rm -rf ai_changes
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --no-daemon -Dorg.gradle.jvmargs="-Xmx4g"
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-modified-app-debug
+          path: app/build/outputs/apk/debug/**/*.apk
+          retention-days: 7

@@ -7,6 +7,7 @@ Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menj
  * **Cek Log Terbaru:** Baca maksimal 2 file log terbaru di dalam folder ai_memory/.
  * **Buat File Log Baru:** Setelah selesai melakukan tugas, buat log task_YYYYMMDD_HHMM_phase8_block_merging.md.
  * **Perbarui 00_INDEX.md:** Tambahkan referensi log baru ke dalam file index utama.
+ 
 # INSTRUKSI PERBAIKAN BUG KODE
 Kamu bertugas menyelesaikan masalah fragmentasi OCR di TranslationEngine.kt. Saat ini, ML Kit memecah satu gelembung percakapan menjadi banyak TextBlock kecil. Kita butuh algoritma penggabungan yang pintar agar teks dialog tidak bercampur dengan SFX atau teks pikiran yang ukurannya berbeda.
 ## 1. Implementasi Algoritma Smart Block Merging (Size & Proximity Aware)

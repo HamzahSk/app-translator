@@ -1,4 +1,4 @@
-name: OMP DB Fixer & Auto-Test
+name: OMP DB Fixer & Auto-Test Pipeline
 
 on:
   workflow_dispatch:
@@ -10,8 +10,9 @@ permissions:
   contents: read
 
 jobs:
-  omp-fix-and-test:
-    name: Let OMP Fix & Test DB History
+  # JOB 1: Menjalankan OMP AI dan membuat artifact source code
+  omp_ai:
+    name: Let OMP Fix DB History
     runs-on: ubuntu-24.04
 
     steps:
@@ -32,8 +33,7 @@ jobs:
 
       - name: Run OMP to Fix and Verify
         env:
-          # Pastikan kamu menaruh API Key dari dashboard hcnsec di GitHub Secrets!
-          # Contoh isinya: sk-1234567890abcdef
+          # PERBAIKAN: Gunakan GitHub Secrets untuk keamanan, jangan di-hardcode
           HCNSEC_API_KEY: "sk-GUWsLR2rd2tuxXP6Nzkux2kVQIZxfuLRPCzO6rx8xwTUJQiI"
         run: |
           mkdir -p ~/.omp/agent
@@ -59,28 +59,74 @@ jobs:
 
           mkdir -p output_artifact
           
-          # Buat file kosong untuk mencatat file yang dihapus
           touch output_artifact/deleted_files.txt
 
-          # Loop semua file yang berubah, ditambah, atau dihapus
           for file in $(git diff --cached --name-only); do
             if [ -f "$file" ]; then
-              # Jika file ada (ditambah/diubah), copy ke artifact
               mkdir -p "output_artifact/$(dirname "$file")"
               cp "$file" "output_artifact/$file"
             else
-              # Jika file tidak ada (dihapus), catat namanya
               echo "$file" >> output_artifact/deleted_files.txt
             fi
           done
 
-          # Memasukkan file recap respons AI
           if [ -f ai-response-recap.txt ]; then
             cp ai-response-recap.txt output_artifact/ai-response-recap.txt
           fi
 
-      # --- INI ADALAH BAGIAN YANG SEBELUMNYA HILANG ---
-      - uses: actions/upload-artifact@v4
+      - name: Upload AI Source Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: opencode-output-${{ github.sha }}
           path: output_artifact/
+
+  # JOB 2: Mengunduh artifact dan melakukan build Android
+  build_app:
+    name: Build Modified App
+    needs: omp_ai
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Base Code
+        uses: actions/checkout@v4
+
+      - name: Download AI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: opencode-output-${{ github.sha }}
+          path: ai_changes
+
+      - name: Apply AI Changes to Code
+        run: |
+          if [ -f ai_changes/deleted_files.txt ]; then
+            while IFS= read -r file; do
+              rm -f "$file"
+            done < ai_changes/deleted_files.txt
+            rm ai_changes/deleted_files.txt
+          fi
+          
+          cp -a ai_changes/. ./
+          rm -rf ai_changes
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --no-daemon -Dorg.gradle.jvmargs="-Xmx4g"
+
+      - name: Upload Debug APK (arm64-v8a)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screen-translator-debug-arm64
+          path: app/build/outputs/apk/debug/**/*arm64-v8a.apk
+          retention-days: 7
