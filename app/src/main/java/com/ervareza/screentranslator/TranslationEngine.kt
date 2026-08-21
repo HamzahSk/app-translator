@@ -225,16 +225,55 @@ class TranslationEngine(private val context: Context) {
         }
     }
 
+    // PHASE 8 FIX: Data class for merged OCR blocks to prevent bubble overlap
+    private data class MergedBlock(val text: String, val boundingBox: Rect)
+
+    // PHASE 8 FIX: Spatial block merging algorithm
+    private fun mergeBlocks(blocks: List<Text.TextBlock>): List<MergedBlock> {
+        val validBlocks = blocks.filter { it.boundingBox != null && it.text.isNotBlank() }
+        if (validBlocks.isEmpty()) return emptyList()
+
+        val sorted = validBlocks.sortedWith(compareBy({ it.boundingBox!!.top }, { it.boundingBox!!.left }))
+        val avgHeight = sorted.map { it.boundingBox!!.height() }.average().let { if (it.isNaN() || it == 0.0) 1.0 else it }
+        val threshold = (avgHeight * 1.5).toInt()
+
+        val merged = mutableListOf<MergedBlock>()
+        var currentText = StringBuilder(sorted[0].text)
+        var currentRect = Rect(sorted[0].boundingBox)
+
+        for (i in 1 until sorted.size) {
+            val next = sorted[i]
+            val nextRect = next.boundingBox!!
+            val verticalDist = nextRect.top - currentRect.bottom
+            val horizontalDist = when {
+                nextRect.left > currentRect.right -> nextRect.left - currentRect.right
+                currentRect.left > nextRect.right -> currentRect.left - nextRect.right
+                else -> 0
+            }
+            if (verticalDist < threshold || horizontalDist < threshold) {
+                currentText.append("\n").append(next.text)
+                currentRect.union(nextRect)
+            } else {
+                merged.add(MergedBlock(currentText.toString(), Rect(currentRect)))
+                currentText = StringBuilder(next.text)
+                currentRect = Rect(nextRect)
+            }
+        }
+        merged.add(MergedBlock(currentText.toString(), Rect(currentRect)))
+        return merged
+    }
+
     private suspend fun identifyAndTranslate(visionText: Text) {
         val fullText = visionText.text
         try {
             val languageCode = mlKitCall("LanguageIdentify") { getLanguageIdentifier().identifyLanguage(fullText).await() }
             if (languageCode != null && languageCode != "und") {
                 Log.d("Translator", "Detected language: $languageCode")
+                val mergedBlocks = mergeBlocks(visionText.textBlocks)
                 if (config.translationMode != "offline") {
-                    onlineTranslate(visionText)
+                    onlineTranslate(mergedBlocks)
                 } else {
-                    translateBlocks(visionText, languageCode)
+                    translateBlocks(mergedBlocks, languageCode)
                 }
             }
         } catch (e: CancellationException) {
@@ -244,19 +283,20 @@ class TranslationEngine(private val context: Context) {
         }
     }
 
-    private suspend fun translateBlocks(visionText: Text, sourceLangCode: String) {
+    // PHASE 8 REFACTOR: Use List<MergedBlock> instead of Text
+    private suspend fun translateBlocks(mergedBlocks: List<MergedBlock>, sourceLangCode: String) {
         val targetLangCode = config.targetLanguage
 
         // ISSUE-003 FIX: Reuse a single translator for the entire batch
         val translator = getTranslator(sourceLangCode, targetLangCode)
-        visionText.textBlocks.forEachIndexed { index, block ->
+        mergedBlocks.forEachIndexed { index, block ->
             adjustedBoundingBox(block.boundingBox)?.let { overlayManager.drawLoadingBubble(it, "offline_$index") }
         }
 
         try {
             translator.downloadModelIfNeeded().await()
             val translatedBubbles = mutableListOf<OverlayManager.Bubble>()
-            for ((index, block) in visionText.textBlocks.withIndex()) {
+            for ((index, block) in mergedBlocks.withIndex()) {
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val rect = adjustedBoundingBox(block.boundingBox) ?: continue
                 try {
@@ -278,13 +318,13 @@ class TranslationEngine(private val context: Context) {
         } catch (e: Exception) {
             Log.e("Translator", "Model download failed", e)
         } finally {
-            visionText.textBlocks.indices.forEach { overlayManager.removeLoading("offline_$it") }
+            mergedBlocks.indices.forEach { overlayManager.removeLoading("offline_$it") }
         }
     }
 
-    // ISSUE-012 FIX: Online translation mode (OpenAI / Gemini compatible APIs).
-    private suspend fun onlineTranslate(visionText: Text) {
-        val blocks = visionText.textBlocks.filter { it.text.isNotBlank() && adjustedBoundingBox(it.boundingBox) != null }
+    // PHASE 8 REFACTOR: Use List<MergedBlock> instead of Text
+    private suspend fun onlineTranslate(mergedBlocks: List<MergedBlock>) {
+        val blocks = mergedBlocks.filter { it.text.isNotBlank() && adjustedBoundingBox(it.boundingBox) != null }
         if (blocks.isEmpty()) return
         val delimiter = "\n<<<SCREEN_TRANSLATOR_SEGMENT>>>\n"
         blocks.forEachIndexed { index, block ->
