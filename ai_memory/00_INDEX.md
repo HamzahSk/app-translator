@@ -9,6 +9,7 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 | Tanggal | File Log | Ringkasan |
 |---------|----------|-----------|
+| 2026-08-21 | [task_20260821_phase8_block_merging.md](task_20260821_phase8_block_merging.md) | Phase 8 OCR block merging: data class MergedBlock + utilitas mergeBlocks (greedy spatial merge, threshold 1.5x avg line height), refactor translateBlocks & onlineTranslate ke List<MergedBlock>. Compile debug sukses. |
 | 2026-08-20 22:54 | [task_20260820_2254_phase7_rewrite.md](task_20260820_2254_phase7_rewrite.md) | Rewrite tombol Start pakai state machine (IDLE/PREPARING/RUNNING/BLOCKED, listener tunggal, fix double-click & lambat stop), preload ML Kit ke scope Default independen + instansiasi lock-free, loading bubble dirender sebelum OCR. Compile debug & spotless sukses. |
 | 2026-08-20 14:11 | [task_20260820_1411_phase6_refinement.md](task_20260820_1411_phase6_refinement.md) | Timeout 7 dtk pada ML Kit (anti-hang offline) + dummy preload, tombol Start dipindah ke IO (anti-ANR), line spacing & pemuaian sentris bubble. Compile debug sukses. |
 | 2026-08-20 08:15 | [task_20260820_0815_phase5_batch_overlay_font.md](task_20260820_0815_phase5_batch_overlay_font.md) | Batch fullscreen overlay, clear aman saat scroll/screenshot, dan custom font Comic dipasang. Compile debug sukses. |

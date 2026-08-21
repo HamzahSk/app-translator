@@ -225,16 +225,22 @@ class TranslationEngine(private val context: Context) {
         }
     }
 
+    // PHASE 8 FIX: ML Kit frequently splits a single conversation bubble into
+    // many small TextBlocks; translating them individually makes the rendered
+    // bubbles overlap. We first run an offline spatial merge so the pipeline
+    // (loading bubble -> translation -> final draw) operates on whole bubbles.
     private suspend fun identifyAndTranslate(visionText: Text) {
         val fullText = visionText.text
         try {
             val languageCode = mlKitCall("LanguageIdentify") { getLanguageIdentifier().identifyLanguage(fullText).await() }
             if (languageCode != null && languageCode != "und") {
                 Log.d("Translator", "Detected language: $languageCode")
+                val merged = mergeBlocks(visionText.textBlocks)
+                if (merged.isEmpty()) return
                 if (config.translationMode != "offline") {
-                    onlineTranslate(visionText)
+                    onlineTranslate(merged)
                 } else {
-                    translateBlocks(visionText, languageCode)
+                    translateBlocks(merged, languageCode)
                 }
             }
         } catch (e: CancellationException) {
@@ -244,23 +250,60 @@ class TranslationEngine(private val context: Context) {
         }
     }
 
-    private suspend fun translateBlocks(visionText: Text, sourceLangCode: String) {
+    // ISSUE-012 FIX: Online translation mode (OpenAI / Gemini compatible APIs).
+    private suspend fun onlineTranslate(blocks: List<MergedBlock>) {
+        val visible = blocks.filter { it.text.isNotBlank() && adjustedBoundingBox(it.boundingBox) != null }
+        if (visible.isEmpty()) return
+        val delimiter = "\n<<<SCREEN_TRANSLATOR_SEGMENT>>>\n"
+        visible.forEachIndexed { index, merged ->
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            overlayManager.drawLoadingBubble(adjustedBoundingBox(merged.boundingBox)!!, index.toString())
+        }
+        try {
+            val translated = onlineTranslator.translateBatch(visible.map { it.text }, config.targetLanguage, delimiter)
+            if (translated == null) {
+                visible.indices.forEach { overlayManager.removeLoading(it.toString()) }
+                return
+            }
+            visible.forEachIndexed { index, merged ->
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                val text = translated.getOrNull(index) ?: return@forEachIndexed
+                adjustedBoundingBox(merged.boundingBox)?.let { box -> overlayManager.replaceLoading(index.toString(), text, box) }
+            }
+        } catch (e: CancellationException) {
+            overlayManager.clearOverlays()
+            throw e
+        } catch (e: NullPointerException) {
+            Log.e("Translator", "Online batch contained null data", e)
+        } catch (e: IndexOutOfBoundsException) {
+            Log.e("Translator", "Online batch segment count mismatch", e)
+        } catch (e: Exception) {
+            Log.e("Translator", "Online batch translation failed", e)
+        } finally {
+            visible.indices.forEach { overlayManager.removeLoading(it.toString()) }
+        }
+    }
+
+    // PHASE 8 FIX: Iterate on merged bubbles instead of raw ML Kit TextBlocks
+    // so the loading bubble, translation, and final overlay cover a single
+    // conversation bubble rather than overlapping sub-segments.
+    private suspend fun translateBlocks(blocks: List<MergedBlock>, sourceLangCode: String) {
         val targetLangCode = config.targetLanguage
 
         // ISSUE-003 FIX: Reuse a single translator for the entire batch
         val translator = getTranslator(sourceLangCode, targetLangCode)
-        visionText.textBlocks.forEachIndexed { index, block ->
-            adjustedBoundingBox(block.boundingBox)?.let { overlayManager.drawLoadingBubble(it, "offline_$index") }
+        blocks.forEachIndexed { index, merged ->
+            adjustedBoundingBox(merged.boundingBox)?.let { overlayManager.drawLoadingBubble(it, "offline_$index") }
         }
 
         try {
             translator.downloadModelIfNeeded().await()
             val translatedBubbles = mutableListOf<OverlayManager.Bubble>()
-            for ((index, block) in visionText.textBlocks.withIndex()) {
+            for ((index, merged) in blocks.withIndex()) {
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                val rect = adjustedBoundingBox(block.boundingBox) ?: continue
+                val rect = adjustedBoundingBox(merged.boundingBox) ?: continue
                 try {
-                    val translatedText = mlKitCall("Translate") { translator.translate(block.text).await() }
+                    val translatedText = mlKitCall("Translate") { translator.translate(merged.text).await() }
                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
                     if (translatedText != null) {
                         translatedBubbles += OverlayManager.Bubble(translatedText, rect)
@@ -278,43 +321,99 @@ class TranslationEngine(private val context: Context) {
         } catch (e: Exception) {
             Log.e("Translator", "Model download failed", e)
         } finally {
-            visionText.textBlocks.indices.forEach { overlayManager.removeLoading("offline_$it") }
+            blocks.indices.forEach { overlayManager.removeLoading("offline_$it") }
         }
     }
 
-    // ISSUE-012 FIX: Online translation mode (OpenAI / Gemini compatible APIs).
-    private suspend fun onlineTranslate(visionText: Text) {
-        val blocks = visionText.textBlocks.filter { it.text.isNotBlank() && adjustedBoundingBox(it.boundingBox) != null }
-        if (blocks.isEmpty()) return
-        val delimiter = "\n<<<SCREEN_TRANSLATOR_SEGMENT>>>\n"
-        blocks.forEachIndexed { index, block ->
-            kotlinx.coroutines.currentCoroutineContext().ensureActive()
-            overlayManager.drawLoadingBubble(adjustedBoundingBox(block.boundingBox)!!, index.toString())
+    // PHASE 8 FIX: A spatially grouped TextBlock (one logical bubble).
+    // ML Kit frequently shards a single conversation bubble into several
+    // tiny TextBlocks that, if translated separately, would render as
+    // overlapping overlays. The merge pipeline collects them into a single
+    // MergedBlock so the loading bubble, translation, and overlay all cover
+    // the full extent of the original bubble.
+    private data class MergedBlock(val text: String, val boundingBox: Rect)
+
+    // PHASE 8 FIX: Spatial grouping of ML Kit TextBlocks.
+    //
+    // Strategy:
+    //  1. Discard TextBlocks with no usable rect/text and compute the
+    //     average text-block height (a proxy for line height).
+    //  2. Sort the survivors top-to-bottom, left-to-right so we walk the
+    //     screen in reading order.
+    //  3. Greedily merge a candidate block into the previous one when:
+    //       - the candidate sits "very close" vertically: gap <
+    //         MERGE_GAP_FACTOR * averageHeight (this fuses the multiple
+    //         sub-lines ML Kit produces from a single speech bubble), OR
+    //       - horizontally overlapping / nearly touching: rects overlap
+    //         or are within MERGE_GAP_FACTOR * averageHeight of each other
+    //         on the x-axis and roughly share the same vertical band.
+    //     The merged bounding box is the union of the two rects; the text
+    //     is joined with a space (or newline if the previous line ended
+    //     without a sentence terminator and the gap is wide enough to be a
+    //     soft break).
+    //  4. Result is a smaller, bubble-shaped list of MergedBlocks that the
+    //     translate/online pipelines can iterate without overlapping.
+    private fun mergeBlocks(blocks: List<Text.TextBlock>): List<MergedBlock> {
+        val candidates = blocks.mapNotNull { block ->
+            val rect = adjustedBoundingBox(block.boundingBox) ?: return@mapNotNull null
+            val text = block.text.trim()
+            if (text.isEmpty()) return@mapNotNull null
+            text to rect
         }
-        try {
-            val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage, delimiter)
-            if (translated == null) {
-                blocks.indices.forEach { overlayManager.removeLoading(it.toString()) }
-                return
+        if (candidates.isEmpty()) return emptyList()
+
+        val avgHeight = candidates.sumOf { (_, r) -> r.height() }
+            .toDouble() / candidates.size
+        val gapThreshold = (avgHeight * MERGE_GAP_FACTOR).toInt().coerceAtLeast(1)
+
+        // Reading order: top-to-bottom, left-to-right within a row.
+        val sorted = candidates.sortedWith(
+            compareBy({ (it.second.top) / gapThreshold }, { it.second.left }),
+        )
+
+        val result = mutableListOf<MergedBlock>()
+        for ((text, rect) in sorted) {
+            val current = result.lastOrNull()
+            if (current != null && shouldMerge(current.boundingBox, rect, gapThreshold)) {
+                val joinedText = joinText(current.text, text, current.boundingBox, rect)
+                result[result.size - 1] = MergedBlock(
+                    text = joinedText,
+                    boundingBox = Rect(current.boundingBox).apply { union(rect) },
+                )
+            } else {
+                result += MergedBlock(text = text, boundingBox = Rect(rect))
             }
-            blocks.forEachIndexed { index, block ->
-                kotlinx.coroutines.currentCoroutineContext().ensureActive()
-                val text = translated.getOrNull(index) ?: return@forEachIndexed
-                adjustedBoundingBox(block.boundingBox)?.let { box -> overlayManager.replaceLoading(index.toString(), text, box) }
-            }
-        } catch (e: CancellationException) {
-            overlayManager.clearOverlays()
-            throw e
-        } catch (e: NullPointerException) {
-            Log.e("Translator", "Online batch contained null data", e)
-        } catch (e: IndexOutOfBoundsException) {
-            Log.e("Translator", "Online batch segment count mismatch", e)
-        } catch (e: Exception) {
-            Log.e("Translator", "Online batch translation failed", e)
-        } finally {
-            blocks.indices.forEach { overlayManager.removeLoading(it.toString()) }
         }
+        return result
     }
+
+    // Decide whether `next` belongs to the same bubble as `prev`. We treat
+    // two rects as "the same bubble" when:
+    //  * `next.top` is just below `prev.bottom` (within the gap threshold)
+    //    OR the rects vertically overlap and horizontally overlap/touch
+    //    within the gap threshold. The second clause catches the case
+    //    where ML Kit splits a single line into a left chunk + a right
+    //    chunk with no vertical gap.
+    private fun shouldMerge(prev: Rect, next: Rect, gapThreshold: Int): Boolean {
+        val verticalGap = next.top - prev.bottom
+        if (verticalGap in 0..gapThreshold) return true
+        val verticalOverlap = next.top < prev.bottom && next.bottom > prev.top
+        if (!verticalOverlap) return false
+        val horizontalGap = maxOf(prev.left - next.right, next.left - prev.right, 0)
+        return horizontalGap <= gapThreshold
+    }
+
+    private fun joinText(prev: String, next: String, prevRect: Rect, nextRect: Rect): String {
+        // If the candidate starts on a new visual line (clearly below the
+        // previous block), insert a newline so the translation preserves
+        // the original line breaks. Otherwise glue with a single space.
+        val isNewLine = nextRect.top > prevRect.centerY()
+        val separator = if (isNewLine) "\n" else " "
+        val needsSpace = !prev.endsWith(' ') && !prev.endsWith('\n') &&
+            !next.startsWith(' ') && !next.startsWith('\n')
+        return if (needsSpace) prev + separator + next else prev + separator.drop(1) + next
+    }
+
 
     // ISSUE-010 FIX: Clean up all resources
     fun close() {
@@ -345,6 +444,10 @@ class TranslationEngine(private val context: Context) {
 
     private companion object {
         const val ML_KIT_TIMEOUT_MS = 7_000L
+        // PHASE 8 FIX: 1.5x the average text-block height is the cut-off for
+        // considering two ML Kit blocks "part of the same bubble". Anything
+        // further apart is treated as the next line/bubble. Tunable later.
+        const val MERGE_GAP_FACTOR = 1.5
     }
 }
 
