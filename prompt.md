@@ -1,4 +1,3 @@
-
 **TUGAS FASE 8: SMART OCR BLOCK MERGING (SIZE & PROXIMITY AWARE) & ANTI-OVERLAP**
 # SYSTEM INSTRUCTION: MEMORY MANAGEMENT SYSTEM
 Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menjaga kesinambungan pekerjaan tanpa membuat context window (token) overload, kamu WAJIB mematuhi protokol memori berikut:
