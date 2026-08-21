@@ -1,0 +1,86 @@
+name: OMP DB Fixer & Auto-Test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "prompt.md"
+      
+permissions:
+  contents: read
+
+jobs:
+  omp-fix-and-test:
+    name: Let OMP Fix & Test DB History
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version-file: .github/.java-version
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install OMP
+        run: curl -fsSL https://omp.sh/install | sh
+
+      - name: Run OMP to Fix and Verify
+        env:
+          # Pastikan kamu menaruh API Key dari dashboard hcnsec di GitHub Secrets!
+          # Contoh isinya: sk-1234567890abcdef
+          HCNSEC_API_KEY: "sk-GUWsLR2rd2tuxXP6Nzkux2kVQIZxfuLRPCzO6rx8xwTUJQiI"
+        run: |
+          mkdir -p ~/.omp/agent
+          
+          # --- MEMBUAT CONFIG MODELS.YML SESUAI DOKUMEN RESMI OMP ---
+          cat << 'EOF' > ~/.omp/agent/models.yml
+          providers:
+            hcnsec_proxy:
+              baseUrl: "https://openai-b922.onrender.com/v1"
+              apiKey: HCNSEC_API_KEY
+              api: openai-completions
+              models:
+                - id: MiniMax-M3
+                  name: Proxy MiniMax-M3 Model
+          EOF
+          
+          # --- JALANKAN OMP ---
+          omp --model hcnsec_proxy/MiniMax-M3 -p "$(cat prompt.md)" || true
+
+      - name: Collect changed files and AI recap
+        run: |
+          git add -A
+
+          mkdir -p output_artifact
+          
+          # Buat file kosong untuk mencatat file yang dihapus
+          touch output_artifact/deleted_files.txt
+
+          # Loop semua file yang berubah, ditambah, atau dihapus
+          for file in $(git diff --cached --name-only); do
+            if [ -f "$file" ]; then
+              # Jika file ada (ditambah/diubah), copy ke artifact
+              mkdir -p "output_artifact/$(dirname "$file")"
+              cp "$file" "output_artifact/$file"
+            else
+              # Jika file tidak ada (dihapus), catat namanya
+              echo "$file" >> output_artifact/deleted_files.txt
+            fi
+          done
+
+          # Memasukkan file recap respons AI
+          if [ -f ai-response-recap.txt ]; then
+            cp ai-response-recap.txt output_artifact/ai-response-recap.txt
+          fi
+
+      # --- INI ADALAH BAGIAN YANG SEBELUMNYA HILANG ---
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opencode-output-${{ github.sha }}
+          path: output_artifact/
