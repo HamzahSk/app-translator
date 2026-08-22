@@ -40,6 +40,7 @@ class InactivityAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (TranslationControlState.paused) return
         // Guard: do nothing if service is not fully initialized yet
         if (!serviceReady || config == null || event == null) return
 

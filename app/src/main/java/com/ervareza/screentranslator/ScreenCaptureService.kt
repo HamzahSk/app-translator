@@ -20,6 +20,12 @@ import android.os.IBinder
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
+import android.view.MotionEvent
+import android.view.View
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PixelFormat
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +58,7 @@ class ScreenCaptureService : Service() {
         super.onCreate()
         createNotificationChannel()
         translationEngine = TranslationEngine(this)
+        showControlBall()
 
         // Register broadcast receiver for the Accessibility Service trigger
         val filter = IntentFilter().apply {
@@ -171,6 +178,7 @@ class ScreenCaptureService : Service() {
     }
 
     private fun captureScreen() {
+        if (TranslationControlState.paused) return
         Log.d("Translator", "Capturing screen...")
         serviceScope.launch(Dispatchers.IO) {
             val image = imageReader?.acquireLatestImage() ?: return@launch
@@ -214,7 +222,36 @@ class ScreenCaptureService : Service() {
         virtualDisplay?.release()
         mediaProjection?.stop()
         imageReader?.close()
+        removeControlBall()
     }
+
+    private var controlBall: View? = null
+    private var controlParams: WindowManager.LayoutParams? = null
+    private fun showControlBall() {
+        val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val size = (56 * resources.displayMetrics.density).toInt()
+        val view = object : View(this) {
+            private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            override fun onDraw(canvas: Canvas) {
+                paint.color = Color.rgb(35, 125, 210); canvas.drawCircle(width / 2f, height / 2f, width / 2f, paint)
+                paint.color = Color.WHITE
+                if (TranslationControlState.paused) canvas.drawPath(android.graphics.Path().apply { moveTo(width * .42f, height * .3f); lineTo(width * .7f, height / 2f); lineTo(width * .42f, height * .7f); close() }, paint)
+                else { canvas.drawRect(width * .35f, height * .3f, width * .45f, height * .7f, paint); canvas.drawRect(width * .55f, height * .3f, width * .65f, height * .7f, paint) }
+            }
+        }
+        var downX = 0f; var downY = 0f; var startX = 0; var startY = 0
+        view.setOnTouchListener { _, e ->
+            when (e.action) {
+                MotionEvent.ACTION_DOWN -> { downX = e.rawX; downY = e.rawY; startX = controlParams?.x ?: 0; startY = controlParams?.y ?: 0; true }
+                MotionEvent.ACTION_MOVE -> { controlParams?.let { it.x = startX + (e.rawX - downX).toInt(); it.y = startY + (e.rawY - downY).toInt(); wm.updateViewLayout(view, it) }; true }
+                MotionEvent.ACTION_UP -> { if (kotlin.math.abs(e.rawX - downX) < 12 && kotlin.math.abs(e.rawY - downY) < 12) { TranslationControlState.paused = !TranslationControlState.paused; view.invalidate() }; true }
+                else -> true
+            }
+        }
+        val params = WindowManager.LayoutParams(size, size, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, PixelFormat.TRANSLUCENT).apply { gravity = android.view.Gravity.TOP or android.view.Gravity.START; x = 24; y = 180 }
+        runCatching { wm.addView(view, params); controlBall = view; controlParams = params }
+    }
+    private fun removeControlBall() { controlBall?.let { runCatching { (getSystemService(Context.WINDOW_SERVICE) as WindowManager).removeView(it) } }; controlBall = null }
 
     override fun onBind(intent: Intent?): IBinder? = null
 }

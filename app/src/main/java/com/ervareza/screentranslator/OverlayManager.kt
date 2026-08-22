@@ -65,21 +65,12 @@ class OverlayManager(private val context: Context) {
                     paint.typeface = customTypeface
                     paint.textSize = config.overlayTextSize.toFloat() * resources.displayMetrics.scaledDensity
                     valid.forEach { bubble ->
-                        val r = Rect(bubble.bounds)
+                        val original = Rect(bubble.bounds)
+                        val r = Rect(original)
                         when (config.placementMode) {
                             "left" -> r.offset(-(r.width()), 0)
                             "right" -> r.offset(r.width(), 0)
                         }
-                        paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
-                        canvas.drawRoundRect(
-                            r.left.toFloat(),
-                            r.top.toFloat(),
-                            r.right.toFloat(),
-                            r.bottom.toFloat(),
-                            dpToPx(config.bubbleCornerRadius).toFloat(),
-                            dpToPx(config.bubbleCornerRadius).toFloat(),
-                            paint,
-                        )
                         paint.color = Color.parseColor(config.bubbleTextColor)
                         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                             color = paint.color
@@ -91,16 +82,17 @@ class OverlayManager(private val context: Context) {
                             .setIncludePad(false)
                             .setLineSpacing(LINE_SPACING_ADD, LINE_SPACING_MULTIPLIER)
                             .build()
-                        // FASE 6 FIX: If the wrapped text is taller than the original box,
-                        // grow the box symmetrically from its vertical middle instead of
-                        // letting the text spill downward and look off-center.
-                        if (layout.height > r.height()) {
-                            val overflow = (layout.height - r.height()) / 2
-                            r.top -= overflow
-                            r.bottom += overflow
-                        }
+                        val padding = dpToPx(10)
+                        val width = layout.width + padding * 2
+                        val height = layout.height + padding * 2
+                        r.left = original.centerX() - width / 2
+                        r.right = r.left + width
+                        r.top = original.centerY() - height / 2
+                        r.bottom = r.top + height
+                        paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
+                        canvas.drawRoundRect(r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), paint)
                         canvas.save()
-                        canvas.translate(r.left.toFloat(), (r.top + ((r.height() - layout.height) / 2).coerceAtLeast(0)).toFloat())
+                        canvas.translate((r.left + padding).toFloat(), (r.top + padding).toFloat())
                         layout.draw(canvas)
                         canvas.restore()
                     }
