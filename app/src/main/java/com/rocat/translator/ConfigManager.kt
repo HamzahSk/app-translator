@@ -33,8 +33,8 @@ class ConfigManager(context: Context) {
         set(value) = prefs.edit().putString("appLanguage", value).apply()
 
     var paragraphGroupingMargin: Float
-        get() = prefs.getFloat("paragraphGroupingMargin", 1.0f)
-        set(value) = prefs.edit().putFloat("paragraphGroupingMargin", value.coerceIn(1f, 3f)).apply()
+        get() = prefs.getFloat("paragraphGroupingMargin", 2.0f)
+        set(value) = prefs.edit().putFloat("paragraphGroupingMargin", value.coerceIn(1f, 4f)).apply()
 
     // ---------- Overlay Customization ----------
 
