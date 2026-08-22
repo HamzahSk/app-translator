@@ -34,3 +34,4 @@ Pada fase 14 ini, kita akan menambahkan opsi pengaturan bahasa UI, menyesuaikan 
 ### 6. Verifikasi Akhir
  * Jalankan ./gradlew spotlessApply.
  * Verifikasi sukses dengan ./gradlew assembleDebug.
+ 

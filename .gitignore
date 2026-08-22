@@ -1,29 +1,60 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+# ==========================
+# Android / Gradle
+# ==========================
 
-# Gradle
+*.iml
 .gradle/
 build/
 app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
 
-# IDE
+# Android Studio / IntelliJ
 .idea/
-*.iml
 *.iws
 
+# ==========================
 # OS
+# ==========================
+
 .DS_Store
 Thumbs.db
+
+# ==========================
+# Node.js
+# ==========================
+
+node_modules/
+
+# ==========================
+# Python
+# ==========================
+
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+
+# ==========================
+# Python build/package
+# ==========================
+
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+
+# ==========================
+# Rust
+# ==========================
+
+target/
+
+# ==========================
+# Java / Kotlin compiled files
+# ==========================
+
+*.class
