@@ -1,33 +1,27 @@
-**TUGAS FASE 8: SMART OCR BLOCK MERGING (SIZE & PROXIMITY AWARE) & ANTI-OVERLAP**
+
+**TUGAS FASE 9: DYNAMIC BORDER STATICLAYOUT & FLOATING CONTROL BALL**
 # SYSTEM INSTRUCTION: MEMORY MANAGEMENT SYSTEM
 Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menjaga kesinambungan pekerjaan tanpa membuat context window (token) overload, kamu WAJIB mematuhi protokol memori berikut:
 ## 1. Protokol Membaca & Menulis Konteks
  * **Cek Master Index:** Selalu baca file ai_memory/00_INDEX.md terlebih dahulu.
  * **Cek Log Terbaru:** Baca maksimal 2 file log terbaru di dalam folder ai_memory/.
- * **Buat File Log Baru:** Setelah selesai melakukan tugas, buat log task_YYYYMMDD_HHMM_phase8_block_merging.md.
+ * **Buat File Log Baru:** Setelah selesai melakukan tugas, buat log task_YYYYMMDD_HHMM_phase9_ui_floating.md.
  * **Perbarui 00_INDEX.md:** Tambahkan referensi log baru ke dalam file index utama.
  
- 
-# INSTRUKSI PERBAIKAN BUG KODE
-Kamu bertugas menyelesaikan masalah fragmentasi OCR di TranslationEngine.kt. Saat ini, ML Kit memecah satu gelembung percakapan menjadi banyak TextBlock kecil. Kita butuh algoritma penggabungan yang pintar agar teks dialog tidak bercampur dengan SFX atau teks pikiran yang ukurannya berbeda.
-## 1. Implementasi Algoritma Smart Block Merging (Size & Proximity Aware)
- * **Masalah:** Iterasi langsung pada visionText.textBlocks membuat teks yang berdekatan digambar terpisah dan bertumpuk. Jika hanya digabung berdasarkan jarak, SFX dan Dialog yang berbeda ukuran akan ikut menyatu.
+# INSTRUKSI PERBAIKAN BUG & PENAMBAHAN FITUR
+Kamu bertugas memperbaiki kotak *background* yang bocor (*overflow*) karena ukurannya tidak mengikuti panjang teks terjemahan, serta menambahkan fitur *Floating Control Ball* untuk navigasi cepat.
+## 1. Perbaikan Dynamic Border & Posisi Loading (OverlayManager)
+ * **Masalah:** Teks terjemahan meluber keluar dari batas *bubble* dan posisi *loading bubble* (...) melenceng. Ini karena Canvas.drawRoundRect masih menggunakan koordinat Rect asli dari OCR, bukan dimensi asli dari StaticLayout yang sudah menyesuaikan *word-wrap*.
  * **Solusi:**
-   * Buat struktur data baru: MergedBlock(val text: String, val boundingBox: Rect).
-   * Buat fungsi mergeBlocks(blocks: List<Text.TextBlock>): List<MergedBlock> di TranslationEngine.
-   * **Logika Penggabungan (Heuristic):**
-     1. Hitung perkiraan tinggi teks per baris (*approximate line height*) untuk setiap blok: block.boundingBox.height() / max(1, block.lines.size).
-     2. Urutkan blok berdasarkan koordinat Y (atas ke bawah).
-     3. Dua blok **HANYA** boleh digabungkan jika memenuhi 3 syarat ini:
-       * **Jarak Vertikal Dekat:** jarak Y < (1.5 * rata-rata line height).
-       * **Bukan Kolom Berbeda:** Jarak horizontal saling beririsan atau berdekatan.
-       * **Ukuran Teks Serupa (PENTING):** Selisih *line height* antara kedua blok **tidak lebih dari 25-30%**. Jika ukurannya jomplang (seperti SFX besar di sebelah teks kecil), biarkan terpisah.
-     4. Jika digabung, satukan string-nya (pisahkan dengan \n) dan gunakan rect1.union(rect2) untuk *bounding box* baru.
-## 2. Refactor Jalur Translasi Online & Offline
- * **Masalah:** Fungsi translateBlocks dan onlineTranslate saat ini masih menggunakan visionText.textBlocks mentah.
+   * Di dalam OverlayManager (saat menggambar *batch* terjemahan), **setelah** StaticLayout terbentuk, hitung dimensi aktual teksnya (layout.width dan layout.height).
+   * Gunakan dimensi aktual tersebut (ditambah *padding* yang wajar, misalnya 8dp - 12dp) untuk mendefinisikan batas drawRoundRect sebagai latar belakang/border, sehingga kotak akan selalu membungkus teks dengan sempurna secara dinamis.
+   * Untuk *Loading Bubble*, pastikan posisinya dihitung agar sentris (*center-aligned*) terhadap *bounding box* asli yang diberikan oleh parameter.
+## 2. Fitur Floating Control Ball (Play/Pause)
+ * **Kebutuhan:** Pengguna ingin bisa menjeda (*pause*) dan melanjutkan (*play*) layanan terjemahan langsung dari layar mana pun tanpa harus membuka aplikasi utama.
  * **Solusi:**
-   * Ubah pemrosesan awal dengan memanggil val mergedBlocks = mergeBlocks(visionText.textBlocks).
-   * Lakukan iterasi, pemanggilan drawLoadingBubble, translate, dan drawTranslationBatch menggunakan data dari mergedBlocks tersebut, bukan blok mentah. Pastikan koordinat offset (status bar) tetap diaplikasikan dengan benar.
+   * Buat sebuah *Custom View* mengambang (seperti *Chat Head*) di ScreenCaptureService menggunakan WindowManager (dengan TYPE_APPLICATION_OVERLAY dan FLAG_NOT_FOCUSABLE).
+   * Tambahkan OnTouchListener agar bola ini bisa diseret (*drag*) ke mana saja di layar.
+   * Tambahkan fungsi *Click/Tap* pada bola tersebut untuk mengganti status terjemahan (*Pause* / *Play*). Jika di-*pause*, abaikan *event* dari *Accessibility Service*. Ubah ikon bola (misal: ikon *Pause* saat aktif, ikon *Play* saat jeda) untuk memberi tahu pengguna status saat ini.
 ## 3. Verifikasi & Build
- * Terapkan perubahan ini tanpa merusak struktur coroutine dan timeout dari Fase 7.
- * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi tidak ada *error* kompilasi.
+ * Pastikan fitur blok yang digabung (*Smart Merging*) dari Fase 8 tidak terganggu.
+ * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi.
