@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.TextView
+import android.widget.ImageButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
@@ -14,6 +15,7 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
         super.onCreate(savedInstanceState)
         setTitle("Settings")
         setContentView(LayoutInflater.from(context).inflate(R.layout.dialog_settings, null))
+        findViewById<ImageButton>(R.id.btnSettingsClose).setOnClickListener { dismiss() }
         window?.setLayout((context.resources.displayMetrics.widthPixels * 0.94).toInt(), -2)
         val delay = findViewById<Slider>(R.id.sliderSettingsDelay)
         val delayLabel = findViewById<TextView>(R.id.tvSettingsDelay)

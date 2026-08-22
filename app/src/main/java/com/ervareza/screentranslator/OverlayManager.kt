@@ -67,10 +67,8 @@ class OverlayManager(private val context: Context) {
                     valid.forEach { bubble ->
                         val original = Rect(bubble.bounds)
                         val r = Rect(original)
-                        when (config.placementMode) {
-                            "left" -> r.offset(-(r.width()), 0)
-                            "right" -> r.offset(r.width(), 0)
-                        }
+                        // Placement controls text alignment inside the original box;
+                        // the canvas/bubble anchor remains tied to the OCR bounds.
                         paint.color = Color.parseColor(config.bubbleTextColor)
                         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                             color = paint.color
@@ -78,7 +76,13 @@ class OverlayManager(private val context: Context) {
                             typeface = paint.typeface
                         }
                         val layout = StaticLayout.Builder.obtain(bubble.text, 0, bubble.text.length, textPaint, r.width().coerceAtLeast(1))
-                            .setAlignment(Layout.Alignment.ALIGN_CENTER)
+                            .setAlignment(
+                                when (config.placementMode) {
+                                    "left" -> Layout.Alignment.ALIGN_NORMAL
+                                    "right" -> Layout.Alignment.ALIGN_OPPOSITE
+                                    else -> Layout.Alignment.ALIGN_CENTER
+                                },
+                            )
                             .setIncludePad(false)
                             .setLineSpacing(LINE_SPACING_ADD, LINE_SPACING_MULTIPLIER)
                             .build()
@@ -152,11 +156,7 @@ class OverlayManager(private val context: Context) {
                 PixelFormat.TRANSLUCENT,
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
-                x = when (config.placementMode) {
-                    "left" -> boundingBox.left - boundingBox.width()
-                    "right" -> boundingBox.left + boundingBox.width()
-                    else -> boundingBox.left
-                }
+                x = boundingBox.left
                 y = boundingBox.top
             }
             runCatching {

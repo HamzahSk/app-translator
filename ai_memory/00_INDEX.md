@@ -7,6 +7,8 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 ## Riwayat (terbaru di atas)
 
+| 2026-08-22 11:00 | [task_20260822_1100_phase13_ui_i18n_fixes.md](task_20260822_1100_phase13_ui_i18n_fixes.md) | Tombol close dan styling Settings, placement tidak lagi menggeser canvas/loading, serta katalog i18n JSON en/id + I18nManager; compile berhasil. |
+
 | Tanggal | File Log | Ringkasan |
 |---------|----------|-----------|
 | 2026-08-22 09:45 | [task_20260822_0945_phase12_ui_prompt_revamp.md](task_20260822_0945_phase12_ui_prompt_revamp.md) | Settings dialog untuk customization/floating ball, home screen lebih ringkas, step delay 0,5s dan opacity 5%, serta prompt Manga/Manhwa natural; compile berhasil. |
