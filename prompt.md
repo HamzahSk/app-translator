@@ -34,3 +34,4 @@ Kamu bertugas melakukan penyempurnaan UI/UX secara masif pada menu utama dan fit
 ## 4. Verifikasi & Build
  * Pastikan fitur dari fase sebelumnya (Dynamic Border StaticLayout & Smart Merging) tidak terhapus.
  * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi
+ 
