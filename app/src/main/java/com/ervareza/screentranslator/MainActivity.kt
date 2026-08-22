@@ -50,6 +50,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity() {
 
     private lateinit var config: ConfigManager
+    private lateinit var i18n: I18nManager
     private lateinit var screenCaptureLauncher: ActivityResultLauncher<Intent>
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
 
@@ -86,6 +87,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         config = ConfigManager(this)
+        i18n = I18nManager(this)
         AppCompatDelegate.setDefaultNightMode(config.appTheme)
 
         super.onCreate(savedInstanceState)
@@ -103,11 +105,11 @@ class MainActivity : AppCompatActivity() {
                 startForegroundService(serviceIntent)
                 startState = StartState.RUNNING
                 renderStartButton()
-                Snackbar.make(fabStart, "Service started! You can close this app.", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(fabStart, i18n.get("service_started"), Snackbar.LENGTH_LONG).show()
             } else {
                 startState = StartState.IDLE
                 renderStartButton()
-                Snackbar.make(fabStart, "Screen capture permission denied.", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(fabStart, i18n.get("screen_capture_denied"), Snackbar.LENGTH_LONG).show()
             }
         }
 
@@ -198,7 +200,14 @@ class MainActivity : AppCompatActivity() {
     private fun setupSourceLanguageSpinner() {
         val spinner = findViewById<AutoCompleteTextView>(R.id.spinnerSourceLanguage)
         val sourceCodes = listOf("auto", "ja", "ko", "zh", "hi", "en")
-        val sourceDisplayNames = listOf("Auto-Detect (Installed Only)", "Japanese", "Korean", "Chinese", "Devanagari", "Latin/English")
+        val sourceDisplayNames = listOf(
+            i18n.get("auto_detect"),
+            i18n.get("japanese"),
+            i18n.get("korean"),
+            i18n.get("chinese"),
+            i18n.get("devanagari"),
+            i18n.get("latin_english"),
+        )
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, sourceDisplayNames)
         spinner.setAdapter(adapter)
         val idx = sourceCodes.indexOf(config.sourceLanguage)
@@ -213,7 +222,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, names)
         spinner.setAdapter(adapter)
         val idx = codes.indexOf(config.targetLanguage)
-        spinner.setText(if (idx >= 0) names[idx] else "Indonesian", false)
+        spinner.setText(if (idx >= 0) names[idx] else i18n.get("indonesian"), false)
         spinner.setOnItemClickListener { _, _, position, _ -> config.targetLanguage = codes[position] }
     }
 
@@ -227,9 +236,9 @@ class MainActivity : AppCompatActivity() {
             onlineConfig.visibility = if (offline) View.GONE else View.VISIBLE
             modelsCard.visibility = if (offline) View.VISIBLE else View.GONE
             findViewById<TextView>(R.id.tvOnlineHint).text = if (offline) {
-                "Offline uses on-device ML Kit models."
+                i18n.get("offline_uses")
             } else {
-                "Online uses the selected AI provider."
+                i18n.get("online_uses")
             }
         }
         when (config.translationMode) {
@@ -252,7 +261,11 @@ class MainActivity : AppCompatActivity() {
             apiKeyLayout.visibility = if (visible) View.VISIBLE else View.GONE
             baseUrlLayout.visibility = if (visible) View.VISIBLE else View.GONE
         }
-        val providers = listOf("OpenAI (ChatGPT / compatible)", "Google Gemini", "Default Translator (Free)")
+        val providers = listOf(
+            i18n.get("provider_openai"),
+            i18n.get("provider_gemini"),
+            i18n.get("provider_default"),
+        )
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, providers)
         providerSpinner.setAdapter(adapter)
         val providerIdx = when (config.apiProvider) { "gemini" -> 1; "default" -> 2; else -> 0 }
@@ -290,15 +303,15 @@ class MainActivity : AppCompatActivity() {
     private fun updateOnlineHint() {
         val hint = findViewById<TextView>(R.id.tvOnlineHint)
         hint.text = if (config.apiProvider == "gemini") {
-            "Google Gemini API. Model e.g. gemini-1.5-flash. Key is sent as a query parameter."
+            i18n.get("gemini_hint")
         } else {
-            "OpenAI and any OpenAI-compatible endpoint (OpenRouter, Groq, Ollama, etc.)."
+            i18n.get("openai_hint")
         }
     }
 
     private fun setupSettingsButton() {
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        val settingsItem = toolbar.menu.add("Settings")
+        val settingsItem = toolbar.menu.add(i18n.get("menu_settings"))
         settingsItem.setIcon(android.R.drawable.ic_menu_preferences)
         settingsItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
         settingsItem.setOnMenuItemClickListener {
@@ -312,7 +325,8 @@ class MainActivity : AppCompatActivity() {
         val container = findViewById<LinearLayout>(R.id.layoutModelsContainer)
         val btnDownloadAll = findViewById<MaterialButton>(R.id.btnDownloadAll)
 
-        for ((code, name) in langNames) {
+        for (code in langNames.keys) {
+            val name = i18n.get("lang_$code", langNames[code]!!)
             val row = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
@@ -324,7 +338,7 @@ class MainActivity : AppCompatActivity() {
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             }
             val tvStatus = TextView(this).apply {
-                text = "Checking..."
+                text = i18n.get("checking")
                 textSize = 13f
                 gravity = Gravity.END
             }
@@ -359,13 +373,13 @@ class MainActivity : AppCompatActivity() {
         }.addOnFailureListener {
             for (code in translateModelCodes.keys) {
                 config.setModelInstalled(code, false)
-                statusViews[code]?.text = "Error"
+                statusViews[code]?.text = i18n.get("error")
             }
         }
     }
 
     private fun updateModelStatusUI(code: String, installed: Boolean) {
-        statusViews[code]?.text = if (installed) "Installed" else "Not Installed"
+        statusViews[code]?.text = if (installed) i18n.get("installed") else i18n.get("not_installed")
         statusViews[code]?.setTextColor(
             if (installed) {
                 ContextCompat.getColor(this, android.R.color.holo_green_dark)
@@ -379,7 +393,7 @@ class MainActivity : AppCompatActivity() {
         val modelManager = RemoteModelManager.getInstance()
         val conditions = DownloadConditions.Builder().build()
 
-        Snackbar.make(fabStart, "Downloading missing translation models...", Snackbar.LENGTH_LONG).show()
+        Snackbar.make(fabStart, i18n.get("downloading_models"), Snackbar.LENGTH_LONG).show()
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "ModelDownloadChannel"
@@ -390,13 +404,14 @@ class MainActivity : AppCompatActivity() {
 
         for ((code, langTag) in translateModelCodes) {
             if (!config.isModelInstalled(code)) {
-                statusViews[code]?.text = "Downloading..."
+                val langDisplay = i18n.get("lang_$code", langNames[code]!!)
+                statusViews[code]?.text = i18n.get("downloading")
                 statusViews[code]?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
 
                 val notificationId = 200 + code.hashCode()
                 val notificationBuilder = NotificationCompat.Builder(this, channelId)
                     .setSmallIcon(android.R.drawable.stat_sys_download)
-                    .setContentTitle("Downloading ${langNames[code]} Translation Model")
+                    .setContentTitle(i18n.get("downloading_model", "Downloading %s Translation Model").format(langDisplay))
                     .setProgress(0, 0, true)
                     .setOngoing(true)
 
@@ -408,17 +423,17 @@ class MainActivity : AppCompatActivity() {
                         config.setModelInstalled(code, true)
                         updateModelStatusUI(code, true)
 
-                        notificationBuilder.setContentText("Download complete")
+                        notificationBuilder.setContentText(i18n.get("download_complete"))
                             .setProgress(0, 0, false)
                             .setOngoing(false)
                             .setSmallIcon(android.R.drawable.stat_sys_download_done)
                         notificationManager.notify(notificationId, notificationBuilder.build())
                     }
                     .addOnFailureListener {
-                        statusViews[code]?.text = "Failed"
+                        statusViews[code]?.text = i18n.get("failed")
                         statusViews[code]?.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
 
-                        notificationBuilder.setContentText("Download failed")
+                        notificationBuilder.setContentText(i18n.get("download_failed"))
                             .setProgress(0, 0, false)
                             .setOngoing(false)
                             .setSmallIcon(android.R.drawable.stat_notify_error)
@@ -449,19 +464,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshPermissionStatuses() {
         val overlayOk = Settings.canDrawOverlays(this)
-        btnOverlay.text = if (overlayOk) "Overlay Permission  --  Granted" else "Grant Overlay Permission"
+        btnOverlay.text = if (overlayOk) i18n.get("overlay_granted") else i18n.get("overlay_grant")
         btnOverlay.setIconResource(if (overlayOk) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background)
         btnOverlay.isEnabled = !overlayOk
 
         val accessOk = isAccessibilityServiceEnabled()
-        btnAccessibility.text = if (accessOk) "Accessibility  --  Enabled" else "Enable Accessibility Service"
+        btnAccessibility.text = if (accessOk) i18n.get("accessibility_enabled") else i18n.get("accessibility_enable")
         btnAccessibility.setIconResource(
             if (accessOk) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background,
         )
         btnAccessibility.isEnabled = !accessOk
 
         val notifOk = isNotificationPermissionGranted()
-        btnNotification.text = if (notifOk) "Notification  --  Granted" else "Grant Notification Permission"
+        btnNotification.text = if (notifOk) i18n.get("notification_granted") else i18n.get("notification_grant")
         btnNotification.setIconResource(
             if (notifOk) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background,
         )
@@ -479,22 +494,22 @@ class MainActivity : AppCompatActivity() {
         when (startState) {
             StartState.BLOCKED -> {
                 fabStart.isEnabled = false
-                fabStart.text = "Grant Permissions First"
+                fabStart.text = i18n.get("grant_permissions_first")
                 fabStart.setIconResource(android.R.drawable.ic_dialog_alert)
             }
             StartState.IDLE -> {
                 fabStart.isEnabled = true
-                fabStart.text = "Start Service"
+                fabStart.text = i18n.get("start_service")
                 fabStart.setIconResource(android.R.drawable.ic_media_play)
             }
             StartState.PREPARING -> {
                 fabStart.isEnabled = false
-                fabStart.text = "Preparing..."
+                fabStart.text = i18n.get("preparing")
                 fabStart.setIconResource(android.R.drawable.ic_media_play)
             }
             StartState.RUNNING -> {
                 fabStart.isEnabled = true
-                fabStart.text = "Service Running"
+                fabStart.text = i18n.get("service_running")
                 fabStart.setIconResource(android.R.drawable.ic_media_pause)
             }
         }
@@ -540,7 +555,7 @@ class MainActivity : AppCompatActivity() {
         if (captureIntent == null) {
             startState = StartState.IDLE
             renderStartButton()
-            Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(fabStart, i18n.get("failed_request_capture"), Snackbar.LENGTH_SHORT).show()
             return
         }
 
@@ -553,7 +568,7 @@ class MainActivity : AppCompatActivity() {
             if (!allReady) {
                 startState = StartState.BLOCKED
                 renderStartButton()
-                Snackbar.make(fabStart, "Please grant overlay & accessibility permissions first.", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(fabStart, i18n.get("grant_permissions_first_snack"), Snackbar.LENGTH_SHORT).show()
                 return@launch
             }
             screenCaptureLauncher.launch(captureIntent)

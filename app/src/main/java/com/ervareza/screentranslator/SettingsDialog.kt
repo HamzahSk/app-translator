@@ -6,22 +6,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.TextView
 import android.widget.ImageButton
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
 
 class SettingsDialog(context: Context, private val config: ConfigManager) : Dialog(context) {
+    private val i18n = I18nManager(context)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTitle("Settings")
+        setTitle(i18n.get("settings_title"))
         setContentView(LayoutInflater.from(context).inflate(R.layout.dialog_settings, null))
-        findViewById<ImageButton>(R.id.btnSettingsClose).setOnClickListener { dismiss() }
+        findViewById<ImageButton>(R.id.btnSettingsClose).apply {
+            contentDescription = i18n.get("close")
+            setOnClickListener { dismiss() }
+        }
+        findViewById<TextView>(R.id.tvSettingsTitle).text = i18n.get("overlay_customization")
         window?.setLayout((context.resources.displayMetrics.widthPixels * 0.94).toInt(), -2)
         val delay = findViewById<Slider>(R.id.sliderSettingsDelay)
         val delayLabel = findViewById<TextView>(R.id.tvSettingsDelay)
         fun setDelay(value: Float) {
             val v = (value * 2).toInt() / 2f
-            delayLabel.text = "Inactivity Delay: ${"%.1f".format(v)}s"
+            delayLabel.text = String.format(i18n.get("inactivity_delay", "Inactivity Delay: %.1fs"), v)
             config.inactivityDelayMs = (v * 1000).toLong()
         }
         delay.value = (config.inactivityDelayMs / 1000f).coerceIn(.5f, 10f)
@@ -31,30 +37,34 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             R.id.sliderSettingsOpacity,
             R.id.tvSettingsOpacity,
             (config.overlayOpacity * 100 / 255 / 5 * 5).toFloat(),
-            "Bubble Opacity: %d%%",
+            i18n.get("bubble_opacity", "Bubble Opacity: %d%%"),
         ) { config.overlayOpacity = (it * 255 / 100).toInt() }
         bindSlider(
             R.id.sliderSettingsCorner,
             R.id.tvSettingsCorner,
             config.bubbleCornerRadius.toFloat(),
-            "Corner Radius: %ddp",
+            i18n.get("corner_radius", "Corner Radius: %ddp"),
         ) { config.bubbleCornerRadius = it.toInt() }
         bindSlider(
             R.id.sliderSettingsTextSize,
             R.id.tvSettingsTextSize,
             config.overlayTextSize.toFloat(),
-            "Text Size: %dsp",
+            i18n.get("text_size", "Text Size: %dsp"),
         ) { config.overlayTextSize = it.toInt() }
         bindSlider(
             R.id.sliderSettingsAutoClear,
             R.id.tvSettingsAutoClear,
             config.autoClearSeconds.toFloat(),
-            "Auto-Clear: %s",
+            i18n.get("auto_clear", "Auto-Clear: %s"),
         ) { config.autoClearSeconds = it.toInt() }
         bindSlider(R.id.sliderSettingsBall, null, config.floatingBallSizeDp.toFloat(), null) {
             config.floatingBallSizeDp = it.toInt()
         }
+        findViewById<TextView>(R.id.tvSettingsBallSize).text = i18n.get("floating_ball_size")
         val placement = findViewById<MaterialButtonToggleGroup>(R.id.settingsPlacement)
+        findViewById<MaterialButton>(R.id.settingsDirect).text = i18n.get("placement_direct")
+        findViewById<MaterialButton>(R.id.settingsLeft).text = i18n.get("placement_left")
+        findViewById<MaterialButton>(R.id.settingsRight).text = i18n.get("placement_right")
         placement.check(
             when (config.placementMode) {
                 "left" -> R.id.settingsLeft
@@ -72,6 +82,7 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             }
         }
         val border = findViewById<MaterialSwitch>(R.id.settingsBorder)
+        border.text = i18n.get("show_bubble_border")
         border.isChecked = config.bubbleBorderEnabled
         border.setOnCheckedChangeListener { _, v -> config.bubbleBorderEnabled = v }
     }
@@ -82,7 +93,7 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             save(v)
             if (label != null && format != null) {
                 label.text = if (format.contains("%s")) {
-                    format.replace("%s", if (v == 0f) "Off" else "${v.toInt()}s")
+                    format.replace("%s", if (v == 0f) i18n.get("off") else "${v.toInt()}s")
                 } else {
                     String.format(format, v.toInt())
                 }
