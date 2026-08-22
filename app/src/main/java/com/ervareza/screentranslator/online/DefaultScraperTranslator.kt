@@ -41,14 +41,17 @@ class DefaultScraperTranslator(private val client: OkHttpClient = OkHttpClient()
                     if (!line.startsWith("data: ") || line == "data: [DONE]") return@forEachLine
                     runCatching {
                         val data = JSONObject(line.substring(6))
-                        if (data.optString("o") == "add") {
-                            val msg = data.optJSONObject("v")?.optJSONObject("message")
-                            if (msg?.optJSONObject("author")?.optString("role") == "assistant") {
-                                text = msg.optJSONObject("content")?.optJSONArray("parts")?.optString(0).orEmpty()
+                        
+                        // Cek apakah ada object "message" dan role-nya "assistant"
+                        val msg = data.optJSONObject("message")
+                        if (msg != null && msg.optJSONObject("author")?.optString("role") == "assistant") {
+                            val extractedText = msg.optJSONObject("content")?.optJSONArray("parts")?.optString(0)
+                            
+                            if (!extractedText.isNullOrEmpty()) {
+                                // Timpa teks lama karena stream dari web sudah berupa teks akumulatif
+                                text = extractedText 
                                 parentMessageId = msg.optString("id", parentMessageId)
                             }
-                        } else if (data.optString("o") == "append" && data.optString("p").startsWith("/message/content/parts/")) {
-                            text += data.optString("v")
                         }
                     }
                 }
