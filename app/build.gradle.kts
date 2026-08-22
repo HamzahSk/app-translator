@@ -12,6 +12,9 @@ val copyI18nAssets by tasks.registering(Copy::class) {
 tasks.named("preBuild") {
     dependsOn(copyI18nAssets)
 }
+tasks.matching { it.name.startsWith("spotless") }.configureEach {
+    mustRunAfter(copyI18nAssets)
+}
 
 spotless {
     kotlin {
@@ -23,11 +26,11 @@ spotless {
 }
 
 android {
-    namespace = "com.ervareza.screentranslator"
+    namespace = "com.rocat.translator"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.ervareza.screentranslator"
+        applicationId = "com.rocat.translator"
         minSdk = 26
         targetSdk = 34
         versionCode = 7
@@ -45,7 +48,13 @@ android {
             // CI-friendly signing: no release keystore is checked into the repo,
             // so the release APK is signed with the local debug key. For Play Store
             // distribution, replace with a real keystore-backed signingConfig.
-            signingConfig = signingConfigs.getByName("debug")
+            val signingKey = System.getenv("SIGNING_KEY").orEmpty()
+            signingConfig = if (signingKey.isNotBlank()) signingConfigs.create("envRelease").apply {
+                storeFile = layout.buildDirectory.file("env-signing.jks").get().asFile
+                storePassword = System.getenv("KEY_STORE_PASSWORD").orEmpty()
+                keyAlias = System.getenv("ALIAS").orEmpty()
+                keyPassword = System.getenv("KEY_PASSWORD").orEmpty()
+            } else signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -77,6 +86,8 @@ android {
 }
 
 dependencies {
+    implementation("com.google.firebase:firebase-analytics-ktx:22.1.2")
+    implementation("com.google.firebase:firebase-crashlytics-ktx:19.2.1")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
