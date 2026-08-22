@@ -32,7 +32,7 @@ jobs:
           opencode run \
             --model opencode/deepseek-v4-flash-free \
             --auto \
-            "$(cat prompt.md)" 2>&1 | tee ai-response-recap.txt || true
+             "eksekusi perintah dari file prompt.md" 2>&1 | tee ai-response-recap.txt || true
 
       - name: Collect changed files
         run: |

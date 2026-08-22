@@ -1,33 +1,27 @@
 
-**TUGAS FASE 10.5: BUG FIX UI OFFLINE, TOGGLE STATE, & INTEGRASI NODE.JS SCRAPER**
+**TUGAS FASE 11: FIX ONLINE BATCH PARSING (JSON) & UI TOGGLE BUG**
 # SYSTEM INSTRUCTION: MEMORY MANAGEMENT SYSTEM
 Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menjaga kesinambungan pekerjaan tanpa membuat context window (token) overload, kamu WAJIB mematuhi protokol memori berikut:
 ## 1. Protokol Membaca & Menulis Konteks
  * **Cek Master Index:** Selalu baca file ai_memory/00_INDEX.md terlebih dahulu.
  * **Cek Log Terbaru:** Baca maksimal 2 file log terbaru di dalam folder ai_memory/.
- * **Buat File Log Baru:** Setelah selesai melakukan tugas, buat log task_YYYYMMDD_HHMM_phase10.5_ui_scraper_fix.md.
+ * **Buat File Log Baru:** Setelah selesai melakukan tugas, buat log task_YYYYMMDD_HHMM_phase11_batch_and_ui.md.
  * **Perbarui 00_INDEX.md:** Tambahkan referensi log baru ke dalam file index utama.
  
 # INSTRUKSI PERBAIKAN BUG KODE
-Terdapat beberapa bug visual dan fungsional dari eksekusi Fase 10. UI *toggle* tidak menyembunyikan elemen yang tepat, dan skrip scraper membutuhkan *rewrite* ke Kotlin karena lingkungan Android tidak mendukung modul Node.js secara *native*. Terapkan perbaikan berikut:
-## 1. Perbaikan UI Toggle Mode Offline vs Online
- * **Masalah:** Saat tombol tab "Offline" dipilih, layout yang berisi daftar paket bahasa (Language Pack Manager) tidak muncul, dan konfigurasi "Online" (AI Provider, API Key, Base URL) gagal disembunyikan.
+Kamu bertugas memperbaiki *bug* fatal dari Fase 10.5. Tombol *toggle* "Offline/Online" ikut menghilang saat mode Offline ditekan, dan terjemahan mode Online gagal di-*render* karena validasi pemisahan (*split delimiter*) yang terlalu ketat saat AI membalas dengan format yang tidak terduga.
+## 1. Perbaikan Bug UI Layout Toggle (MainActivity & XML)
+ * **Masalah:** ID layoutOnlineConfig di activity_main.xml ditempatkan pada LinearLayout terluar yang juga membungkus MaterialButtonToggleGroup. Akibatnya, saat mode *Offline* dipilih, tombol *toggle*-nya ikut tersembunyi (*View.GONE*).
  * **Solusi:**
-   * Perbaiki *listener* pada MaterialButtonToggleGroup untuk Mode Translasi di MainActivity.
-   * Jika "Offline" ditekan: Set visibilitas LinearLayout konfigurasi online menjadi View.GONE, lalu set layout daftar bahasa ML Kit (Language Manager) menjadi View.VISIBLE.
-   * Jika "Online" ditekan: Lakukan sebaliknya.
-## 2. Penyembunyian Field Konfigurasi untuk "Default Translator"
- * **Masalah:** Saat *dropdown* AI Provider dipilih ke mode "Default Translator (Free)", isian API Key dan Base URL masih terlihat.
- * **Solusi:**
-   * Tambahkan OnItemSelectedListener atau TextWatcher pada *AutoCompleteTextView* AI Provider.
-   * Jika teks yang terpilih adalah "Default Translator", set *visibility* untuk *layout*/isian API Key dan Base URL menjadi View.GONE. Untuk *provider* lain seperti OpenAI/Gemini, set kembali menjadi View.VISIBLE.
-## 3. Rewrite Fungsionalitas scrape_ai.js ke Kotlin (OkHttp)
- * **Masalah:** Skrip scrape_ai.js yang dilampirkan menggunakan fungsi require('axios') dan crypto khas Node.js. Skrip ini akan menyebabkan *crash* atau gagal dieksekusi jika dipaksakan masuk ke WebView Android atau QuickJS.
- * **Solusi (Native Kotlin Porting):**
-   * Translasikan logika *scraping* ChatGPT Anonim tersebut ke dalam *class* Kotlin baru, misal DefaultScraperTranslator.
-   * Gunakan OkHttpClient standar aplikasi untuk melakukan *request* POST ke [https://android.chat.openai.com/backend-anon/sentinel/chat-requirements](https://android.chat.openai.com/backend-anon/sentinel/chat-requirements) guna mendapatkan token/cookie.
-   * Gunakan java.util.UUID.randomUUID().toString() untuk meniru crypto.randomUUID().
-   * Lakukan *request* *Server-Sent Events* (SSE) ke /backend-anon/f/conversation dan *parsing* balasan JSON-nya persis seperti alur di skrip JS tersebut. Gabungkan nilai yang ada di *path* /message/content/parts/ dan gunakan Regex Kotlin untuk membersihkan tag \ue200entity... (seperti pada fungsi cleanSpecialTags di JS).
-## 4. Verifikasi & Build
- * Pastikan perubahan tidak merusak fitur *Auto-hide Floating Ball* dan *Smart Block Merging*.
- * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi tidak ada *error* kompilasi pada *OkHttp requests* yang baru.
+   * Buka activity_main.xml. Pindahkan penempatan ID @+id/layoutOnlineConfig ke dalam sebuah LinearLayout baru (berada di bawah tvOnlineHint) yang *HANYA* membungkus elemen konfigurasi khusus Online (spinnerApiProvider, editApiKey, editApiBaseUrl, dan editApiModel).
+   * Pastikan modeToggleGroup dan tvOnlineHint berada di luar layoutOnlineConfig agar tetap selalu terlihat.
+## 2. Rombak Sistem Online Batch Translation (Gunakan JSON)
+ * **Masalah:** ChatGPT atau *provider Default* sering merespons dengan tambahan kata (basa-basi) atau merusak *delimiter* mentah, sehingga kode takeIf { it.size == texts.size } di OnlineTranslator.kt gagal divalidasi dan mengembalikan nilai *null* secara diam-diam.
+ * **Solusi (JSON Array Enforcement):**
+   * Buka OnlineTranslator.kt. Ubah instruksi *prompt* pada fungsi translateBatch. Instruksikan *System Prompt* dengan sangat tegas agar AI **HANYA** mengembalikan struktur data **JSON Array of Strings** (misalnya: ["translasi 1", "translasi 2"]) tanpa *markdown* atau teks tambahan apa pun.
+   * Buang metode lama yang menggunakan *delimiter* dan fungsi split().
+   * Buat logika *parsing*: cari indeks karakter [ pertama dan ] terakhir pada *string* respons, lalu ekstrak dan *parse* isinya menggunakan org.json.JSONArray.
+   * Ubah hasil *JSONArray* tersebut kembali menjadi List<String>. Jika ternyata jumlah *array* tidak sama dengan jumlah teks *input*, jangan langsung *return null*—lakukan pemetaan sebisa mungkin (gunakan *fallback* atau biarkan sisa kotak tidak terjemahkan).
+## 3. Verifikasi & Build
+ * Pastikan DefaultScraperTranslator.kt dari fase sebelumnya tidak bermasalah.
+ * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi tidak ada *error* kompilasi.

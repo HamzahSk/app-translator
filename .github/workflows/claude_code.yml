@@ -2,10 +2,7 @@ name: OMP DB Fixer & Auto-Test Pipeline
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "prompt.md"
-      
+
 permissions:
   contents: read
 
