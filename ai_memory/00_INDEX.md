@@ -9,6 +9,7 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 | Tanggal | File Log | Ringkasan |
 |---------|----------|-----------|
+| 2026-08-22 09:45 | [task_20260822_0945_phase12_ui_prompt_revamp.md](task_20260822_0945_phase12_ui_prompt_revamp.md) | Settings dialog untuk customization/floating ball, home screen lebih ringkas, step delay 0,5s dan opacity 5%, serta prompt Manga/Manhwa natural; compile berhasil. |
 | 2026-08-22 06:23 | [task_20260822_0623_phase11_5_critical_fixes.md](task_20260822_0623_phase11_5_critical_fixes.md) | Fix kartu overlay/model, render batch online tunggal, offset loading kiri/kanan, dan merge berbasis baris; compile berhasil. |
 | 2026-08-22 05:39 | [task_20260822_0539_phase11_batch_and_ui.md](task_20260822_0539_phase11_batch_and_ui.md) | Batch online kini memakai JSON array parsing; layout toggle dipisahkan dari konfigurasi online; compileDebugKotlin berhasil. |
 | 2026-08-22 04:07 | [task_20260822_0407_phase10_verification.md](task_20260822_0407_phase10_verification.md) | Verifikasi fase 10: menghapus duplikasi import PixelFormat; compileDebugKotlin berhasil. |

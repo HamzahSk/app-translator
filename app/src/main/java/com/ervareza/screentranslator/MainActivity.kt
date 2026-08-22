@@ -30,8 +30,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.materialswitch.MaterialSwitch
-import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.mlkit.common.model.DownloadConditions
@@ -125,11 +123,10 @@ class MainActivity : AppCompatActivity() {
         fabStart = findViewById(R.id.fabStartService)
 
         setupThemeToggle()
-        setupDelaySlider()
         setupSourceLanguageSpinner()
         setupTargetLanguageSpinner()
         setupOnlineMode()
-        setupOverlayCustomization()
+        setupSettingsButton()
         setupAIModelsManager()
         setupPermissionsAndStart()
     }
@@ -194,19 +191,6 @@ class MainActivity : AppCompatActivity() {
                     AppCompatDelegate.setDefaultNightMode(mode)
                 }
             }
-        }
-    }
-
-    // ==================== DELAY ====================
-    private fun setupDelaySlider() {
-        val tvDelayLabel = findViewById<TextView>(R.id.tvDelayLabel)
-        val sliderDelay = findViewById<Slider>(R.id.sliderDelay)
-        val currentSeconds = (config.inactivityDelayMs / 1000).toFloat().coerceIn(1f, 10f)
-        sliderDelay.value = currentSeconds
-        tvDelayLabel.text = "Inactivity Delay: ${currentSeconds.toInt()}s"
-        sliderDelay.addOnChangeListener { _, value, _ ->
-            tvDelayLabel.text = "Inactivity Delay: ${value.toInt()}s"
-            config.inactivityDelayMs = value.toLong() * 1000L
         }
     }
 
@@ -312,101 +296,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ==================== OVERLAY CUSTOMIZATION ====================
-    private fun setupOverlayCustomization() {
-        // Placement
-        val placementGroup = findViewById<MaterialButtonToggleGroup>(R.id.placementToggleGroup)
-        when (config.placementMode) {
-            "left" -> placementGroup.check(R.id.btnPlaceLeft)
-            "right" -> placementGroup.check(R.id.btnPlaceRight)
-            else -> placementGroup.check(R.id.btnPlaceDirect)
-        }
-        placementGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                config.placementMode = when (checkedId) {
-                    R.id.btnPlaceLeft -> "left"
-                    R.id.btnPlaceRight -> "right"
-                    else -> "direct"
-                }
-            }
-        }
-
-        // Opacity
-        val tvOpacity = findViewById<TextView>(R.id.tvOpacityLabel)
-        val sliderOpacity = findViewById<Slider>(R.id.sliderOpacity)
-        val opacityPct = (config.overlayOpacity * 100 / 255).toFloat().coerceIn(10f, 100f)
-        sliderOpacity.value = opacityPct
-        tvOpacity.text = "Bubble Opacity: ${opacityPct.toInt()}%"
-        sliderOpacity.addOnChangeListener { _, value, _ ->
-            tvOpacity.text = "Bubble Opacity: ${value.toInt()}%"
-            config.overlayOpacity = (value * 255 / 100).toInt()
-        }
-
-        // Corner Radius
-        val tvCorner = findViewById<TextView>(R.id.tvCornerLabel)
-        val sliderCorner = findViewById<Slider>(R.id.sliderCorner)
-        sliderCorner.value = config.bubbleCornerRadius.toFloat().coerceIn(0f, 32f)
-        tvCorner.text = "Corner Radius: ${config.bubbleCornerRadius}dp"
-        sliderCorner.addOnChangeListener { _, value, _ ->
-            tvCorner.text = "Corner Radius: ${value.toInt()}dp"
-            config.bubbleCornerRadius = value.toInt()
-        }
-
-        // Text Size
-        val tvTextSize = findViewById<TextView>(R.id.tvTextSizeLabel)
-        val sliderTextSize = findViewById<Slider>(R.id.sliderTextSize)
-        sliderTextSize.value = config.overlayTextSize.toFloat().coerceIn(8f, 28f)
-        tvTextSize.text = "Text Size: ${config.overlayTextSize}sp"
-        sliderTextSize.addOnChangeListener { _, value, _ ->
-            tvTextSize.text = "Text Size: ${value.toInt()}sp"
-            config.overlayTextSize = value.toInt()
-        }
-
-        // Bubble Color
-        val bgColorGroup = findViewById<MaterialButtonToggleGroup>(R.id.bgColorToggleGroup)
-        when (config.bubbleBgColor) {
-            "#000000" -> {
-                bgColorGroup.check(R.id.btnBgBlack)
-                config.bubbleTextColor = "#FFFFFF"
-            }
-            "#FFFDE7" -> bgColorGroup.check(R.id.btnBgYellow)
-            else -> bgColorGroup.check(R.id.btnBgWhite)
-        }
-        bgColorGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                when (checkedId) {
-                    R.id.btnBgWhite -> {
-                        config.bubbleBgColor = "#FFFFFF"
-                        config.bubbleTextColor = "#000000"
-                    }
-                    R.id.btnBgBlack -> {
-                        config.bubbleBgColor = "#000000"
-                        config.bubbleTextColor = "#FFFFFF"
-                    }
-                    R.id.btnBgYellow -> {
-                        config.bubbleBgColor = "#FFFDE7"
-                        config.bubbleTextColor = "#000000"
-                    }
-                }
-            }
-        }
-
-        // Border Toggle
-        val switchBorder = findViewById<MaterialSwitch>(R.id.switchBorder)
-        switchBorder.isChecked = config.bubbleBorderEnabled
-        switchBorder.setOnCheckedChangeListener { _, isChecked ->
-            config.bubbleBorderEnabled = isChecked
-        }
-
-        // Auto-Clear
-        val tvAutoClear = findViewById<TextView>(R.id.tvAutoClearLabel)
-        val sliderAutoClear = findViewById<Slider>(R.id.sliderAutoClear)
-        sliderAutoClear.value = config.autoClearSeconds.toFloat().coerceIn(0f, 30f)
-        tvAutoClear.text = if (config.autoClearSeconds == 0) "Auto-Clear: Off" else "Auto-Clear: ${config.autoClearSeconds}s"
-        sliderAutoClear.addOnChangeListener { _, value, _ ->
-            val sec = value.toInt()
-            tvAutoClear.text = if (sec == 0) "Auto-Clear: Off" else "Auto-Clear: ${sec}s"
-            config.autoClearSeconds = sec
+    private fun setupSettingsButton() {
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        val settingsItem = toolbar.menu.add("Settings")
+        settingsItem.setIcon(android.R.drawable.ic_menu_preferences)
+        settingsItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+        settingsItem.setOnMenuItemClickListener {
+            SettingsDialog(this, config).show()
+            true
         }
     }
 

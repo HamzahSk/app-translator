@@ -38,16 +38,17 @@ class OnlineTranslator(context: Context) {
         val model = config.apiModel.ifBlank { defaultModelFor(provider) }
         val targetLangName = langName(targetLang)
 
-        val prompt = "You are a manga/comic translation engine. " +
-            "Translate the following text into $targetLangName. " +
-            "Return ONLY the translation without any explanation, notes, or quotation marks.\n\n" +
+        val prompt = "You are a professional Manga and Manhwa translator. " +
+            "Translate the following text into $targetLangName using natural, casual language that fits everyday comic dialogue. " +
+            "Preserve the original meaning, emotion, and character voice. " +
+            "Do not add explanations, notes, or quotation marks. Return only the translation.\n\n" +
             "Source text: $text"
 
         return try {
             when (provider) {
                 AiProvider.OPENAI -> translateWithOpenAi(model, prompt)
                 AiProvider.GEMINI -> translateWithGemini(model, prompt)
-                AiProvider.DEFAULT -> defaultScraper.translate(text)
+                AiProvider.DEFAULT -> defaultScraper.translate(prompt)
             }
         } catch (e: Exception) {
             Log.e("OnlineTranslator", "Translation request failed", e)
@@ -58,13 +59,28 @@ class OnlineTranslator(context: Context) {
     suspend fun translateBatch(texts: List<String>, targetLang: String): List<String>? {
         if (texts.isEmpty()) return emptyList()
         val sourceArray = JSONArray().apply { texts.forEach { put(it) } }
-        val result = translate(
-            "Translate each string independently into the target language. " +
-                "You MUST return ONLY a valid JSON array of strings, in the same order and count as the input. " +
-                "Do not use markdown, code fences, explanations, or any text outside the JSON array.\n\n" +
-                "Input JSON array:\n$sourceArray",
-            targetLang,
-        ) ?: return null
+        val targetLangName = langName(targetLang)
+        val provider = AiProvider.fromId(config.apiProvider)
+        val model = config.apiModel.ifBlank { defaultModelFor(provider) }
+
+        val batchPrompt = "You are a professional Manga and Manhwa translator. " +
+            "Translate the following JSON array of texts into $targetLangName using natural, casual language that fits everyday comic dialogue. " +
+            "Preserve the original meaning, emotion, and character voice. " +
+            "Do not add explanations, notes, or quotation marks. " +
+            "You MUST return ONLY a valid JSON array of strings in the exact same order. Do not use markdown.\n\n" +
+            "Source text: $sourceArray"
+
+        val result = try {
+            when (provider) {
+                AiProvider.OPENAI -> translateWithOpenAi(model, batchPrompt)
+                AiProvider.GEMINI -> translateWithGemini(model, batchPrompt)
+                AiProvider.DEFAULT -> defaultScraper.translate(batchPrompt)
+            }
+        } catch (e: Exception) {
+            Log.e("OnlineTranslator", "Batch translation request failed", e)
+            null
+        } ?: return null
+
         return try {
             val start = result.indexOf('[')
             val end = result.lastIndexOf(']')
@@ -85,7 +101,6 @@ class OnlineTranslator(context: Context) {
         val request = OpenAiChatRequest(
             model = model,
             messages = listOf(
-                OpenAiMessage(role = "system", content = "You are a precise manga translation engine."),
                 OpenAiMessage(role = "user", content = prompt),
             ),
         )
