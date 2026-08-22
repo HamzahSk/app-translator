@@ -56,7 +56,7 @@ jobs:
           fi
 
           # Cukup pakai 1 flag pamungkas ini aja sebelum 'exec'
-          codex --dangerously-bypass-approvals-and-sandbox exec "$(cat prompt.md)" 2>&1 | tee ai-response-recap.txt || true
+          codex --dangerously-bypass-approvals-and-sandbox "eksekusi perintah dari file prompt.md" 2>&1 | tee ai-response-recap.txt || true
 
       - name: Collect changed files and AI recap
         run: |

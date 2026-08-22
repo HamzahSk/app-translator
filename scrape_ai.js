@@ -1,12 +1,4 @@
-/*
-Base : https://play.google.com/store/apps/details?id=com.openai.chatgpt
-Author : Geno
-WhatsApp Channel: https://whatsapp.com/channel/0029Vb6hVYK8V0tkiz4bKs0N
-Featured 
-Support Streaming Chat
-Support Conversation
-Support WebSearch
-*/
+
 
 const axios = require('axios')
 const crypto = require('crypto')

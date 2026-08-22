@@ -1,4 +1,3 @@
-
 **TUGAS FASE 10: AUTO-HIDE FLOATING BALL, OFFLINE LANGUAGE MANAGER & DEFAULT JS TRANSLATOR**
 # SYSTEM INSTRUCTION: MEMORY MANAGEMENT SYSTEM
 Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menjaga kesinambungan pekerjaan tanpa membuat context window (token) overload, kamu WAJIB mematuhi protokol memori berikut:
@@ -34,4 +33,4 @@ Kamu bertugas melakukan penyempurnaan UI/UX secara masif pada menu utama dan fit
    * Di dalam TranslationEngine atau OnlineTranslator, buat mekanisme pengeksekusi JavaScript (bisa menggunakan android.webkit.WebView tersembunyi dengan evaluateJavascript, atau *library* seperti QuickJS/Duktape jika tersedia) untuk memanggil fungsi di dalam assets/scrape_ai.js, mengirimkan *string* asli, dan mengembalikan hasil terjemahannya.
 ## 4. Verifikasi & Build
  * Pastikan fitur dari fase sebelumnya (Dynamic Border StaticLayout & Smart Merging) tidak terhapus.
- * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi.
+ * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi
