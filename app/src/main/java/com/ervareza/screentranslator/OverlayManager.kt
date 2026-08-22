@@ -152,7 +152,11 @@ class OverlayManager(private val context: Context) {
                 PixelFormat.TRANSLUCENT,
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
-                x = boundingBox.left
+                x = when (config.placementMode) {
+                    "left" -> boundingBox.left - boundingBox.width()
+                    "right" -> boundingBox.left + boundingBox.width()
+                    else -> boundingBox.left
+                }
                 y = boundingBox.top
             }
             runCatching {

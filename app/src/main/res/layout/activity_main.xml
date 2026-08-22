@@ -294,7 +294,6 @@
 
             <!-- ========== OVERLAY CUSTOMIZATION ========== -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/layoutModelsCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
@@ -482,6 +481,7 @@
 
             <!-- ========== AI MODELS ========== -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/layoutModelsCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"

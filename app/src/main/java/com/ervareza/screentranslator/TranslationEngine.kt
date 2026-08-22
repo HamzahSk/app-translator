@@ -313,15 +313,16 @@ class TranslationEngine(private val context: Context) {
         }
         try {
             val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage)
-            if (translated == null) {
-                blocks.indices.forEach { overlayManager.removeLoading(it.toString()) }
-                return
-            }
+            if (translated == null) return
+            val translatedBubbles = mutableListOf<OverlayManager.Bubble>()
             blocks.forEachIndexed { index, block ->
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val text = translated.getOrNull(index) ?: return@forEachIndexed
-                adjustedBoundingBox(block.rect)?.let { box -> overlayManager.replaceLoading(index.toString(), text, box) }
+                adjustedBoundingBox(block.rect)?.let { box ->
+                    translatedBubbles += OverlayManager.Bubble(text, box)
+                }
             }
+            if (translatedBubbles.isNotEmpty()) overlayManager.drawTranslationBatch(translatedBubbles)
         } catch (e: CancellationException) {
             overlayManager.clearOverlays()
             throw e
@@ -383,11 +384,11 @@ class TranslationEngine(private val context: Context) {
     // If merged, the text is joined with `\n` and the bounding box becomes the
     // union of both rectangles.
     private fun mergeBlocks(blocks: List<Text.TextBlock>): List<MergedBlock> {
-        val fragments = blocks.mapNotNull { src ->
-            val rect = src.boundingBox ?: return@mapNotNull null
-            if (src.text.isBlank() || rect.isEmpty) return@mapNotNull null
-            val lineHeight = rect.height().toFloat() / src.lines.size.coerceAtLeast(1)
-            MergedBlock(src.text.trim(), Rect(rect), lineHeight)
+        val allLines = blocks.flatMap { it.lines }
+        val fragments = allLines.mapNotNull { line ->
+            val rect = line.boundingBox ?: return@mapNotNull null
+            if (line.text.isBlank() || rect.isEmpty) return@mapNotNull null
+            MergedBlock(line.text.trim(), Rect(rect), rect.height().toFloat())
         }
         if (fragments.isEmpty()) return emptyList()
 
