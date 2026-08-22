@@ -18,6 +18,7 @@ import android.view.Gravity
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.LinearLayout
+import android.view.View
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -235,17 +236,38 @@ class MainActivity : AppCompatActivity() {
     // ==================== ONLINE MODE ====================
     private fun setupOnlineMode() {
         val modeGroup = findViewById<MaterialButtonToggleGroup>(R.id.modeToggleGroup)
+        val onlineConfig = findViewById<LinearLayout>(R.id.layoutOnlineConfig)
+        val modelsCard = findViewById<View>(R.id.layoutModelsCard)
+        fun applyMode(mode: String) {
+            val offline = mode == "offline"
+            onlineConfig.visibility = if (offline) View.GONE else View.VISIBLE
+            modelsCard.visibility = if (offline) View.VISIBLE else View.GONE
+            findViewById<TextView>(R.id.tvOnlineHint).text = if (offline) {
+                "Offline uses on-device ML Kit models."
+            } else {
+                "Online uses the selected AI provider."
+            }
+        }
         when (config.translationMode) {
             "online" -> modeGroup.check(R.id.btnModeOnline)
             else -> modeGroup.check(R.id.btnModeOffline)
         }
+        applyMode(config.translationMode)
         modeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 config.translationMode = if (checkedId == R.id.btnModeOnline) "online" else "offline"
+                applyMode(config.translationMode)
             }
         }
 
         val providerSpinner = findViewById<AutoCompleteTextView>(R.id.spinnerApiProvider)
+        val apiKeyLayout = findViewById<View>(R.id.layoutApiKey)
+        val baseUrlLayout = findViewById<View>(R.id.layoutApiBaseUrl)
+        fun applyProviderVisibility() {
+            val visible = config.apiProvider != "default"
+            apiKeyLayout.visibility = if (visible) View.VISIBLE else View.GONE
+            baseUrlLayout.visibility = if (visible) View.VISIBLE else View.GONE
+        }
         val providers = listOf("OpenAI (ChatGPT / compatible)", "Google Gemini", "Default Translator (Free)")
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, providers)
         providerSpinner.setAdapter(adapter)
@@ -254,6 +276,7 @@ class MainActivity : AppCompatActivity() {
         providerSpinner.setOnItemClickListener { _, _, position, _ ->
             config.apiProvider = when (position) { 1 -> "gemini"; 2 -> "default"; else -> "openai" }
             updateOnlineHint()
+            applyProviderVisibility()
         }
 
         bindOnlineTextField(R.id.editApiKey) { config.apiKey = it }
@@ -261,6 +284,7 @@ class MainActivity : AppCompatActivity() {
         bindOnlineTextField(R.id.editApiModel) { config.apiModel = it }
 
         updateOnlineHint()
+        applyProviderVisibility()
     }
 
     private fun bindOnlineTextField(viewId: Int, save: (String) -> Unit) {

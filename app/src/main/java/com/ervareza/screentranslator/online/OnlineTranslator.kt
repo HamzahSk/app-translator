@@ -14,6 +14,7 @@ class OnlineTranslator(context: Context) {
     private val config = ConfigManager(context)
     private var service: AiApiService? = null
     private var serviceFingerprint: String? = null
+    private val defaultScraper = DefaultScraperTranslator()
 
     private fun getService(): AiApiService {
         val provider = AiProvider.fromId(config.apiProvider)
@@ -45,7 +46,7 @@ class OnlineTranslator(context: Context) {
             when (provider) {
                 AiProvider.OPENAI -> translateWithOpenAi(model, prompt)
                 AiProvider.GEMINI -> translateWithGemini(model, prompt)
-                AiProvider.DEFAULT -> text
+                AiProvider.DEFAULT -> defaultScraper.translate(text)
             }
         } catch (e: Exception) {
             Log.e("OnlineTranslator", "Translation request failed", e)
