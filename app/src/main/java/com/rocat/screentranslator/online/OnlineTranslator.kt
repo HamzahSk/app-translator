@@ -64,7 +64,8 @@ class OnlineTranslator(context: Context) {
         val model = config.apiModel.ifBlank { defaultModelFor(provider) }
 
         val batchPrompt = "You are a professional Manga and Manhwa translator. " +
-            "Translate the following JSON array of texts into $targetLangName using natural, casual language that fits everyday comic dialogue. " +
+            "Translate the following JSON array of texts into $targetLangName using natural, casual " +
+            "language that fits everyday comic dialogue. " +
             "Preserve the original meaning, emotion, and character voice. " +
             "Do not add explanations, notes, or quotation marks. " +
             "You MUST return ONLY a valid JSON array of strings in the exact same order. Do not use markdown.\n\n" +

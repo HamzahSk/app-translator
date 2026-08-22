@@ -94,7 +94,15 @@ class OverlayManager(private val context: Context) {
                         r.top = original.centerY() - height / 2
                         r.bottom = r.top + height
                         paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
-                        canvas.drawRoundRect(r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), paint)
+                        canvas.drawRoundRect(
+                            r.left.toFloat(),
+                            r.top.toFloat(),
+                            r.right.toFloat(),
+                            r.bottom.toFloat(),
+                            dpToPx(config.bubbleCornerRadius).toFloat(),
+                            dpToPx(config.bubbleCornerRadius).toFloat(),
+                            paint,
+                        )
                         canvas.save()
                         canvas.translate((r.left + padding).toFloat(), (r.top + padding).toFloat())
                         layout.draw(canvas)

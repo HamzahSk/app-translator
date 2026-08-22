@@ -15,10 +15,10 @@ import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.LinearLayout
-import android.view.View
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -268,10 +268,18 @@ class MainActivity : AppCompatActivity() {
         )
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, providers)
         providerSpinner.setAdapter(adapter)
-        val providerIdx = when (config.apiProvider) { "gemini" -> 1; "default" -> 2; else -> 0 }
+        val providerIdx = when (config.apiProvider) {
+            "gemini" -> 1
+            "default" -> 2
+            else -> 0
+        }
         providerSpinner.setText(providers[providerIdx], false)
         providerSpinner.setOnItemClickListener { _, _, position, _ ->
-            config.apiProvider = when (position) { 1 -> "gemini"; 2 -> "default"; else -> "openai" }
+            config.apiProvider = when (position) {
+                1 -> "gemini"
+                2 -> "default"
+                else -> "openai"
+            }
             updateOnlineHint()
             applyProviderVisibility()
         }

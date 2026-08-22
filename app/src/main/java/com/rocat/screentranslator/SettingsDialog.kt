@@ -2,10 +2,17 @@ package com.ervareza.screentranslator
 
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
-import android.widget.TextView
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.TextView
+import androidx.annotation.AttrRes
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -17,12 +24,13 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
         super.onCreate(savedInstanceState)
         setTitle(i18n.get("settings_title"))
         setContentView(LayoutInflater.from(context).inflate(R.layout.dialog_settings, null))
+        applyThemeBackground()
         findViewById<ImageButton>(R.id.btnSettingsClose).apply {
             contentDescription = i18n.get("close")
             setOnClickListener { dismiss() }
         }
         findViewById<TextView>(R.id.tvSettingsTitle).text = i18n.get("overlay_customization")
-        window?.setLayout((context.resources.displayMetrics.widthPixels * 0.94).toInt(), -2)
+        window?.setLayout((context.resources.displayMetrics.widthPixels * 0.94).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT)
         val delay = findViewById<Slider>(R.id.sliderSettingsDelay)
         val delayLabel = findViewById<TextView>(R.id.tvSettingsDelay)
         fun setDelay(value: Float) {
@@ -86,6 +94,25 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
         border.isChecked = config.bubbleBorderEnabled
         border.setOnCheckedChangeListener { _, v -> config.bubbleBorderEnabled = v }
     }
+
+    private fun applyThemeBackground() {
+        val content = findViewById<View>(R.id.settingsDialogRoot)
+        content.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 20f * context.resources.displayMetrics.density
+            setColor(resolveThemeColor(com.google.android.material.R.attr.colorSurface, android.R.attr.colorBackground))
+        }
+        window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+    }
+
+    private fun resolveThemeColor(@AttrRes primary: Int, @AttrRes fallback: Int): Int {
+        val value = TypedValue()
+        if (context.theme.resolveAttribute(primary, value, true) || context.theme.resolveAttribute(fallback, value, true)) {
+            return if (value.resourceId != 0) context.getColor(value.resourceId) else value.data
+        }
+        return Color.WHITE
+    }
+
     private fun bindSlider(sliderId: Int, labelId: Int?, initial: Float, format: String?, save: (Float) -> Unit) {
         val slider = findViewById<Slider>(sliderId)
         val label = labelId?.let { findViewById<TextView>(it) }

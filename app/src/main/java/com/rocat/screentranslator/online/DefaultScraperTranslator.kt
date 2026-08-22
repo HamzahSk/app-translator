@@ -22,12 +22,17 @@ class DefaultScraperTranslator(private val client: OkHttpClient = OkHttpClient()
             val messageId = UUID.randomUUID().toString()
             val body = JSONObject().apply {
                 put("action", "next")
-                put("messages", org.json.JSONArray().put(JSONObject().apply {
-                    put("id", messageId)
-                    put("author", JSONObject().put("role", "user"))
-                    put("content", JSONObject().put("content_type", "text").put("parts", org.json.JSONArray().put(prompt)))
-                    put("status", "finished_successfully").put("recipient", "all")
-                }))
+                put(
+                    "messages",
+                    org.json.JSONArray().put(
+                        JSONObject().apply {
+                            put("id", messageId)
+                            put("author", JSONObject().put("role", "user"))
+                            put("content", JSONObject().put("content_type", "text").put("parts", org.json.JSONArray().put(prompt)))
+                            put("status", "finished_successfully").put("recipient", "all")
+                        },
+                    ),
+                )
                 put("model", "auto").put("history_and_training_disabled", false).put("force_use_sse", true)
                 put("stream", true).put("timezone", "Asia/Makassar").put("timezone_offset_min", -480)
             }
@@ -41,15 +46,15 @@ class DefaultScraperTranslator(private val client: OkHttpClient = OkHttpClient()
                     if (!line.startsWith("data: ") || line == "data: [DONE]") return@forEachLine
                     runCatching {
                         val data = JSONObject(line.substring(6))
-                        
+
                         // Cek apakah ada object "message" dan role-nya "assistant"
                         val msg = data.optJSONObject("message")
                         if (msg != null && msg.optJSONObject("author")?.optString("role") == "assistant") {
                             val extractedText = msg.optJSONObject("content")?.optJSONArray("parts")?.optString(0)
-                            
+
                             if (!extractedText.isNullOrEmpty()) {
                                 // Timpa teks lama karena stream dari web sudah berupa teks akumulatif
-                                text = extractedText 
+                                text = extractedText
                                 parentMessageId = msg.optString("id", parentMessageId)
                             }
                         }

@@ -7,6 +7,8 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 ## Riwayat (terbaru di atas)
 
+| 2026-08-22 12:43 | [task_20260822_1243_phase13_6_bug_fixes.md](task_20260822_1243_phase13_6_bug_fixes.md) | Memperbaiki pipeline asset i18n XML dan fallback Inggris, background Settings berbasis tema, serta memastikan Spotless dan assembleDebug sukses. |
+
 | 2026-08-22 11:00 | [task_20260822_1100_phase13_ui_i18n_fixes.md](task_20260822_1100_phase13_ui_i18n_fixes.md) | Tombol close dan styling Settings, placement tidak lagi menggeser canvas/loading, serta katalog i18n JSON en/id + I18nManager; compile berhasil. |
 
 | Tanggal | File Log | Ringkasan |

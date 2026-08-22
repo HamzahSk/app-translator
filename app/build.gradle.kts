@@ -4,10 +4,19 @@ plugins {
     id("com.diffplug.spotless")
 }
 
+val copyI18nAssets by tasks.registering(Copy::class) {
+    from(rootProject.layout.projectDirectory.dir("i18n"))
+    into(layout.projectDirectory.dir("src/main/assets/i18n"))
+}
+
+tasks.named("preBuild") {
+    dependsOn(copyI18nAssets)
+}
+
 spotless {
     kotlin {
         target("src/**/*.kt")
-        ktlint("1.2.1").editorConfigOverride(mapOf("max_line_length" to "140"))
+        ktlint("1.2.1").editorConfigOverride(mapOf("max_line_length" to "200"))
         trimTrailingWhitespace()
         endWithNewline()
     }

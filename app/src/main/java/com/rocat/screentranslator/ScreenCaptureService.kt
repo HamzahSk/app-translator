@@ -9,6 +9,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
@@ -19,12 +22,9 @@ import android.os.Build
 import android.os.IBinder
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.WindowManager
 import android.view.MotionEvent
 import android.view.View
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -233,29 +233,91 @@ class ScreenCaptureService : Service() {
         val view = object : View(this) {
             private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             override fun onDraw(canvas: Canvas) {
-                paint.color = Color.rgb(35, 125, 210); canvas.drawCircle(width / 2f, height / 2f, width / 2f, paint)
+                paint.color = Color.rgb(35, 125, 210)
+                canvas.drawCircle(width / 2f, height / 2f, width / 2f, paint)
                 paint.color = Color.WHITE
-                if (TranslationControlState.paused) canvas.drawPath(android.graphics.Path().apply { moveTo(width * .42f, height * .3f); lineTo(width * .7f, height / 2f); lineTo(width * .42f, height * .7f); close() }, paint)
-                else { canvas.drawRect(width * .35f, height * .3f, width * .45f, height * .7f, paint); canvas.drawRect(width * .55f, height * .3f, width * .65f, height * .7f, paint) }
+                if (TranslationControlState.paused) {
+                    canvas.drawPath(
+                        android.graphics.Path().apply {
+                            moveTo(width * .42f, height * .3f)
+                            lineTo(width * .7f, height / 2f)
+                            lineTo(width * .42f, height * .7f)
+                            close()
+                        },
+                        paint,
+                    )
+                } else {
+                    canvas.drawRect(width * .35f, height * .3f, width * .45f, height * .7f, paint)
+                    canvas.drawRect(width * .55f, height * .3f, width * .65f, height * .7f, paint)
+                }
             }
         }
-        var downX = 0f; var downY = 0f; var startX = 0; var startY = 0
+        var downX = 0f
+        var downY = 0f
+        var startX = 0
+        var startY = 0
         val hideHandler = android.os.Handler(android.os.Looper.getMainLooper())
-        val hideRunnable = Runnable { val edge = if ((controlParams?.x ?: 0) < resources.displayMetrics.widthPixels / 2) 0 else resources.displayMetrics.widthPixels - size; view.animate().translationX((edge - (controlParams?.x ?: 0)).toFloat()).alpha(.5f).setDuration(250).start() }
-        fun scheduleHide() { hideHandler.removeCallbacks(hideRunnable); hideHandler.postDelayed(hideRunnable, 5000) }
+        val hideRunnable =
+            Runnable {
+                val edge = if ((controlParams?.x ?: 0) < resources.displayMetrics.widthPixels / 2) 0 else resources.displayMetrics.widthPixels - size
+                view.animate().translationX((edge - (controlParams?.x ?: 0)).toFloat()).alpha(.5f).setDuration(250).start()
+            }
+        fun scheduleHide() {
+            hideHandler.removeCallbacks(hideRunnable)
+            hideHandler.postDelayed(hideRunnable, 5000)
+        }
         view.setOnTouchListener { _, e ->
             when (e.action) {
-                MotionEvent.ACTION_DOWN -> { view.animate().translationX(0f).alpha(1f).setDuration(150).start(); downX = e.rawX; downY = e.rawY; startX = controlParams?.x ?: 0; startY = controlParams?.y ?: 0; true }
-                MotionEvent.ACTION_MOVE -> { controlParams?.let { it.x = startX + (e.rawX - downX).toInt(); it.y = startY + (e.rawY - downY).toInt(); wm.updateViewLayout(view, it) }; true }
-                MotionEvent.ACTION_UP -> { if (kotlin.math.abs(e.rawX - downX) < 12 && kotlin.math.abs(e.rawY - downY) < 12) { TranslationControlState.paused = !TranslationControlState.paused; if (TranslationControlState.paused) translationEngine.hardPause(); view.invalidate() }; scheduleHide(); true }
+                MotionEvent.ACTION_DOWN -> {
+                    view.animate().translationX(0f).alpha(1f).setDuration(150).start()
+                    downX = e.rawX
+                    downY = e.rawY
+                    startX = controlParams?.x ?: 0
+                    startY = controlParams?.y ?: 0
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    controlParams?.let {
+                        it.x = startX + (e.rawX - downX).toInt()
+                        it.y = startY + (e.rawY - downY).toInt()
+                        wm.updateViewLayout(view, it)
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (kotlin.math.abs(e.rawX - downX) < 12 && kotlin.math.abs(e.rawY - downY) < 12) {
+                        TranslationControlState.paused = !TranslationControlState.paused
+                        if (TranslationControlState.paused) translationEngine.hardPause()
+                        view.invalidate()
+                    }
+                    scheduleHide()
+                    true
+                }
                 else -> true
             }
         }
-        val params = WindowManager.LayoutParams(size, size, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, PixelFormat.TRANSLUCENT).apply { gravity = android.view.Gravity.TOP or android.view.Gravity.START; x = 24; y = 180 }
-        runCatching { wm.addView(view, params); controlBall = view; controlParams = params }
+        val params = WindowManager.LayoutParams(
+            size,
+            size,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            gravity = android.view.Gravity.TOP or android.view.Gravity.START
+            x = 24
+            y = 180
+        }
+        runCatching {
+            wm.addView(view, params)
+            controlBall = view
+            controlParams = params
+        }
         scheduleHide()
     }
-    private fun removeControlBall() { controlBall?.let { runCatching { (getSystemService(Context.WINDOW_SERVICE) as WindowManager).removeView(it) } }; controlBall = null }
+    private fun removeControlBall() {
+        controlBall?.let { runCatching { (getSystemService(Context.WINDOW_SERVICE) as WindowManager).removeView(it) } }
+        controlBall = null
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 }
