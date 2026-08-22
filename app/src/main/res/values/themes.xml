@@ -3,15 +3,15 @@
     <!-- Base application theme -->
     <style name="Theme.ScreenTranslator" parent="Theme.Material3.Light.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#6750A4</item>
+        <item name="colorPrimary">#00897B</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorPrimaryContainer">#EADDFF</item>
-        <item name="colorOnPrimaryContainer">#21005D</item>
+        <item name="colorPrimaryContainer">#B2DFDB</item>
+        <item name="colorOnPrimaryContainer">#00332F</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">#625B71</item>
+        <item name="colorSecondary">#0288D1</item>
         <item name="colorOnSecondary">#FFFFFF</item>
-        <item name="colorSecondaryContainer">#E8DEF8</item>
-        <item name="colorOnSecondaryContainer">#1D192B</item>
+        <item name="colorSecondaryContainer">#B3E5FC</item>
+        <item name="colorOnSecondaryContainer">#003044</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimary</item>
     </style>

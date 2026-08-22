@@ -123,6 +123,7 @@ class MainActivity : AppCompatActivity() {
         btnAccessibility = findViewById(R.id.btnAccessibilityPermission)
         btnNotification = findViewById(R.id.btnNotificationPermission)
         fabStart = findViewById(R.id.fabStartService)
+        fabStart.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.rgb(0, 137, 123))
 
         setupThemeToggle()
         setupSourceLanguageSpinner()

@@ -10,8 +10,11 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.AttrRes
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -59,6 +62,25 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             config.overlayTextSize.toFloat(),
             i18n.get("text_size", "Text Size: %dsp"),
         ) { config.overlayTextSize = it.toInt() }
+        bindSlider(R.id.sliderSettingsGrouping, R.id.tvSettingsGrouping, config.paragraphGroupingMargin, "Paragraph Grouping / Margin: %.1fx") { config.paragraphGroupingMargin = it }
+        findViewById<AutoCompleteTextView>(R.id.spinnerAppLanguage).apply {
+            val labels = listOf("System Default", "English", "Indonesian")
+            setAdapter(ArrayAdapter(context, android.R.layout.simple_list_item_1, labels))
+            setText(
+                labels[
+                    when (config.appLanguage) {
+                        "en" -> 1
+                        "id" -> 2
+                        else -> 0
+                    },
+                ],
+                false,
+            )
+            setOnItemClickListener { _, _, position, _ ->
+                config.appLanguage = listOf("system", "en", "id")[position]
+                Toast.makeText(context, "Language updated. Restart to apply.", Toast.LENGTH_SHORT).show()
+            }
+        }
         bindSlider(
             R.id.sliderSettingsAutoClear,
             R.id.tvSettingsAutoClear,
@@ -122,7 +144,7 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
                 label.text = if (format.contains("%s")) {
                     format.replace("%s", if (v == 0f) i18n.get("off") else "${v.toInt()}s")
                 } else {
-                    String.format(format, v.toInt())
+                    if (format.contains("%f")) String.format(format, v) else String.format(format, v.toInt())
                 }
             }
         }

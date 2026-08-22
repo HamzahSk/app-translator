@@ -233,7 +233,7 @@ class ScreenCaptureService : Service() {
         val view = object : View(this) {
             private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             override fun onDraw(canvas: Canvas) {
-                paint.color = Color.rgb(35, 125, 210)
+                paint.color = Color.rgb(0, 137, 123)
                 canvas.drawCircle(width / 2f, height / 2f, width / 2f, paint)
                 paint.color = Color.WHITE
                 if (TranslationControlState.paused) {
