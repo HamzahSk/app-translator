@@ -1,688 +1,223 @@
-[0m
-> build · deepseek-v4-flash-free
-[0m
-[0m→ [0mRead ai_memory/00_INDEX.md
-[0m
-[0m$ [0mls -la /home/runner/work/app-translator/app-translator
-total 880
-drwxr-xr-x 8 runner runner   4096 Aug 20 22:47 .
-drwxr-xr-x 3 runner runner   4096 Aug 20 22:47 ..
-drwxr-xr-x 7 runner runner   4096 Aug 20 22:47 .git
-drwxr-xr-x 3 runner runner   4096 Aug 20 22:47 .github
--rw-r--r-- 1 runner runner    314 Aug 20 22:47 .gitignore
--rw-r--r-- 1 runner runner   2972 Aug 20 22:47 CHANGELOG.md
--rw-r--r-- 1 runner runner   1286 Aug 20 22:47 CONTRIBUTING.md
--rw-r--r-- 1 runner runner   1073 Aug 20 22:47 LICENSE
--rw-r--r-- 1 runner runner   4880 Aug 20 22:47 README.md
--rw-r--r-- 1 runner runner     83 Aug 20 22:47 ai-response-recap.txt
-drwxr-xr-x 2 runner runner   4096 Aug 20 22:47 ai_memory
-drwxr-xr-x 3 runner runner   4096 Aug 20 22:47 app
-drwxr-xr-x 2 runner runner   4096 Aug 20 22:47 assets
--rw-r--r-- 1 runner runner    203 Aug 20 22:47 build.gradle.kts
--rw-r--r-- 1 runner runner   4232 Aug 20 22:47 crash_2026-08-20_12-43-58.txt
-drwxr-xr-x 3 runner runner   4096 Aug 20 22:47 gradle
--rw-r--r-- 1 runner runner     53 Aug 20 22:47 gradle.properties
--rwxr-xr-x 1 runner runner   8656 Aug 20 22:47 gradlew
--rw-r--r-- 1 runner runner   2848 Aug 20 22:47 gradlew.bat
--rw-r--r-- 1 runner runner 787801 Aug 20 22:47 logo_screen_translator.png
--rw-r--r-- 1 runner runner   2017 Aug 20 22:47 memory_prompt.md
--rw-r--r-- 1 runner runner   3090 Aug 20 22:47 prompt.md
--rw-r--r-- 1 runner runner    438 Aug 20 22:47 release_notes_1.0.6.md
--rw-r--r-- 1 runner runner    335 Aug 20 22:47 settings.gradle.kts
-[0m
-[0m→ [0mRead ai_memory/task_20260820_1411_phase6_refinement.md
-[0m→ [0mRead ai_memory/task_20260820_0900_phase55_overlay_preload_start.md
-[0m
-[0m$ [0mfind /home/runner/work/app-translator/app-translator/app/src -type f | sort
-/home/runner/work/app-translator/app-translator/app/src/main/AndroidManifest.xml
-/home/runner/work/app-translator/app-translator/app/src/main/assets/fonts/comic_font.ttf
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ConfigManager.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/CrashActivity.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/GlobalExceptionHandler.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/InactivityAccessibilityService.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenTranslatorApplication.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/SplashActivity.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/AiApiClient.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/AiApiModels.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/AiApiService.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/AiProvider.kt
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/online/OnlineTranslator.kt
-/home/runner/work/app-translator/app-translator/app/src/main/res/animator/splash_letter_a.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/animator/splash_letter_a2.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/animator/splash_logo_pop.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/drawable/ic_splash_logo.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/drawable/ic_splash_logo_anim.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/layout/activity_main.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/layout/activity_splash.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/mipmap-hdpi/ic_launcher.png
-/home/runner/work/app-translator/app-translator/app/src/main/res/mipmap-mdpi/ic_launcher.png
-/home/runner/work/app-translator/app-translator/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-/home/runner/work/app-translator/app-translator/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-/home/runner/work/app-translator/app-translator/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-/home/runner/work/app-translator/app-translator/app/src/main/res/raw/splash_video.mp4
-/home/runner/work/app-translator/app-translator/app/src/main/res/values-night/themes.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/values-v31/themes.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/values/strings.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/values/themes.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/xml/accessibility_service_config.xml
-/home/runner/work/app-translator/app-translator/app/src/main/res/xml/network_security_config.xml
-[0m
-[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
-[0m→ [0mRead app/build.gradle.kts
-[0m→ [0mRead app/src/main/res/layout/activity_main.xml
-[0m
-[0m# [0mTodos
-[•] Rewrite MainActivity Start button with clean StartState machine
-[ ] Re-optimize TranslationEngine preload (Default dispatcher, lock-free instantiation, independent scope)
-[ ] Ensure loading bubble renders before CPU-heavy OCR (withContext(Main) + delay)
-[ ] Verify OverlayManager Phase 6 features intact
-[ ] Compile check ./gradlew :app:compileDebugKotlin
-[ ] Write phase7 log + update 00_INDEX.md
-[0m
-Now I understand the codebase and issues. The double-click bug comes from `onResume` replacing the click listener with `{ setupPermissionsAndStart() }` (which only re-registers, doesn't start), plus the slow sync via `getRunningServices` on the main thread. Let me implement the rewrite
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-@@ -10,9 +10,8 @@
- import android.media.projection.MediaProjectionManager
- import android.net.Uri
- import android.os.Build
- import android.os.Bundle
--import android.os.SystemClock
- import android.provider.Settings
- import android.text.Editable
- import android.text.TextWatcher
- import android.view.Gravity
+Reading additional input from stdin...
+OpenAI Codex v0.149.0
+--------
+workdir: /home/runner/work/app-translator/app-translator
+model: gpt-5.6-sol
+provider: agentrouter
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: none
+session id: 01a027a2-c34d-77b3-8d6c-62f95b52c009
+--------
+user
+eksekusi perintah dari file prompt.md
+codex
+Saya akan membaca `prompt.md` terlebih dahulu, lalu menjalankan instruksinya sesuai cakupan dan kondisi repository saat ini.
+exec
+/bin/bash -lc "sed -n '1,240p' prompt.md" in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+**TUGAS FASE 10: AUTO-HIDE FLOATING BALL, OFFLINE LANGUAGE MANAGER & DEFAULT JS TRANSLATOR**
+# SYSTEM INSTRUCTION: MEMORY MANAGEMENT SYSTEM
+Kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless. Untuk menjaga kesinambungan pekerjaan tanpa membuat context window (token) overload, kamu WAJIB mematuhi protokol memori berikut:
+## 1. Protokol Membaca & Menulis Konteks
+ * **Cek Master Index:** Selalu baca file ai_memory/00_INDEX.md terlebih dahulu.
+ * **Cek Log Terbaru:** Baca maksimal 2 file log terbaru di dalam folder ai_memory/.
+ * **Buat File Log Baru:** Setelah selesai melakukan tugas, buat log task_YYYYMMDD_HHMM_phase10_ui_and_scraper.md.
+ * **Perbarui 00_INDEX.md:** Tambahkan referensi log baru ke dalam file index utama.
+ 
+# INSTRUKSI PERBAIKAN BUG & PENAMBAHAN FITUR
+Kamu bertugas melakukan penyempurnaan UI/UX secara masif pada menu utama dan fitur *floating ball*, serta mengintegrasikan *script* JS lokal sebagai *provider* translasi alternatif.
+## 1. Floating Ball: Auto-Hide, Kustomisasi & Logika Hard-Pause
+ * **Masalah Utama:** *Floating ball* ukurannya terlalu besar, menutupi layar, dan saat dijeda (*pause*), proses yang sedang berjalan tidak dibatalkan.
+ * **Solusi UI (Kustomisasi & Auto-Hide):**
+   * Tambahkan pengaturan ukuran (*slider*) di ConfigManager dan terapkan pada *LayoutParams* bola tersebut.
+   * Implementasikan *timer* selama 5 detik setiap kali bola selesai disentuh. Jika tidak ada interaksi selama 5 detik, jalankan animasi animate().translationX(...) untuk menggeser bola ke tepi layar terdekat (kiri atau kanan) dan kurangi *opacity*-nya (misal menjadi 0.5f). Sentuhan berikutnya harus mengembalikan ukuran/posisi/opacity bola dan mereset timer.
+ * **Solusi Logika Hard-Pause:**
+   * Saat bola ditekan untuk mengubah status menjadi **Pause**:
+     1. Ubah ikon menjadi ikon *Play*.
+     2. Set *flag* internal agar *Accessibility Service* berhenti mengirimkan *event capture*.
+     3. **Batalkan (cancel)** seluruh activeJob yang sedang berjalan di TranslationEngine (hentikan paksa proses OCR dan translasi).
+     4. Panggil overlayManager.clearOverlays() untuk **membersihkan seluruh canvas/bubble** dari layar seketika itu juga.
+## 2. Peningkatan UI Mode Offline (Language Pack Manager)
+ * **Masalah:** Saat tab "Offline" dipilih, pengguna tidak bisa mengatur paket bahasa ML Kit mana yang sudah/belum diunduh.
+ * **Solusi:**
+   * Modifikasi UI MainActivity. Saat tab "Offline" aktif, sembunyikan isian API Key dan Base URL, lalu tampilkan daftar (*RecyclerView* atau *Layout* dinamis) yang berisi bahasa ML Kit yang didukung.
+   * Berikan indikator ("Installed", "Not Installed", "Downloading") dan tombol untuk mengunduh (downloadModelIfNeeded) atau menghapus model secara manual.
+## 3. Integrasi "Default Translator" (Scrape AI via JS)
+ * **Masalah:** Pengguna butuh opsi gratis di mode "Online" menggunakan *script* scrape_ai.js.
+ * **Solusi:**
+   * Pada *dropdown* **AI Provider**, tambahkan opsi **"Default Translator (Free)"**.
+   * Jika dipilih, sembunyikan *API Key* dan *Base URL*.
+   * Di dalam TranslationEngine atau OnlineTranslator, buat mekanisme pengeksekusi JavaScript (bisa menggunakan android.webkit.WebView tersembunyi dengan evaluateJavascript, atau *library* seperti QuickJS/Duktape jika tersedia) untuk memanggil fungsi di dalam assets/scrape_ai.js, mengirimkan *string* asli, dan mengembalikan hasil terjemahannya.
+## 4. Verifikasi & Build
+ * Pastikan fitur dari fase sebelumnya (Dynamic Border StaticLayout & Smart Merging) tidak terhapus.
+ * Jalankan ./gradlew :app:compileDebugKotlin atau ./gradlew assembleDebug untuk memverifikasi
+ 
+exec
+/bin/bash -lc "sed -n '1,240p' ai_memory/00_INDEX.md" in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+# AI Memory Master Index — Screen Translator
 
-[0m
-Now let me rewrite MainActivity.kt:
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-@@ -76,19 +76,16 @@
- private lateinit var btnOverlay: MaterialButton
- private lateinit var btnAccessibility: MaterialButton
- private lateinit var btnNotification: MaterialButton
- private lateinit var fabStart: ExtendedFloatingActionButton
--private var lastStartClickAt = 0L
- 
--// FASE 6 FIX: Result holder for the async Start button flow, so heavy
--// permission/state checks never run on the main thread.
--private data class StartCheckResult(
--    val overlayGranted: Boolean,
--    val accessibilityEnabled: Boolean,
--    val serviceRunning: Boolean,
--    val captureIntent: Intent,
--)
-+// PHASE 7 FIX: Single source of truth for the Start button. The click
-+// listener is registered exactly once and routes on this state, so one tap
-+// always responds immediately and the "Preparing..." state is never stuck.
-+private enum class StartState { IDLE, PREPARING, RUNNING, BLOCKED }
- 
-+@Volatile private var startState = StartState.IDLE
-+
- override fun onCreate(savedInstanceState: Bundle?) {
-     config = ConfigManager(this)
-     AppCompatDelegate.setDefaultNightMode(config.appTheme)
- 
+## Status Proyek Terkini
+Aplikasi **Screen Translator** (Android, Kotlin, AGP 8.2.1, targetSdk 34, minSdk 26).
+Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit via Coroutines, Screen Capture Service, Accessibility trigger, Overlay translation bubble, OCR multi-bahasa (ja/ko/zh/hi/en), mode terjemahan offline (ML Kit) dan online (OpenAI/Gemini via Retrofit), serta Split APK per ABI.
+**Build debug SUCCESS; release R8 terhenti karena heap daemon 512 MiB.** Runtime cache online/ML Kit, overlay thread handling, batch parsing, dan global crash reporting sudah di-hardening. Seluruh Material Slider kini continuous. Fase 4 selesai: offset status bar/filter OCR, debounce default 1,5 detik, dan cancellation job saat aktivitas layar sudah diterapkan. Fase 6 selesai: semua panggilan ML Kit dibungkus timeout 7 detik (anti-hang offline) + dummy preload model ke RAM, alur tombol Start dipindah ke thread IO (anti-ANR/multi-click), dan teks bubble diberi line spacing + pemuaian vertikal sentris. Fase 7 selesai: tombol Start ditulis ulang dengan state machine bersih (IDLE/PREPARING/RUNNING/BLOCKED, listener tunggal, hilangkan bug klik dua kali), pre-load… **Fase 8 selesai:** smart OCR block merging (size & proximity aware) via `MergedBlock` + `mergeBlocks()` dengan syarat vertikal < 1.5×line-height, horizontal overlap/≤25% gap, dan toleransi ukuran 30% — dialog kecil tidak lagi ke-fuse dengan SFX besar; `translateBlocks` & `onlineTranslate` memakai mergedBlocks; coroutine & timeout Fase 7 tetap utuh.
 
-[0m
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-@@ -95,19 +95,20 @@
- // Register launchers before lifecycle starts
- screenCaptureLauncher = registerForActivityResult(
-     ActivityResultContracts.StartActivityForResult(),
- ) { result ->
--    fabStart.isEnabled = true
-     if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-         val serviceIntent = Intent(this, ScreenCaptureService::class.java).apply {
-             putExtra("resultCode", result.resultCode)
-             putExtra("data", result.data)
-         }
-         startForegroundService(serviceIntent)
--        fabStart.text = "Service Running"
--        fabStart.setIconResource(android.R.drawable.ic_media_pause)
-+        startState = StartState.RUNNING
-+        renderStartButton()
-         Snackbar.make(fabStart, "Service started! You can close this app.", Snackbar.LENGTH_LONG).show()
-     } else {
-+        startState = StartState.IDLE
-+        renderStartButton()
-         Snackbar.make(fabStart, "Screen capture permission denied.", Snackbar.LENGTH_LONG).show()
-     }
- }
- 
+## Riwayat (terbaru di atas)
 
-[0m
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-@@ -136,44 +136,24 @@
- private val serviceStopReceiver = object : android.content.BroadcastReceiver() {
-     override fun onReceive(context: Context?, intent: Intent?) {
-         if (intent?.action == "com.ervareza.screentranslator.SERVICE_STOPPED") {
-             refreshPermissionStatuses()
-+            syncServiceState()
-         }
-     }
- }
- 
- override fun onResume() {
-     super.onResume()
-     refreshPermissionStatuses()
-+    syncServiceState()
- 
-     val filter = android.content.IntentFilter("com.ervareza.screentranslator.SERVICE_STOPPED")
-     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-         registerReceiver(serviceStopReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-     } else {
-         registerReceiver(serviceStopReceiver, filter)
-     }
--
--    // ISSUE-006 FIX: Sync FAB with actual service state
--    if (isServiceRunning(ScreenCaptureService::class.java)) {
--        fabStart.text = "Service Running"
--        fabStart.setIconResource(android.R.drawable.ic_media_pause)
--        fabStart.isEnabled = true
--        fabStart.setOnClickListener {
--            val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
--            stopBroadcast.setPackage(packageName)
--            sendBroadcast(stopBroadcast)
--
--            val stopIntent = Intent(this, ScreenCaptureService::class.java).apply {
--                action = "ACTION_STOP"
--            }
--            startService(stopIntent)
--        }
--    } else {
--        fabStart.text = "Start Service"
--        fabStart.setIconResource(android.R.drawable.ic_media_play)
--        fabStart.isEnabled = true
--        fabStart.setOnClickListener { setupPermissionsAndStart() }
--    }
- }
- 
- override fun onPause() {
-     super.onPause()
+| Tanggal | File Log | Ringkasan |
+|---------|----------|-----------|
+| 2026-08-22 09:35 | [task_20260822_0935_phase10_ui_and_scraper.md](task_20260822_0935_phase10_ui_and_scraper.md) | Floating ball size + auto-hide, hard-pause cancellation/clear, Default Translator provider, dan asset JS lokal. Build terhalang Java tidak tersedia. |
+| 2026-08-22 09:23 | [task_20260822_0923_phase9_ui_floating.md](task_20260822_0923_phase9_ui_floating.md) | Dynamic bubble border berbasis StaticLayout + floating control ball draggable untuk pause/play; build terhalang Java tidak tersedia. |
+| 2026-08-21 08:02 | [task_20260821_0802_phase8_block_merging.md](task_20260821_0802_phase8_block_merging.md) | Smart OCR block merging (size & proximity aware) + anti-overlap SFX/dialog: data class MergedBlock + mergeBlocks() dengan 3 syarat (vertikal < 1.5×line height, horizontal overlap/<=25% gap, |ΔlineHeight| <= 30%); translateBlocks & onlineTranslate pakai mergedBlocks; coroutine & timeout Fase 7 utuh. Compile & spotless sukses. |
+| 2026-08-20 14:11 | [task_20260820_1411_phase6_refinement.md](task_20260820_1411_phase6_refinement.md) | Timeout 7 dtk pada ML Kit (anti-hang offline) + dummy preload, tombol Start dipindah ke IO (anti-ANR), line spacing & pemuaian sentris bubble. Compile debug sukses. |
+| 2026-08-20 08:15 | [task_20260820_0815_phase5_batch_overlay_font.md](task_20260820_0815_phase5_batch_overlay_font.md) | Batch fullscreen overlay, clear aman saat scroll/screenshot, dan custom font Comic dipasang. Compile debug sukses. |
+| 2026-08-20 09:00 | [task_20260820_0900_phase55_overlay_preload_start.md](task_20260820_0900_phase55_overlay_preload_start.md) | Fix touch interception, StaticLayout wrapping, offline loading bubble, preload model, debounce/state tombol Start. Compile debug sukses. |
+| 2026-08-20 07:46 | [task_20260820_0746_phase4_overlay_debounce_cancellation.md](task_20260820_0746_phase4_overlay_debounce_cancellation.md) | Koreksi/filter status bar, debounce 1,5 detik, dan pembatalan OCR/network aktif saat scroll/touch; build debug sukses. |
+| 2026-08-20 05:53 | [task_20260820_0553_phase3_material_slider_fix.md](task_20260820_0553_phase3_material_slider_fix.md) | Menghapus stepSize dari seluruh Material Slider dan memvalidasi konversi nilai listener; build debug sukses. |
+| 2026-08-20 05:28 | [task_20260820_0528_phase25_global_crash_handler.md](task_20260820_0528_phase25_global_crash_handler.md) | Perbaikan thread overlay dan parsing batch, GlobalExceptionHandler, CrashActivity, serta log crash lokal. |
+| 2026-08-20 02:27 | [task_20260820_0227_build_release_fix.md](task_20260820_0227_build_release_fix.md) | Fix ProGuard/R8 untuk mode online (Gson/Retrofit keep rules), verifikasi build debug+release sukses, verifikasi 5 Split APK ABI. |
+| 2026-08-20 03:15 | [task_20260820_0315_runtime_cache_hardening.md](task_20260820_0315_runtime_cache_hardening.md) | Hardening lifecycle splash, refresh client API saat konfigurasi berubah, dan cache ML Kit thread-safe; build debug+release sukses. |
+| 2026-08-20 04:33 | [task_20260820_0433_phase2_translation_ui_spotless.md](task_20260820_0433_phase2_translation_ui_spotless.md) | Spotless ktlint, satu request translasi online per layar, dan loading bubble overlay sebelum hasil tersedia; compile berhasil. |
 
-[0m
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
-@@ -545,19 +545,41 @@
-             if (notifOk) android.R.drawable.checkbox_on_background else android.R.drawable.checkbox_off_background,
-         )
-         btnNotification.isEnabled = !notifOk
- 
--        val allReady = overlayOk && accessOk
--        fabStart.isEnabled = allReady
--        if (!allReady) {
--            fabStart.text = "Grant Permissions First"
--            fabStart.setIconResource(android.R.drawable.ic_dialog_alert)
--        } else {
--            fabStart.text = "Start Service"
--            fabStart.setIconResource(android.R.drawable.ic_media_play)
-+        // PHASE 7 FIX: Permission changes only affect the button when we are not
-+        // busy preparing or already running.
-+        if (startState != StartState.RUNNING && startState != StartState.PREPARING) {
-+            startState = if (overlayOk && accessOk) StartState.IDLE else StartState.BLOCKED
-         }
-+        renderStartButton()
-     }
- 
-+    private fun renderStartButton() {
-+        when (startState) {
-+            StartState.BLOCKED -> {
-+                fabStart.isEnabled = false
-+                fabStart.text = "Grant Permissions First"
-+                fabStart.setIconResource(android.R.drawable.ic_dialog_alert)
-+            }
-+            StartState.IDLE -> {
-+                fabStart.isEnabled = true
-+                fabStart.text = "Start Service"
-+                fabStart.setIconResource(android.R.drawable.ic_media_play)
-+            }
-+            StartState.PREPARING -> {
-+                fabStart.isEnabled = false
-+                fabStart.text = "Preparing..."
-+                fabStart.setIconResource(android.R.drawable.ic_media_play)
-+            }
-+            StartState.RUNNING -> {
-+                fabStart.isEnabled = true
-+                fabStart.text = "Service Running"
-+                fabStart.setIconResource(android.R.drawable.ic_media_pause)
-+            }
-+        }
-+    }
-+
-     private fun setupPermissionsAndStart() {
-         btnOverlay.setOnClickListener {
-             if (!Settings.canDrawOverlays(this)) {
-                 startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
-@@ -570,58 +592,76 @@
-             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-             }
-         }
-+        // PHASE 7 FIX: Registered exactly once; state routing lives in the enum.
-         fabStart.setOnClickListener {
--            val now = SystemClock.elapsedRealtime()
--            if (now - lastStartClickAt < 500L) return@setOnClickListener
--            lastStartClickAt = now
--            fabStart.isEnabled = false
--            fabStart.text = "Preparing..."
--            var launched = false
--            lifecycleScope.launch {
--                try {
--                    // FASE 6 FIX: All heavy checks (overlay/accessibility state,
--                    // isServiceRunning, MediaProjectionManager) run on IO, never on Main.
--                    val result = withContext(Dispatchers.IO) {
--                        StartCheckResult(
--                            overlayGranted = Settings.canDrawOverlays(this@MainActivity),
--                            accessibilityEnabled = isAccessibilityServiceEnabled(),
--                            serviceRunning = isServiceRunning(ScreenCaptureService::class.java),
--                            captureIntent = (getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).createScreenCaptureIntent(),
--                        )
--                    }
--                    if (!result.overlayGranted) {
--                        Snackbar.make(fabStart, "Please grant overlay permission first.", Snackbar.LENGTH_SHORT).show()
--                        return@launch
--                    }
--                    if (!result.accessibilityEnabled) {
--                        Snackbar.make(fabStart, "Please enable accessibility service first.", Snackbar.LENGTH_SHORT).show()
--                        return@launch
--                    }
--                    if (result.serviceRunning) {
--                        val stopIntent = Intent("com.ervareza.screentranslator.ACTION_STOP")
--                        sendBroadcast(stopIntent)
--                        return@launch
--                    }
--                    launched = true
--                    screenCaptureLauncher.launch(result.captureIntent)
--                } catch (e: Exception) {
--                    fabStart.isEnabled = true
--                    fabStart.text = "Start Service"
--                    Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
--                } finally {
--                    if (!launched) {
--                        fabStart.isEnabled = true
--                        refreshPermissionStatuses()
--                    }
--                }
-+            when (startState) {
-+                StartState.RUNNING -> stopService()
-+                StartState.IDLE -> startServiceFlow()
-+                StartState.PREPARING, StartState.BLOCKED -> Unit
-             }
-         }
-         refreshPermissionStatuses()
-     }
- 
--    private fun startScreenCapture() {
--        val mgr = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
--        screenCaptureLauncher.launch(mgr.createScreenCaptureIntent())
-+    private fun startServiceFlow() {
-+        if (startState != StartState.IDLE) return
-+        startState = StartState.PREPARING
-+        renderStartButton()
-+
-+        // createScreenCaptureIntent() is cheap; build it instantly so the
-+        // permission dialog can open as soon as the async checks complete.
-+        val captureIntent = try {
-+            (getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager).createScreenCaptureIntent()
-+        } catch (e: Exception) {
-+            null
-+        }
-+        if (captureIntent == null) {
-+            startState = StartState.IDLE
-+            renderStartButton()
-+            Snackbar.make(fabStart, "Failed to request screen capture", Snackbar.LENGTH_SHORT).show()
-+            return
-+        }
-+
-+        // PHASE 7 FIX: Only the permission evaluation runs off-thread; the UI is
-+        // never locked and the button reacts on the first tap.
-+        lifecycleScope.launch {
-+            val allReady = withContext(Dispatchers.IO) {
-+                Settings.canDrawOverlays(this@MainActivity) && isAccessibilityServiceEnabled()
-+            }
-+            if (!allReady) {
-+                startState = StartState.BLOCKED
-+                renderStartButton()
-+                Snackbar.make(fabStart, "Please grant overlay & accessibility permissions first.", Snackbar.LENGTH_SHORT).show()
-+                return@launch
-+            }
-+            screenCaptureLauncher.launch(captureIntent)
-+        }
-     }
-+
-+    private fun stopService() {
-+        val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
-+        stopBroadcast.setPackage(packageName)
-+        sendBroadcast(stopBroadcast)
-+        val stopIntent = Intent(this, ScreenCaptureService::class.java).apply {
-+            action = "ACTION_STOP"
-+        }
-+        startService(stopIntent)
-+        startState = StartState.IDLE
-+        renderStartButton()
-+    }
-+
-+    private fun syncServiceState() {
-+        lifecycleScope.launch {
-+            // getRunningServices is deprecated and slow; always run it off-thread.
-+            val running = withContext(Dispatchers.IO) { isServiceRunning(ScreenCaptureService::class.java) }
-+            if (running) {
-+                startState = StartState.RUNNING
-+            } else if (startState == StartState.RUNNING) {
-+                val ready = Settings.canDrawOverlays(this@MainActivity) && isAccessibilityServiceEnabled()
-+                startState = if (ready) StartState.IDLE else StartState.BLOCKED
-+            }
-+            renderStartButton()
-+        }
-+    }
- }
+## Catatan
+- Baca maks. 2 log terbaru bila butuh detail; jangan baca seluruh folder sekaligus.
+- Jika jumlah log > 10, arsipkan ke `archive_phase_N.md` lalu hapus log individu.
 
-[0m
-[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/MainActivity.kt[90m [offset=50, limit=130][0m
-[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/MainActivity.kt[90m [offset=510][0m
-MainActivity looks good. Let me check if the unused `recognizers` lazy map is referenced anywhere, then
-[0m✱ [0mGrep "recognizers"[90m in app/src/main/java/com/ervareza/screentranslator/MainActivity.kt · 2 matches[0m
-[0m
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-@@ -25,12 +25,14 @@
- import kotlinx.coroutines.Dispatchers
- import kotlinx.coroutines.SupervisorJob
- import kotlinx.coroutines.TimeoutCancellationException
- import kotlinx.coroutines.cancel
-+import kotlinx.coroutines.delay
- import kotlinx.coroutines.launch
- import kotlinx.coroutines.Job
- import kotlinx.coroutines.ensureActive
- import kotlinx.coroutines.suspendCancellableCoroutine
-+import kotlinx.coroutines.withContext
- import kotlinx.coroutines.withTimeout
- import kotlin.coroutines.resume
- import kotlin.coroutines.resumeWithException
- 
+exec
+/bin/bash -lc "find ai_memory -maxdepth 1 -type f -printf '%T@ %p
+' | sort -nr | head -2" in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+1787371361.5204066770 ai_memory/task_20260822_0935_phase10_ui_and_scraper.md
+1787371361.5204066770 ai_memory/task_20260822_0923_phase9_ui_floating.md
 
-[0m
-MainActivity task done. Now TranslationEngine re
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-@@ -43,8 +43,12 @@
- 
- // ISSUE-011 FIX: Everything runs off the main thread. Heavy clients are
- // initialized lazily (only on first use) so the service starts instantly.
- private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-+// PHASE 7 FIX: Independent background job (CPU-bound, Default) for the ML Kit
-+// pre-load, fully decoupled from the capture pipeline so a warm-up never
-+// blocks/stalls a real OCR/translate request.
-+private val preloadScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
- @Volatile private var activeJob: Job? = null
- 
- private val statusBarHeight: Int by lazy {
-     val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
+exec
+/bin/bash -lc 'rg --files | head -80' in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+CHANGELOG.md
+release_notes_1.0.6.md
+crash_2026-08-20_12-43-58.txt
+ai_memory/task_20260821_0802_phase8_block_merging.md
+memory_prompt.md
+ai_memory/task_20260820_0315_runtime_cache_hardening.md
+ai_memory/task_20260820_0900_phase55_overlay_preload_start.md
+ai_memory/task_20260820_0433_phase2_translation_ui_spotless.md
+ai_memory/task_20260820_0815_phase5_batch_overlay_font.md
+ai_memory/task_20260820_0553_phase3_material_slider_fix.md
+ai_memory/task_20260820_0528_phase25_global_crash_handler.md
+ai_memory/task_20260822_0935_phase10_ui_and_scraper.md
+ai_memory/task_20260820_0227_build_release_fix.md
+ai_memory/task_20260820_0746_phase4_overlay_debounce_cancellation.md
+ai_memory/task_20260820_2254_phase7_rewrite.md
+ai_memory/task_20260822_0923_phase9_ui_floating.md
+ai_memory/task_20260820_1411_phase6_refinement.md
+ai_memory/00_INDEX.md
+build.gradle.kts
+prompt.md
+gradle.properties
+scrape_ai.js
+gradlew.bat
+logo_screen_translator.png
+deleted_files.txt
+ai-response-recap.txt
+app/build.gradle.kts
+app/proguard-rules.pro
+gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+LICENSE
+README.md
+app/src/main/AndroidManifest.xml
+assets/logo_screen_translator.png
+gradlew
+CONTRIBUTING.md
+settings.gradle.kts
+app/src/main/assets/fonts/comic_font.ttf
+app/src/main/res/values/themes.xml
+app/src/main/res/values/strings.xml
+app/src/main/java/com/ervareza/screentranslator/ConfigManager.kt
+app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+app/src/main/java/com/ervareza/screentranslator/InactivityAccessibilityService.kt
+app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
+app/src/main/java/com/ervareza/screentranslator/CrashActivity.kt
+app/src/main/java/com/ervareza/screentranslator/TranslationControlState.kt
+app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+app/src/main/res/raw/splash_video.mp4
+app/src/main/java/com/ervareza/screentranslator/online/AiApiModels.kt
+app/src/main/java/com/ervareza/screentranslator/online/OnlineTranslator.kt
+app/src/main/java/com/ervareza/screentranslator/online/AiProvider.kt
+app/src/main/java/com/ervareza/screentranslator/online/AiApiService.kt
+app/src/main/java/com/ervareza/screentranslator/online/AiApiClient.kt
+app/src/main/java/com/ervareza/screentranslator/GlobalExceptionHandler.kt
+app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
+app/src/main/java/com/ervareza/screentranslator/ScreenTranslatorApplication.kt
+app/src/main/java/com/ervareza/screentranslator/SplashActivity.kt
+app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
+app/src/main/res/drawable/ic_splash_logo_anim.xml
+app/src/main/res/drawable/ic_splash_logo.xml
+app/src/main/res/layout/activity_main.xml
+app/src/main/res/layout/activity_splash.xml
+app/src/main/res/mipmap-mdpi/ic_launcher.png
+app/src/main/res/values-night/themes.xml
+app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+app/src/main/res/xml/network_security_config.xml
+app/src/main/res/xml/accessibility_service_config.xml
+app/src/main/res/values-v31/themes.xml
+app/src/main/res/mipmap-hdpi/ic_launcher.png
+app/src/main/res/mipmap-xhdpi/ic_launcher.png
+app/src/main/res/animator/splash_letter_a2.xml
+app/src/main/res/animator/splash_logo_pop.xml
+app/src/main/res/animator/splash_letter_a.xml
 
-[0m
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-@@ -70,10 +70,28 @@
- 
- // Lazy: network client is only built when online mode is actually used.
- private val onlineTranslator by lazy { OnlineTranslator(context) }
- 
--init { scope.launch(Dispatchers.IO) { preloadOfflineModel() } }
-+init { preloadScope.launch(Dispatchers.Default) { preloadOfflineModel() } }
- 
-+private val scanningIndicatorKey = "phase7_scanning"
-+
-+// PHASE 7 FIX: Show a visible loading bubble and force Android to render it
-+// before the CPU-heavy OCR grabs all cores. withContext(Main) flushes the
-+// queued overlay draw onto the UI thread, then delay(50) gives the system
-+// a rendering window.
-+private suspend fun showScanningIndicator() {
-+    val metrics = context.resources.displayMetrics
-+    val density = metrics.density
-+    val width = (metrics.widthPixels * 0.42f).toInt().coerceAtLeast(1)
-+    val height = (48 * density).toInt()
-+    val left = (metrics.widthPixels - width) / 2
-+    val top = metrics.heightPixels / 3
-+    overlayManager.drawLoadingBubble(Rect(left, top, left + width, top + height), scanningIndicatorKey)
-+    withContext(Dispatchers.Main) { }
-+    delay(50)
-+}
-+
- // FASE 6 FIX: ML Kit can freeze internally and hang the coroutine forever.
- // Wrap every on-device .await() call with a bounded timeout so a stuck model
- // throws TimeoutCancellationException instead of blocking all future captures.
- private suspend fun <T> mlKitCall(tag: String, block: suspend () -> T): T? = try {
+exec
+/bin/bash -lc "sed -n '1,180p' ai_memory/task_20260822_0923_phase9_ui_floating.md" in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+# Task Log: Phase 9 Dynamic Bubble Border & Floating Control Ball
 
-[0m
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-@@ -103,17 +103,20 @@
- 
- private suspend fun preloadOfflineModel() {
-     if (config.translationMode != "offline") return
-     val source = config.sourceLanguage.takeUnless { it == "auto" } ?: "en"
--    runCatching { getTranslator(source, config.targetLanguage).downloadModelIfNeeded().await() }
--    // FASE 6 FIX: Dummy calls force ML Kit to load OCR + translate models from
--    // storage into RAM while the service starts, avoiding the first-capture freeze.
-+    val target = config.targetLanguage
-+    runCatching { getTranslator(source, target).downloadModelIfNeeded().await() }
-+    // PHASE 7 FIX: Warm the OCR + translate models into RAM from inside the
-+    // independent preloadScope (Dispatchers.Default, CPU-bound). The clients
-+    // are created lock-free (see getRecognizer/getTranslator), so a real
-+    // capture can instantiate its own recognizer concurrently without stalls.
-     runCatching {
-         val dummy = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-         try {
-             val dummyImage = InputImage.fromBitmap(dummy, 0)
-             mlKitCall("PreloadOCR") { getRecognizer(source).process(dummyImage).await() }
--            mlKitCall("PreloadTranslate") { getTranslator(source, config.targetLanguage).translate("test").await() }
-+            mlKitCall("PreloadTranslate") { getTranslator(source, target).translate("test").await() }
-         } finally {
-             dummy.recycle()
-         }
-     }
+## Status
+Implemented. Build verification was attempted but Java/JAVA_HOME is unavailable in the environment.
 
-[0m
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-@@ -121,32 +121,41 @@
-         }
-     }
- }
- 
-+// PHASE 7 FIX: Client creation happens OUTSIDE the lock. TextRecognition.
-+// getClient() can take time on first call; previously it ran inside a
-+// synchronized block, so a pre-load warm-up could block a real capture's
-+// getRecognizer() and stall the first screenshot.
- private fun getRecognizer(code: String): TextRecognizer {
-+    val cached = synchronized(recognizerCache) { recognizerCache[code] }
-+    if (cached != null) return cached
-+    val created = createRecognizer(code)
-     return synchronized(recognizerCache) {
--        recognizerCache.getOrPut(code) {
--            when (code) {
--                "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
--                "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
--                "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
--                "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
--                else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
--            }
--        }
-+        recognizerCache[code] ?: created.also { recognizerCache[code] = it }
-     }
- }
- 
-+private fun createRecognizer(code: String): TextRecognizer = when (code) {
-+    "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
-+    "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
-+    "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-+    "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
-+    else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-+}
-+
- private fun getTranslator(sourceLang: String, targetLang: String): Translator {
-     val key = "${sourceLang}_$targetLang"
-+    val cached = synchronized(translatorCache) { translatorCache[key] }
-+    if (cached != null) return cached
-+    val created = Translation.getClient(
-+        TranslatorOptions.Builder()
-+            .setSourceLanguage(sourceLang)
-+            .setTargetLanguage(targetLang)
-+            .build(),
-+    )
-     return synchronized(translatorCache) {
--        translatorCache.getOrPut(key) {
--            val options = TranslatorOptions.Builder()
--                .setSourceLanguage(sourceLang)
--                .setTargetLanguage(targetLang)
--                .build()
--            Translation.getClient(options)
--        }
-+        translatorCache[key] ?: created.also { translatorCache[key] = it }
-     }
- }
- 
- // ISSUE-011 FIX: Async pipeline. Bitmap conversion + OCR + translation all run
+## Changes
+- Overlay translation bubble bounds now derive from `StaticLayout.width` and `layout.height`, with 10dp padding and symmetric centering around the OCR bounds.
+- Added `TranslationControlState` shared pause flag.
+- Added draggable `TYPE_APPLICATION_OVERLAY` control ball to `ScreenCaptureService`; tap toggles pause/play and updates the pause/play glyph.
+- Accessibility triggers and screen capture are ignored while paused.
 
-[0m
-Now refactor `getRecognizer` and `getTranslator` to be lock-free during
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-@@ -175,27 +175,32 @@
- }
- 
- private suspend fun processImageInternal(bitmap: Bitmap) {
-     kotlinx.coroutines.currentCoroutineContext().ensureActive()
-+    showScanningIndicator()
-     val image = InputImage.fromBitmap(bitmap, 0)
-+    try {
-+        if (config.sourceLanguage == "auto") {
-+            val supportedCodes = listOf("ja", "ko", "zh", "hi", "en")
-+            val installedCodes = supportedCodes.filter { config.isModelInstalled(it) }
- 
--    if (config.sourceLanguage == "auto") {
--        val supportedCodes = listOf("ja", "ko", "zh", "hi", "en")
--        val installedCodes = supportedCodes.filter { config.isModelInstalled(it) }
--
--        if (installedCodes.isEmpty()) {
--            Log.e("Translator", "Auto-detect failed: No OCR models are installed!")
--            return
-+            if (installedCodes.isEmpty()) {
-+                Log.e("Translator", "Auto-detect failed: No OCR models are installed!")
-+                return
-+            }
-+            runFallbackChain(image, installedCodes, 0)
-+        } else {
-+            val recognizer = getRecognizer(config.sourceLanguage)
-+            try {
-+                val text = mlKitCall("OCR") { recognizer.process(image).await() }
-+                overlayManager.removeLoading(scanningIndicatorKey)
-+                if (text != null && text.text.isNotBlank()) identifyAndTranslate(text)
-+            } catch (e: Exception) {
-+                Log.e("Translator", "OCR Failed", e)
-+            }
-         }
--        runFallbackChain(image, installedCodes, 0)
--    } else {
--        val recognizer = getRecognizer(config.sourceLanguage)
--        try {
--            val text = mlKitCall("OCR") { recognizer.process(image).await() }
--            if (text != null && text.text.isNotBlank()) identifyAndTranslate(text)
--        } catch (e: Exception) {
--            Log.e("Translator", "OCR Failed", e)
--        }
-+    } finally {
-+        overlayManager.removeLoading(scanningIndicatorKey)
-     }
- }
- 
- private suspend fun runFallbackChain(image: InputImage, codes: List<String>, index: Int) {
-@@ -203,8 +208,9 @@
-     try {
-         val recognizer = getRecognizer(codes[index])
-         val text = mlKitCall("OCR-${codes[index]}") { recognizer.process(image).await() }
-         if (text != null && text.text.isNotBlank()) {
-+            overlayManager.removeLoading(scanningIndicatorKey)
-             identifyAndTranslate(text)
-         } else {
-             runFallbackChain(image, codes, index + 1)
-         }
+## Verification
+- `sh gradlew :app:compileDebugKotlin` could not run: `JAVA_HOME is not set and no 'java' command could be found`.
 
-[0m
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-@@ -314,8 +314,9 @@
- 
- // ISSUE-010 FIX: Clean up all resources
- fun close() {
-     scope.cancel()
-+    preloadScope.cancel()
-     runCatching { languageIdentifier?.close() }
-     languageIdentifier = null
-     recognizerCache.values.forEach { runCatching { it.close() } }
-     recognizerCache.clear()
+exec
+/bin/bash -lc "sed -n '1,240p' ai_memory/task_20260822_0935_phase10_ui_and_scraper.md" in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+# Task Log: Phase 10 UI and Scraper
 
-[0m
-[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt[90m [offset=37, limit=190][0m
-[0m✱ [0mGrep "LINE_SPACING|setLineSpacing|layout.height > r.height"[90m in app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt · 4 matches[0m
-TranslationEngine done. Now let me verify OverlayManager Phase 6 features are intact and run the build
-[0m
-[0m# [0mTodos
-[✓] Rewrite MainActivity Start button with clean StartState machine
-[✓] Re-optimize TranslationEngine preload (Default dispatcher, lock-free instantiation, independent scope)
-[✓] Ensure loading bubble renders before CPU-heavy OCR (withContext(Main) + delay)
-[✓] Verify OverlayManager Phase 6 features intact
-[•] Compile check ./gradlew :app:compileDebugKotlin
-[ ] Write phase7 log + update 00_INDEX.md
-[0m
-Phase 6 features intact. Now compiling
-[0m$ [0m./gradlew :app:compileDebugKotlin 2>&1
+## Status
+Implemented. Build verification remains blocked because Java/JAVA_HOME is unavailable.
+
+## Changes
+- Added persisted floating-ball size setting and 5-second edge auto-hide with restore-on-touch.
+- Pause now cancels the active translation job and clears overlays immediately.
+- Added `Default Translator (Free)` provider option and local `assets/scrape_ai.js` entry point.
+- Existing offline model manager UI was retained; model status/download controls were already present.
+
+## Verification
+- `sh gradlew :app:compileDebugKotlin` attempted; environment reports no Java executable/JAVA_HOME.
+
+exec
+/bin/bash -lc 'git status --short' in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+ M ai-response-recap.txt
+
+codex
+Instruksi fase 10 ternyata sudah tercatat sebagai implementasi sebelumnya. Saya akan tetap menjalankan verifikasi yang diminta (`compileDebugKotlin`) dan memeriksa hasilnya, lalu memperbarui log/index sesuai protokol memori.
+exec
+/bin/bash -lc './gradlew :app:compileDebugKotlin' in /home/runner/work/app-translator/app-translator
+exec
+/bin/bash -lc './gradlew :app:compileDebugKotlin' in /home/runner/work/app-translator/app-translator
+ exited 1 in 93147ms:
+Fetching distribution.
+Downloading https://services.gradle.org/distributions/gradle-8.7-bin.zip
+............10%.............20%.............30%.............40%............50%.............60%.............70%.............80%.............90%............100%
 Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:checkKotlinGradlePluginConfigurationErrors
 > Task :app:preBuild UP-TO-DATE
@@ -692,183 +227,64 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
+> Task :app:mergeDebugResources FAILED
+> Task :app:parseDebugLocalResources
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_4-1787371510876.json
+FAILURE: 
+Build failed with an exception.
+
+* What went wrong:
+7 actionable tasks: 7 executed
+Execution failed for task ':app:mergeDebugResources'.
+> Multiple task action failures occurred:
+   > A failure occurred while executing com.android.build.gradle.internal.res.ResourceCompilerRunnable
+      > Resource compilation failed (/home/runner/work/app-translator/app-translator/app/build/intermediates/incremental/debug/mergeDebugResources/merged.dir/values-h320dp-port-v13/values-h320dp-port-v13.xml (No such file or directory). Cause: null). Check logs for more details.
+   > A failure occurred while executing com.android.build.gradle.internal.res.ResourceCompilerRunnable
+      > Resource compilation failed (/home/runner/work/app-translator/app-translator/app/build/intermediates/incremental/debug/mergeDebugResources/merged.dir/values-cs/values-cs.xml (No such file or directory). Cause: null). Check logs for more details.
+   > A failure occurred while executing com.android.build.gradle.internal.res.ResourceCompilerRunnable
+      > Resource compilation failed (/home/runner/work/app-translator/app-translator/app/build/intermediates/incremental/debug/mergeDebugResources/merged.dir/values-si/values-si.xml (No such file or directory). Cause: null). Check logs for more details.
+   > A failure occurred while executing com.android.build.gradle.internal.res.ResourceCompilerRunnable
+      > Resource compilation failed (/home/runner/work/app-translator/app-translator/app/build/intermediates/incremental/debug/mergeDebugResources/merged.dir/values-watch-v21/values-watch-v21.xml (No such file or directory). Cause: null). Check logs for more details.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 32s
+
+ exited 1 in 75096ms:
+Starting a Gradle Daemon, 1 busy Daemon could not be reused, use --status for details
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
-> Task :app:mergeDebugResources
 > Task :app:parseDebugLocalResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:processDebugManifestForPackage
 > Task :app:processDebugResources
 
-> Task :app:compileDebugKotlin
-w: file:///home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt:66:98 'scaledDensity: Float' is deprecated. Deprecated in Java
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1787266323985.json
+> Task :app:compileDebugKotlin FAILED
+e: file:///home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt:12:25 Conflicting import, imported name 'PixelFormat' is ambiguous
+e: file:///home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt:28:25 Conflicting import, imported name 'PixelFormat' is ambiguous
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_4-1787371547553.json
 
-BUILD SUCCESSFUL in 31s
-14 actionable tasks: 14 executed
-[0m
-Compile succeeded (only pre-existing `scaledDensity` deprecation warning). Let me also verify spotless formatting since the project enforces ktlint:
-[0m$ [0m./gradlew spotlessCheck 2>&1
-Configuration 'spotless996157737' was resolved during configuration time.
-This is a build performance and scalability issue.
-See https://github.com/gradle/gradle/issues/2298
-Run with --info for a stacktrace.
-> Task :spotlessInternalRegisterDependencies
-
-> Task :app:spotlessKotlin FAILED
-Step 'ktlint' found problem in 'src/main/java/com/ervareza/screentranslator/OverlayManager.kt':
-Error on line: 110, column: 37
-rule: standard:max-line-length
-Exceeded max line length (140)
-java.lang.AssertionError: Error on line: 110, column: 37
-rule: standard:max-line-length
-Exceeded max line length (140)
-	at com.diffplug.spotless.glue.ktlint.compat.KtLintCompatReporting.report(KtLintCompatReporting.java:23)
-	at com.diffplug.spotless.glue.ktlint.compat.KtLintCompat1Dot0Dot0Adapter$FormatterCallback.invoke(KtLintCompat1Dot0Dot0Adapter.java:78)
-	at com.diffplug.spotless.glue.ktlint.compat.KtLintCompat1Dot0Dot0Adapter$FormatterCallback.invoke(KtLintCompat1Dot0Dot0Adapter.java:73)
-	at com.pinterest.ktlint.rule.engine.api.KtLintRuleEngine.format(KtLintRuleEngine.kt:198)
-	at com.diffplug.spotless.glue.ktlint.compat.KtLintCompat1Dot0Dot0Adapter.format(KtLintCompat1Dot0Dot0Adapter.java:117)
-	at com.diffplug.spotless.glue.ktlint.KtlintFormatterFunc.applyWithFile(KtlintFormatterFunc.java:68)
-	at com.diffplug.spotless.FormatterFunc$NeedsFile.apply(FormatterFunc.java:154)
-	at com.diffplug.spotless.FormatterStepImpl$Standard.format(FormatterStepImpl.java:82)
-	at com.diffplug.spotless.FormatterStep$Strict.format(FormatterStep.java:103)
-	at com.diffplug.spotless.Formatter.compute(Formatter.java:246)
-	at com.diffplug.spotless.PaddedCell.calculateDirtyState(PaddedCell.java:203)
-	at com.diffplug.spotless.PaddedCell.calculateDirtyState(PaddedCell.java:190)
-	at com.diffplug.gradle.spotless.SpotlessTaskImpl.processInputFile(SpotlessTaskImpl.java:105)
-	at com.diffplug.gradle.spotless.SpotlessTaskImpl.performAction(SpotlessTaskImpl.java:89)
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
-	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
-	at org.gradle.api.internal.project.taskfactory.IncrementalTaskAction.doExecute(IncrementalTaskAction.java:45)
-	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
-	at org.gradle.api.internal.project.taskfactory.IncrementalTaskAction.execute(IncrementalTaskAction.java:26)
-	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
-	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:244)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
-	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
-	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:229)
-	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:212)
-	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:195)
-	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:162)
-	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:105)
-	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:44)
-	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:59)
-	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:56)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:200)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:195)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
-	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
-	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:56)
-	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:44)
-	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:41)
-	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:74)
-	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
-	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:50)
-	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:28)
-	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:67)
-	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:37)
-	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:61)
-	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:26)
-	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:67)
-	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:45)
-	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:40)
-	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:29)
-	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
-	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$1(BuildCacheStep.java:75)
-	at org.gradle.internal.Either$Right.fold(Either.java:175)
-	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
-	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:73)
-	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:48)
-	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:46)
-	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:35)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:76)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:54)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:54)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:36)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
-	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:49)
-	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:27)
-	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:71)
-	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:39)
-	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:65)
-	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:36)
-	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:106)
-	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:55)
-	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:64)
-	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:43)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.executeWithNonEmptySources(AbstractSkipEmptyWorkStep.java:125)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:56)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:36)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
-	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:36)
-	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:23)
-	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:75)
-	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:41)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$execute$0(AssignMutableWorkspaceStep.java:35)
-	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:289)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:31)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:22)
-	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
-	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
-	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
-	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
-	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:48)
-	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:35)
-	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:61)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:127)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:116)
-	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
-	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
-	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
-	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
-	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:200)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:195)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
-	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
-	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
-	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:80)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
-	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:463)
-	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:380)
-	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
-	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1787266350230.json
-
+14 actionable tasks: 11 executed, 3 up-to-date
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:spotlessKotlin'.
-> Error on line: 110, column: 37
-  rule: standard:max-line-length
-  Exceeded max line length (140)
+Execution failed for task ':app:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
 
 * Try:
 > Run with --stacktrace option to get the stack trace.
@@ -876,767 +292,366 @@ Execution failed for task ':app:spotlessKotlin'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 2s
-2 actionable tasks: 2 executed
-[0m
-[0m→ [0mRead app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt[90m [offset=100, limit=15][0m
-The spotless failure is in OverlayManager line 110 (pre-existing long line). Let me check it
-This is a pre-existing long line (105/111), not from my changes. Let me run spotlessApply to auto-
-[0m
-[0m$ [0m./gradlew spotlessApply 2>&1
-Configuration 'spotless996157737' was resolved during configuration time.
-This is a build performance and scalability issue.
-See https://github.com/gradle/gradle/issues/2298
-Run with --info for a stacktrace.
-> Task :spotlessInternalRegisterDependencies UP-TO-DATE
+BUILD FAILED in 1m 14s
 
-> Task :app:spotlessKotlin FAILED
-Step 'ktlint' found problem in 'src/main/java/com/ervareza/screentranslator/OverlayManager.kt':
-Error on line: 110, column: 37
-rule: standard:max-line-length
-Exceeded max line length (140)
-java.lang.AssertionError: Error on line: 110, column: 37
-rule: standard:max-line-length
-Exceeded max line length (140)
-	at com.diffplug.spotless.glue.ktlint.compat.KtLintCompatReporting.report(KtLintCompatReporting.java:23)
-	at com.diffplug.spotless.glue.ktlint.compat.KtLintCompat1Dot0Dot0Adapter$FormatterCallback.invoke(KtLintCompat1Dot0Dot0Adapter.java:78)
-	at com.diffplug.spotless.glue.ktlint.compat.KtLintCompat1Dot0Dot0Adapter$FormatterCallback.invoke(KtLintCompat1Dot0Dot0Adapter.java:73)
-	at com.pinterest.ktlint.rule.engine.api.KtLintRuleEngine.format(KtLintRuleEngine.kt:198)
-	at com.diffplug.spotless.glue.ktlint.compat.KtLintCompat1Dot0Dot0Adapter.format(KtLintCompat1Dot0Dot0Adapter.java:117)
-	at com.diffplug.spotless.glue.ktlint.KtlintFormatterFunc.applyWithFile(KtlintFormatterFunc.java:68)
-	at com.diffplug.spotless.FormatterFunc$NeedsFile.apply(FormatterFunc.java:154)
-	at com.diffplug.spotless.FormatterStepImpl$Standard.format(FormatterStepImpl.java:82)
-	at com.diffplug.spotless.FormatterStep$Strict.format(FormatterStep.java:103)
-	at com.diffplug.spotless.Formatter.compute(Formatter.java:246)
-	at com.diffplug.spotless.PaddedCell.calculateDirtyState(PaddedCell.java:203)
-	at com.diffplug.spotless.PaddedCell.calculateDirtyState(PaddedCell.java:190)
-	at com.diffplug.gradle.spotless.SpotlessTaskImpl.processInputFile(SpotlessTaskImpl.java:105)
-	at com.diffplug.gradle.spotless.SpotlessTaskImpl.performAction(SpotlessTaskImpl.java:89)
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
-	at org.gradle.api.internal.project.taskfactory.IncrementalTaskAction.doExecute(IncrementalTaskAction.java:45)
-	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
-	at org.gradle.api.internal.project.taskfactory.IncrementalTaskAction.execute(IncrementalTaskAction.java:26)
-	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
-	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:244)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
-	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
-	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:229)
-	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:212)
-	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:195)
-	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:162)
-	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:105)
-	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:44)
-	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:59)
-	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:56)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:200)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:195)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
-	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
-	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:56)
-	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:44)
-	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:41)
-	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:74)
-	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
-	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:50)
-	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:28)
-	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:67)
-	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:37)
-	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:61)
-	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:26)
-	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:67)
-	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:45)
-	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:40)
-	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:29)
-	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
-	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$1(BuildCacheStep.java:75)
-	at org.gradle.internal.Either$Right.fold(Either.java:175)
-	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
-	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:73)
-	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:48)
-	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:46)
-	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:35)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:76)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:54)
-	at java.base/java.util.Optional.orElseGet(Optional.java:364)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:54)
-	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:36)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
-	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:49)
-	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:27)
-	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:71)
-	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:39)
-	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:65)
-	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:36)
-	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:106)
-	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:55)
-	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:64)
-	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:43)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.executeWithNonEmptySources(AbstractSkipEmptyWorkStep.java:125)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:56)
-	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:36)
-	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
-	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:36)
-	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:23)
-	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:75)
-	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:41)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$execute$0(AssignMutableWorkspaceStep.java:35)
-	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:289)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:31)
-	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:22)
-	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
-	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
-	at java.base/java.util.Optional.orElseGet(Optional.java:364)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
-	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
-	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
-	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
-	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:48)
-	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:35)
-	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:61)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:127)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:116)
-	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
-	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
-	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
-	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
-	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:200)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:195)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
-	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
-	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
-	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:80)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
-	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:463)
-	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:380)
-	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
-	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-	at java.base/java.lang.Thread.run(Thread.java:1583)
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1787266360230.json
+exec
+/bin/bash -lc "nl -ba app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt | sed -n '1,50p'" in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+     1	package com.ervareza.screentranslator
+     2	
+     3	import android.app.Activity
+     4	import android.app.NotificationChannel
+     5	import android.app.NotificationManager
+     6	import android.app.Service
+     7	import android.content.BroadcastReceiver
+     8	import android.content.Context
+     9	import android.content.Intent
+    10	import android.content.IntentFilter
+    11	import android.graphics.Bitmap
+    12	import android.graphics.PixelFormat
+    13	import android.hardware.display.DisplayManager
+    14	import android.hardware.display.VirtualDisplay
+    15	import android.media.ImageReader
+    16	import android.media.projection.MediaProjection
+    17	import android.media.projection.MediaProjectionManager
+    18	import android.os.Build
+    19	import android.os.IBinder
+    20	import android.util.DisplayMetrics
+    21	import android.util.Log
+    22	import android.view.WindowManager
+    23	import android.view.MotionEvent
+    24	import android.view.View
+    25	import android.graphics.Canvas
+    26	import android.graphics.Color
+    27	import android.graphics.Paint
+    28	import android.graphics.PixelFormat
+    29	import androidx.core.app.NotificationCompat
+    30	import kotlinx.coroutines.CoroutineScope
+    31	import kotlinx.coroutines.Dispatchers
+    32	import kotlinx.coroutines.SupervisorJob
+    33	import kotlinx.coroutines.cancel
+    34	import kotlinx.coroutines.launch
+    35	
+    36	class ScreenCaptureService : Service() {
+    37	
+    38	    private lateinit var mediaProjectionManager: MediaProjectionManager
+    39	    private var mediaProjection: MediaProjection? = null
+    40	    private var virtualDisplay: VirtualDisplay? = null
+    41	    private var imageReader: ImageReader? = null
+    42	    private lateinit var translationEngine: TranslationEngine
+    43	
+    44	    // ISSUE-011 FIX: Screen capture + bitmap conversion run on a background thread.
+    45	    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    46	
+    47	    private val captureReceiver = object : BroadcastReceiver() {
+    48	        override fun onReceive(context: Context?, intent: Intent?) {
+    49	            if (intent?.action == "com.ervareza.screentranslator.CLEAR_OVERLAY") {
+    50	                translationEngine.clearOverlays()
 
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':app:spotlessKotlin'.
-> Error on line: 110, column: 37
-  rule: standard:max-line-length
-  Exceeded max line length (140)
-
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
-
-BUILD FAILED in 1s
-2 actionable tasks: 1 executed, 1 up-to-date
-[0m
-[0m$ [0mawk '{ if (length($0) > 140) print NR": "length($0)" chars" }' /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt; echo "---"; awk 'NR>=105 && NR<=112 {print NR": "length($0)" | "$0}' /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-74: 215 chars
-105: 163 chars
----
-105: 163 |                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-106: 40 |                 PixelFormat.TRANSLUCENT,
-107: 21 |             ).apply {
-108: 54 |                 gravity = Gravity.TOP or Gravity.START
-109: 13 |             }
-110: 42 |             if (id != batchId) return@post
-111: 104 |             runCatching { windowManager.addView(view, params); batchView = view; activeViews.add(view) }
-112: 0 |
-[0m
-[0m$ [0mfor f in $(find /home/runner/work/app-translator/app-translator/app/src -name '*.kt'); do awk -v file="$f" '{ if (length($0) > 140) print file":"NR": "length($0)" chars" }' "$f"; done
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt:74: 215 chars
-/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt:105: 163 chars
-[0m
-Lines 74 and 105 in OverlayManager are pre-existing >140 char violations (not from my edits). Let me check all Kotlin files for violations,
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-@@ -70,9 +70,17 @@
-     "left" -> r.offset(-(r.width()), 0)
-     "right" -> r.offset(r.width(), 0)
- }
- paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
--canvas.drawRoundRect(r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), paint)
-+canvas.drawRoundRect(
-+    r.left.toFloat(),
-+    r.top.toFloat(),
-+    r.right.toFloat(),
-+    r.bottom.toFloat(),
-+    dpToPx(config.bubbleCornerRadius).toFloat(),
-+    dpToPx(config.bubbleCornerRadius).toFloat(),
-+    paint,
-+)
- paint.color = Color.parseColor(config.bubbleTextColor)
- val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-     color = paint.color
-     textSize = paint.textSize
-
-[0m
-Only those two lines. Let me fix both without touching the Phase 6 features
-[0m← [0mEdit app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-Index: /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-===================================================================
---- /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-+++ /home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-@@ -109,9 +109,11 @@
- val params = WindowManager.LayoutParams(
-     WindowManager.LayoutParams.MATCH_PARENT,
-     WindowManager.LayoutParams.MATCH_PARENT,
-     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
--    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-+    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-+        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-+        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-     PixelFormat.TRANSLUCENT,
- ).apply {
-     gravity = Gravity.TOP or Gravity.START
- }
-
-[0m
-[0m$ [0m./gradlew spotlessCheck 2>&1 | tail -30
-····private·var·batchView:·View?·=·null
-           ····private·val·customTypeface:·Typeface?·by·lazy·{
-          @@ -118,13 +118,21 @@
-           ················gravity·=·Gravity.TOP·or·Gravity.START
-           ············}
-           ············if·(id·!=·batchId)·return@post
-          -············runCatching·{·windowManager.addView(view,·params);·batchView·=·view;·activeViews.add(view)·}
-          +············runCatching·{
-          +················windowManager.addView(view,·params)
-          +················batchView·=·view
-          +················activeViews.add(view)
-          +············}
-           
-           ············val·autoClear·=·config.autoClearSeconds
-           ············if·(autoClear·>·0)·{
-           ················handler.postDelayed({
-           ····················try·{
-      ... (33 more lines that didn't fit)
-  Violations also present in:
-      src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-  Run './gradlew :app:spotlessApply' to fix these violations.
-
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
-
-BUILD FAILED in 1s
-3 actionable tasks: 2 executed, 1 up-to-date
-[0m
-Now that line-length errors are fixed, spotlessApply can auto-format the rest (mostly
-[0m$ [0m./gradlew spotlessApply 2>&1 | tail -5
-> Task :app:spotlessApply
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1787266380936.json
-
-BUILD SUCCESSFUL in 584ms
-3 actionable tasks: 1 executed, 2 up-to-date
-[0m
-[0m$ [0mgit status --short && echo "=== DIFF STAT ===" && git diff --stat
-M ai-response-recap.txt
- M app/src/main/java/com/ervareza/screentranslator/MainActivity.kt
- M app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
- M app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-=== DIFF STAT ===
- ai-response-recap.txt                              | 1438 ++++++++++++++------
- .../com/ervareza/screentranslator/MainActivity.kt  |  197 +--
- .../ervareza/screentranslator/OverlayManager.kt    |   56 +-
- .../ervareza/screentranslator/TranslationEngine.kt |  125 +-
- 4 files changed, 1281 insertions(+), 535 deletions(-)
-[0m
-[0m$ [0mgit diff ai-response-recap.txt | head -40 && echo "=== file size ===" && wc -c ai-response-recap.txt && echo "=== git log ===" && git log --oneline -5
-diff --git a/ai-response-recap.txt b/ai-response-recap.txt
-index 8a96d99..09f72b2 100644
---- a/ai-response-recap.txt
-+++ b/ai-response-recap.txt
-@@ -1,131 +1,454 @@
- [0m
- > build · deepseek-v4-flash-free
- [0m
--[0m$ [0mls -la
-+[0m→ [0mRead ai_memory/00_INDEX.md
-+[0m
-+[0m$ [0mls -la /home/runner/work/app-translator/app-translator
- total 880
--drwxr-xr-x 8 runner runner   4096 Aug 20 14:07 .
--drwxr-xr-x 3 runner runner   4096 Aug 20 14:07 ..
--drwxr-xr-x 7 runner runner   4096 Aug 20 14:08 .git
--drwxr-xr-x 3 runner runner   4096 Aug 20 14:07 .github
---rw-r--r-- 1 runner runner    314 Aug 20 14:07 .gitignore
---rw-r--r-- 1 runner runner   2972 Aug 20 14:07 CHANGELOG.md
---rw-r--r-- 1 runner runner   1286 Aug 20 14:07 CONTRIBUTING.md
---rw-r--r-- 1 runner runner   1073 Aug 20 14:07 LICENSE
---rw-r--r-- 1 runner runner   4880 Aug 20 14:07 README.md
---rw-r--r-- 1 runner runner     44 Aug 20 14:08 ai-response-recap.txt
--drwxr-xr-x 2 runner runner   4096 Aug 20 14:07 ai_memory
--drwxr-xr-x 3 runner runner   4096 Aug 20 14:07 app
--drwxr-xr-x 2 runner runner   4096 Aug 20 14:07 assets
---rw-r--r-- 1 runner runner    203 Aug 20 14:07 build.gradle.kts
---rw-r--r-- 1 runner runner   4232 Aug 20 14:07 crash_2026-08-20_12-43-58.txt
--drwxr-xr-x 3 runner runner   4096 Aug 20 14:07 gradle
---rw-r--r-- 1 runner runner     53 Aug 20 14:07 gradle.properties
---rwxr-xr-x 1 runner runner   8656 Aug 20 14:07 gradlew
---rw-r--r-- 1 runner runner   2848 Aug 20 14:07 gradlew.bat
---rw-r--r-- 1 runner runner 787801 Aug 20 14:07 logo_screen_translator.png
---rw-r--r-- 1 runner runner   2017 Aug 20 14:07 memory_prompt.md
---rw-r--r-- 1 runner runner   3542 Aug 20 14:07 prompt.md
---rw-r--r-- 1 runner runner    438 Aug 20 14:07 release_notes_1.0.6.md
---rw-r--r-- 1 runner runner    335 Aug 20 14:07 settings.gradle.kts
--[0m
--[0m✱ [0mGlob "**/*.kt"[90m 15 matches[0m
--[0m
-=== file size ===
-76332 ai-response-recap.txt
-=== git log ===
-1f6cd8a Last Sync: 2026-08-21 05:47 (Mobile)
-[0m
-`ai-response-recap.txt` was modified but I didn't touch it. Let me check
-[0m$ [0mgit diff app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-diff --git a/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt b/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-index 98cf568..e7e72c7 100644
---- a/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-+++ b/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt
-@@ -1,20 +1,19 @@
- package com.ervareza.screentranslator
- 
- import android.content.Context
-+import android.graphics.Canvas
+codex
+Build menemukan error konkret: `PixelFormat` diimpor dua kali di `ScreenCaptureService.kt`. Saya akan menghapus duplikasi ini sebagai perbaikan minimal, lalu mengulang kompilasi.
+apply patch
+patch: completed
+/home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+diff --git a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+index 03f141e2181b1900d474190010d85179fdf2de34..e2a1d4b426dbf0f9d599243b932b10e9c72c5fc5
+--- a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -25,7 +25,6 @@
+ import android.graphics.Canvas
  import android.graphics.Color
-+import android.graphics.Paint
- import android.graphics.PixelFormat
- import android.graphics.Rect
--import android.graphics.Paint
- import android.graphics.Typeface
--import android.graphics.Canvas
--import android.text.Layout
--import android.text.StaticLayout
--import android.text.TextPaint
- import android.graphics.drawable.GradientDrawable
- import android.os.Handler
- import android.os.Looper
-+import android.text.Layout
-+import android.text.StaticLayout
-+import android.text.TextPaint
- import android.view.Gravity
--import android.view.MotionEvent
- import android.view.View
- import android.view.WindowManager
- import android.widget.TextView
-@@ -30,6 +29,7 @@ class OverlayManager(private val context: Context) {
-     // ISSUE-005 FIX: Thread-safe list to prevent ConcurrentModificationException
-     private val activeViews = CopyOnWriteArrayList<View>()
-     private val loadingViews = ConcurrentHashMap<String, View>()
-+
-     @Volatile private var batchId = 0L
-     private var batchView: View? = null
-     private val customTypeface: Typeface? by lazy {
-@@ -71,7 +71,15 @@ class OverlayManager(private val context: Context) {
-                             "right" -> r.offset(r.width(), 0)
-                         }
-                         paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
--                        canvas.drawRoundRect(r.left.toFloat(), r.top.toFloat(), r.right.toFloat(), r.bottom.toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), dpToPx(config.bubbleCornerRadius).toFloat(), paint)
-+                        canvas.drawRoundRect(
-+                            r.left.toFloat(),
-+                            r.top.toFloat(),
-+                            r.right.toFloat(),
-+                            r.bottom.toFloat(),
-+                            dpToPx(config.bubbleCornerRadius).toFloat(),
-+                            dpToPx(config.bubbleCornerRadius).toFloat(),
-+                            paint,
-+                        )
-                         paint.color = Color.parseColor(config.bubbleTextColor)
-                         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-                             color = paint.color
-@@ -102,19 +110,29 @@ class OverlayManager(private val context: Context) {
-                 WindowManager.LayoutParams.MATCH_PARENT,
-                 WindowManager.LayoutParams.MATCH_PARENT,
-                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
--                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                 PixelFormat.TRANSLUCENT,
-             ).apply {
-                 gravity = Gravity.TOP or Gravity.START
-             }
-             if (id != batchId) return@post
--            runCatching { windowManager.addView(view, params); batchView = view; activeViews.add(view) }
-+            runCatching {
-+                windowManager.addView(view, params)
-+                batchView = view
-+                activeViews.add(view)
-+            }
- 
-             val autoClear = config.autoClearSeconds
-             if (autoClear > 0) {
-                 handler.postDelayed({
-                     try {
--                        if (batchId == id) { windowManager.removeView(view); activeViews.remove(view); batchView = null }
-+                        if (batchId == id) {
-+                            windowManager.removeView(view)
-+                            activeViews.remove(view)
-+                            batchView = null
-+                        }
-                     } catch (_: IllegalArgumentException) {}
-                 }, autoClear * 1000L)
-             }
-@@ -179,14 +197,14 @@ class OverlayManager(private val context: Context) {
-     }
- 
-     private fun clearOverlaysInternal() {
--            batchId++
--            for (view in activeViews) {
--                try {
--                    windowManager.removeView(view)
--                } catch (_: IllegalArgumentException) {}
--            }
--            activeViews.clear()
--            loadingViews.clear()
--            batchView = null
-+        batchId++
-+        for (view in activeViews) {
-+            try {
-+                windowManager.removeView(view)
-+            } catch (_: IllegalArgumentException) {}
-+        }
-+        activeViews.clear()
-+        loadingViews.clear()
-+        batchView = null
-     }
- }
-[0m
-`ai-response-recap.txt` is an environment-generated session log (not mine). Let me review the actual Kotlin diffs to confirm correctness
-[0m$ [0mgit diff app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt | head -120
-diff --git a/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt b/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-index 4682e36..f135d26 100644
---- a/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-+++ b/app/src/main/java/com/ervareza/screentranslator/TranslationEngine.kt
-@@ -23,13 +23,15 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
- import kotlinx.coroutines.CancellationException
+ import android.graphics.Paint
+-import android.graphics.PixelFormat
+ import androidx.core.app.NotificationCompat
  import kotlinx.coroutines.CoroutineScope
  import kotlinx.coroutines.Dispatchers
-+import kotlinx.coroutines.Job
- import kotlinx.coroutines.SupervisorJob
- import kotlinx.coroutines.TimeoutCancellationException
- import kotlinx.coroutines.cancel
--import kotlinx.coroutines.launch
--import kotlinx.coroutines.Job
-+import kotlinx.coroutines.delay
- import kotlinx.coroutines.ensureActive
-+import kotlinx.coroutines.launch
- import kotlinx.coroutines.suspendCancellableCoroutine
-+import kotlinx.coroutines.withContext
- import kotlinx.coroutines.withTimeout
- import kotlin.coroutines.resume
- import kotlin.coroutines.resumeWithException
-@@ -42,6 +44,12 @@ class TranslationEngine(private val context: Context) {
-     // ISSUE-011 FIX: Everything runs off the main thread. Heavy clients are
-     // initialized lazily (only on first use) so the service starts instantly.
-     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-+
-+    // PHASE 7 FIX: Independent background job (CPU-bound, Default) for the ML Kit
-+    // pre-load, fully decoupled from the capture pipeline so a warm-up never
-+    // blocks/stalls a real OCR/translate request.
-+    private val preloadScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-+
-     @Volatile private var activeJob: Job? = null
- 
-     private val statusBarHeight: Int by lazy {
-@@ -65,7 +73,27 @@ class TranslationEngine(private val context: Context) {
-     // Lazy: network client is only built when online mode is actually used.
-     private val onlineTranslator by lazy { OnlineTranslator(context) }
- 
--    init { scope.launch(Dispatchers.IO) { preloadOfflineModel() } }
-+    init {
-+        preloadScope.launch(Dispatchers.Default) { preloadOfflineModel() }
-+    }
-+
-+    private val scanningIndicatorKey = "phase7_scanning"
-+
-+    // PHASE 7 FIX: Show a visible loading bubble and force Android to render it
-+    // before the CPU-heavy OCR grabs all cores. withContext(Main) flushes the
-+    // queued overlay draw onto the UI thread, then delay(50) gives the system
-+    // a rendering window.
-+    private suspend fun showScanningIndicator() {
-+        val metrics = context.resources.displayMetrics
-+        val density = metrics.density
-+        val width = (metrics.widthPixels * 0.42f).toInt().coerceAtLeast(1)
-+        val height = (48 * density).toInt()
-+        val left = (metrics.widthPixels - width) / 2
-+        val top = metrics.heightPixels / 3
-+        overlayManager.drawLoadingBubble(Rect(left, top, left + width, top + height), scanningIndicatorKey)
-+        withContext(Dispatchers.Main) { }
-+        delay(50)
-+    }
- 
-     // FASE 6 FIX: ML Kit can freeze internally and hang the coroutine forever.
-     // Wrap every on-device .await() call with a bounded timeout so a stuck model
-@@ -80,45 +108,57 @@ class TranslationEngine(private val context: Context) {
-     private suspend fun preloadOfflineModel() {
-         if (config.translationMode != "offline") return
-         val source = config.sourceLanguage.takeUnless { it == "auto" } ?: "en"
--        runCatching { getTranslator(source, config.targetLanguage).downloadModelIfNeeded().await() }
--        // FASE 6 FIX: Dummy calls force ML Kit to load OCR + translate models from
--        // storage into RAM while the service starts, avoiding the first-capture freeze.
-+        val target = config.targetLanguage
-+        runCatching { getTranslator(source, target).downloadModelIfNeeded().await() }
-+        // PHASE 7 FIX: Warm the OCR + translate models into RAM from inside the
-+        // independent preloadScope (Dispatchers.Default, CPU-bound). The clients
-+        // are created lock-free (see getRecognizer/getTranslator), so a real
-+        // capture can instantiate its own recognizer concurrently without stalls.
-         runCatching {
-             val dummy = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-             try {
-                 val dummyImage = InputImage.fromBitmap(dummy, 0)
-                 mlKitCall("PreloadOCR") { getRecognizer(source).process(dummyImage).await() }
--                mlKitCall("PreloadTranslate") { getTranslator(source, config.targetLanguage).translate("test").await() }
-+                mlKitCall("PreloadTranslate") { getTranslator(source, target).translate("test").await() }
-             } finally {
-                 dummy.recycle()
-             }
-         }
-     }
- 
-+    // PHASE 7 FIX: Client creation happens OUTSIDE the lock. TextRecognition.
-+    // getClient() can take time on first call; previously it ran inside a
-+    // synchronized block, so a pre-load warm-up could block a real capture's
-+    // getRecognizer() and stall the first screenshot.
-     private fun getRecognizer(code: String): TextRecognizer {
-+        val cached = synchronized(recognizerCache) { recognizerCache[code] }
-+        if (cached != null) return cached
-+        val created = createRecognizer(code)
-         return synchronized(recognizerCache) {
--            recognizerCache.getOrPut(code) {
--                when (code) {
--                    "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
--                    "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
--                    "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
--                    "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
--                    else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
--                }
--            }
-+            recognizerCache[code] ?: created.also { recognizerCache[code] = it }
-         }
-     }
- 
-+    private fun createRecognizer(code: String): TextRecognizer = when (code) {
-+        "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
-+        "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
-+        "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-+        "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
-+        else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-+    }
-+
-[0m
-Formatting-only changes in OverlayManager; Phase 6 features intact. Now the other two dif
-[0m$ [0m./gradlew :app:compileDebugKotlin spotlessCheck 2>&1 | tail -8
-> Task :app:spotlessCheck
+
+diff --git a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+index 03f141e2181b1900d474190010d85179fdf2de34..e2a1d4b426dbf0f9d599243b932b10e9c72c5fc5
+--- a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -25,7 +25,6 @@
+ import android.graphics.Canvas
+ import android.graphics.Color
+ import android.graphics.Paint
+-import android.graphics.PixelFormat
+ import androidx.core.app.NotificationCompat
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+
+exec
+/bin/bash -lc "sed -n '8,32p' app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt && ./gradlew :app:compileDebugKotlin" in /home/runner/work/app-translator/app-translator
+ succeeded in 12124ms:
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:mergeDebugResources
+> Task :app:processDebugResources UP-TO-DATE
 
 > Task :app:compileDebugKotlin
 w: file:///home/runner/work/app-translator/app-translator/app/src/main/java/com/ervareza/screentranslator/OverlayManager.kt:66:98 'scaledDensity: Float' is deprecated. Deprecated in Java
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1787266464942.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_4-1787371630355.json
 
-BUILD SUCCESSFUL in 2s
-17 actionable tasks: 4 executed, 13 up-to-date
-[0m
-[0m$ [0mgit diff app/src/main/java/com/ervareza/screentranslator/MainActivity.kt | grep -E '^[+-]' | grep -vE '^[+-]{3}' | head -100
--import android.os.SystemClock
--    private var lastStartClickAt = 0L
--
--    // FASE 6 FIX: Result holder for the async Start button flow, so heavy
--    // permission/state checks never run on the main thread.
--    private data class StartCheckResult(
--        val overlayGranted: Boolean,
--        val accessibilityEnabled: Boolean,
--        val serviceRunning: Boolean,
--        val captureIntent: Intent,
--    )
-+
-+    // PHASE 7 FIX: Single source of truth for the Start button. The click
-+    // listener is registered exactly once and routes on this state, so one tap
-+    // always responds immediately and the "Preparing..." state is never stuck.
-+    private enum class StartState { IDLE, PREPARING, RUNNING, BLOCKED }
-+
-+    @Volatile private var startState = StartState.IDLE
--            fabStart.isEnabled = true
--                fabStart.text = "Service Running"
--                fabStart.setIconResource(android.R.drawable.ic_media_pause)
-+                startState = StartState.RUNNING
-+                renderStartButton()
-+                startState = StartState.IDLE
-+                renderStartButton()
-+                syncServiceState()
-+        syncServiceState()
--
--        // ISSUE-006 FIX: Sync FAB with actual service state
--        if (isServiceRunning(ScreenCaptureService::class.java)) {
--            fabStart.text = "Service Running"
--            fabStart.setIconResource(android.R.drawable.ic_media_pause)
--            fabStart.isEnabled = true
--            fabStart.setOnClickListener {
--                val stopBroadcast = Intent("com.ervareza.screentranslator.SERVICE_STOPPED")
--                stopBroadcast.setPackage(packageName)
--                sendBroadcast(stopBroadcast)
--
--                val stopIntent = Intent(this, ScreenCaptureService::class.java).apply {
--                    action = "ACTION_STOP"
--                }
--                startService(stopIntent)
--            }
--        } else {
--            fabStart.text = "Start Service"
--            fabStart.setIconResource(android.R.drawable.ic_media_play)
--            fabStart.isEnabled = true
--            fabStart.setOnClickListener { setupPermissionsAndStart() }
--        }
--        val allReady = overlayOk && accessOk
--        fabStart.isEnabled = allReady
--        if (!allReady) {
--            fabStart.text = "Grant Permissions First"
--            fabStart.setIconResource(android.R.drawable.ic_dialog_alert)
--        } else {
--            fabStart.text = "Start Service"
--            fabStart.setIconResource(android.R.drawable.ic_media_play)
-+        // PHASE 7 FIX: Permission changes only affect the button when we are not
-+        // busy preparing or already running.
-+        if (startState != StartState.RUNNING && startState != StartState.PREPARING) {
-+            startState = if (overlayOk && accessOk) StartState.IDLE else StartState.BLOCKED
-+        }
-+        renderStartButton()
-+    }
-+
-+    private fun renderStartButton() {
-+        when (startState) {
-+            StartState.BLOCKED -> {
-+                fabStart.isEnabled = false
-+                fabStart.text = "Grant Permissions First"
-+                fabStart.setIconResource(android.R.drawable.ic_dialog_alert)
-+            }
-+            StartState.IDLE -> {
-+                fabStart.isEnabled = true
-+                fabStart.text = "Start Service"
-+                fabStart.setIconResource(android.R.drawable.ic_media_play)
-+            }
-+            StartState.PREPARING -> {
-+                fabStart.isEnabled = false
-+                fabStart.text = "Preparing..."
-+                fabStart.setIconResource(android.R.drawable.ic_media_play)
-+            }
-+            StartState.RUNNING -> {
-+                fabStart.isEnabled = true
-+                fabStart.text = "Service Running"
-+                fabStart.setIconResource(android.R.drawable.ic_media_pause)
-+            }
-+        // PHASE 7 FIX: Registered exactly once; state routing lives in the enum.
--            val now = SystemClock.elapsedRealtime()
--            if (now - lastStartClickAt < 500L) return@setOnClickListener
--            lastStartClickAt = now
--            fabStart.isEnabled = false
--            fabStart.text = "Preparing..."
--            var launched = false
--            lifecycleScope.launch {
--                try {
--                    // FASE 6 FIX: All heavy checks (overlay/accessibility state,
--                    // isServiceRunning, MediaProjectionManager) run on IO, never on Main.
--                    val result = withContext(Dispatchers.IO) {
--                        StartCheckResult(
-[0m
-Both compile and spotless pass. Let me verify the MainActivity diff once more
-[0m$ [0mdate +%Y%m%d_%H%M
-20260820_2254
-[0m
-All diffs look correct. Now let me write the phase 7 log and update the
-[0m← [0mWrite ai_memory/task_20260820_2254_phase7_rewrite.md
-Wrote file successfully.
-[0m
-[0m← [0mEdit ai_memory/00_INDEX.md
-Index: /home/runner/work/app-translator/app-translator/ai_memory/00_INDEX.md
-===================================================================
---- /home/runner/work/app-translator/app-translator/ai_memory/00_INDEX.md
-+++ /home/runner/work/app-translator/app-translator/ai_memory/00_INDEX.md
-@@ -2,9 +2,9 @@
- 
- ## Status Proyek Terkini
- Aplikasi **Screen Translator** (Android, Kotlin, AGP 8.2.1, targetSdk 34, minSdk 26).
- Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit via Coroutines, Screen Capture Service, Accessibility trigger, Overlay translation bubble, OCR multi-bahasa (ja/ko/zh/hi/en), mode terjemahan offline (ML Kit) dan online (OpenAI/Gemini via Retrofit), serta Split APK per ABI.
--**Build debug SUCCESS; release R8 terhenti karena heap daemon 512 MiB.** Runtime cache online/ML Kit, overlay thread handling, batch parsing, dan global crash reporting sudah di-hardening. Seluruh Material Slider kini continuous. Fase 4 selesai: offset status bar/filter OCR, debounce default 1,5 detik, dan cancellation job saat aktivitas layar sudah diterapkan. Fase 6 selesai: semua panggilan ML Kit dibungkus timeout 7 detik (anti-hang offline) + dummy preload model ke RAM, alur tombol Start dipindah ke thread IO (anti-ANR/multi-click), dan teks bubble diberi line spacing + pemuaian vertikal sentris. Compile debug sukses.
-+**Build debug SUCCESS; release R8 terhenti karena heap daemon 512 MiB.** Runtime cache online/ML Kit, overlay thread handling, batch parsing, dan global crash reporting sudah di-hardening. Seluruh Material Slider kini continuous. Fase 4 selesai: offset status bar/filter OCR, debounce default 1,5 detik, dan cancellation job saat aktivitas layar sudah diterapkan. Fase 6 selesai: semua panggilan ML Kit dibungkus timeout 7 detik (anti-hang offline) + dummy preload model ke RAM, alur tombol Start dipindah ke thread IO (anti-ANR/multi-click), dan teks bubble diberi line spacing + pemuaian vertikal sentris. Fase 7 selesai: tombol Start ditulis ulang dengan state machine bersih (IDLE/PREPARING/RUNNING/BLOCKED, listener tunggal, hilangkan bug klik dua kali), pre-load ML Kit dipindah ke scope Default independen dengan instansiasi client lock-free, dan loading bubble dipaksa render (withContext(Main) + delay(50)) sebelum OCR. Compile debug & spotless sukses.
- 
- ## Riwayat (terbaru di atas)
- 
- | Tanggal | File Log | Ringkasan |
+BUILD SUCCESSFUL in 12s
+14 actionable tasks: 3 executed, 11 up-to-date
 
-[0m
-[0m← [0mEdit ai_memory/00_INDEX.md
-Index: /home/runner/work/app-translator/app-translator/ai_memory/00_INDEX.md
-===================================================================
---- /home/runner/work/app-translator/app-translator/ai_memory/00_INDEX.md
-+++ /home/runner/work/app-translator/app-translator/ai_memory/00_INDEX.md
-@@ -8,8 +8,9 @@
- ## Riwayat (terbaru di atas)
+diff --git a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+index 03f141e2181b1900d474190010d85179fdf2de34..e2a1d4b426dbf0f9d599243b932b10e9c72c5fc5
+--- a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -25,7 +25,6 @@
+ import android.graphics.Canvas
+ import android.graphics.Color
+ import android.graphics.Paint
+-import android.graphics.PixelFormat
+ import androidx.core.app.NotificationCompat
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+
+exec
+/bin/bash -lc "date '+%Y%m%d_%H%M'" in /home/runner/work/app-translator/app-translator
+ succeeded in 0ms:
+20260822_0407
+
+diff --git a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+index 03f141e2181b1900d474190010d85179fdf2de34..e2a1d4b426dbf0f9d599243b932b10e9c72c5fc5
+--- a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -25,7 +25,6 @@
+ import android.graphics.Canvas
+ import android.graphics.Color
+ import android.graphics.Paint
+-import android.graphics.PixelFormat
+ import androidx.core.app.NotificationCompat
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+
+codex
+Perbaikan sudah diterapkan dan kompilasi sekarang berhasil. Saya sedang mencatat hasil verifikasi serta perubahan import ke `ai_memory`, termasuk referensi baru di `00_INDEX.md`.
+apply patch
+patch: completed
+/home/runner/work/app-translator/app-translator/ai_memory/00_INDEX.md
+/home/runner/work/app-translator/app-translator/ai_memory/task_20260822_0407_phase10_verification.md
+diff --git a/ai_memory/00_INDEX.md b/ai_memory/00_INDEX.md
+index 3d6585b065291eea1d4a9f8e592a312e677d6eee..f6636c092d4262b73ff60a7ca4c09f730d509135
+--- a/ai_memory/00_INDEX.md
++++ b/ai_memory/00_INDEX.md
+@@ -9,6 +9,7 @@
  
  | Tanggal | File Log | Ringkasan |
  |---------|----------|-----------|
-+| 2026-08-20 22:54 | [task_20260820_2254_phase7_rewrite.md](task_20260820_2254_phase7_rewrite.md) | Rewrite tombol Start pakai state machine (IDLE/PREPARING/RUNNING/BLOCKED, listener tunggal, fix double-click & lambat stop), preload ML Kit ke scope Default independen + instansiasi lock-free, loading bubble dirender sebelum OCR. Compile debug & spotless sukses. |
- | 2026-08-20 14:11 | [task_20260820_1411_phase6_refinement.md](task_20260820_1411_phase6_refinement.md) | Timeout 7 dtk pada ML Kit (anti-hang offline) + dummy preload, tombol Start dipindah ke IO (anti-ANR), line spacing & pemuaian sentris bubble. Compile debug sukses. |
- | 2026-08-20 08:15 | [task_20260820_0815_phase5_batch_overlay_font.md](task_20260820_0815_phase5_batch_overlay_font.md) | Batch fullscreen overlay, clear aman saat scroll/screenshot, dan custom font Comic dipasang. Compile debug sukses. |
- | 2026-08-20 09:00 | [task_20260820_0900_phase55_overlay_preload_start.md](task_20260820_0900_phase55_overlay_preload_start.md) | Fix touch interception, StaticLayout wrapping, offline loading bubble, preload model, debounce/state tombol Start. Compile debug sukses. |
- | 2026-08-20 07:46 | [task_20260820_0746_phase4_overlay_debounce_cancellation.md](task_20260820_0746_phase4_overlay_debounce_cancellation.md) | Koreksi/filter status bar, debounce 1,5 detik, dan pembatalan OCR/network aktif saat scroll/touch; build debug sukses. |
++| 2026-08-22 04:07 | [task_20260822_0407_phase10_verification.md](task_20260822_0407_phase10_verification.md) | Verifikasi fase 10: menghapus duplikasi import PixelFormat; compileDebugKotlin berhasil. |
+ | 2026-08-22 09:35 | [task_20260822_0935_phase10_ui_and_scraper.md](task_20260822_0935_phase10_ui_and_scraper.md) | Floating ball size + auto-hide, hard-pause cancellation/clear, Default Translator provider, dan asset JS lokal. Build terhalang Java tidak tersedia. |
+ | 2026-08-22 09:23 | [task_20260822_0923_phase9_ui_floating.md](task_20260822_0923_phase9_ui_floating.md) | Dynamic bubble border berbasis StaticLayout + floating control ball draggable untuk pause/play; build terhalang Java tidak tersedia. |
+ | 2026-08-21 08:02 | [task_20260821_0802_phase8_block_merging.md](task_20260821_0802_phase8_block_merging.md) | Smart OCR block merging (size & proximity aware) + anti-overlap SFX/dialog: data class MergedBlock + mergeBlocks() dengan 3 syarat (vertikal < 1.5×line height, horizontal overlap/<=25% gap, |ΔlineHeight| <= 30%); translateBlocks & onlineTranslate pakai mergedBlocks; coroutine & timeout Fase 7 utuh. Compile & spotless sukses. |
+diff --git a/ai_memory/task_20260822_0407_phase10_verification.md b/ai_memory/task_20260822_0407_phase10_verification.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..1e4f55a8972ce862141356892aa5851091ae97f2
+--- /dev/null
++++ b/ai_memory/task_20260822_0407_phase10_verification.md
+@@ -0,0 +1,11 @@
++# Task Log: Phase 10 Verification
++
++## Status
++Completed. Phase 10 implementation was already present; verification exposed and fixed a duplicate import.
++
++## Changes
++- Removed the duplicate `android.graphics.PixelFormat` import from `ScreenCaptureService.kt`.
++
++## Verification
++- `./gradlew :app:compileDebugKotlin` succeeded.
++- One pre-existing deprecation warning remains for `DisplayMetrics.scaledDensity` in `OverlayManager.kt`.
+diff --git a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+index 03f141e2181b1900d474190010d85179fdf2de34..e2a1d4b426dbf0f9d599243b932b10e9c72c5fc5
+--- a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -25,7 +25,6 @@
+ import android.graphics.Canvas
+ import android.graphics.Color
+ import android.graphics.Paint
+-import android.graphics.PixelFormat
+ import androidx.core.app.NotificationCompat
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
 
-[0m
-[0m# [0mTodos
-[✓] Rewrite MainActivity Start button with clean StartState machine
-[✓] Re-optimize TranslationEngine preload (Default dispatcher, lock-free instantiation, independent scope)
-[✓] Ensure loading bubble renders before CPU-heavy OCR (withContext(Main) + delay)
-[✓] Verify OverlayManager Phase 6 features intact
-[✓] Compile check ./gradlew :app:compileDebugKotlin
-[✓] Write phase7 log + update 00_INDEX.md
-[0m
-Fase 7 selesai. `./gradlew :app:compileDebugKotlin` dan `spotlessCheck` BUILD SUCCESSFUL.
+diff --git a/ai_memory/00_INDEX.md b/ai_memory/00_INDEX.md
+index 3d6585b065291eea1d4a9f8e592a312e677d6eee..f6636c092d4262b73ff60a7ca4c09f730d509135
+--- a/ai_memory/00_INDEX.md
++++ b/ai_memory/00_INDEX.md
+@@ -9,6 +9,7 @@
+ 
+ | Tanggal | File Log | Ringkasan |
+ |---------|----------|-----------|
++| 2026-08-22 04:07 | [task_20260822_0407_phase10_verification.md](task_20260822_0407_phase10_verification.md) | Verifikasi fase 10: menghapus duplikasi import PixelFormat; compileDebugKotlin berhasil. |
+ | 2026-08-22 09:35 | [task_20260822_0935_phase10_ui_and_scraper.md](task_20260822_0935_phase10_ui_and_scraper.md) | Floating ball size + auto-hide, hard-pause cancellation/clear, Default Translator provider, dan asset JS lokal. Build terhalang Java tidak tersedia. |
+ | 2026-08-22 09:23 | [task_20260822_0923_phase9_ui_floating.md](task_20260822_0923_phase9_ui_floating.md) | Dynamic bubble border berbasis StaticLayout + floating control ball draggable untuk pause/play; build terhalang Java tidak tersedia. |
+ | 2026-08-21 08:02 | [task_20260821_0802_phase8_block_merging.md](task_20260821_0802_phase8_block_merging.md) | Smart OCR block merging (size & proximity aware) + anti-overlap SFX/dialog: data class MergedBlock + mergeBlocks() dengan 3 syarat (vertikal < 1.5×line height, horizontal overlap/<=25% gap, |ΔlineHeight| <= 30%); translateBlocks & onlineTranslate pakai mergedBlocks; coroutine & timeout Fase 7 utuh. Compile & spotless sukses. |
+diff --git a/ai_memory/task_20260822_0407_phase10_verification.md b/ai_memory/task_20260822_0407_phase10_verification.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..1e4f55a8972ce862141356892aa5851091ae97f2
+--- /dev/null
++++ b/ai_memory/task_20260822_0407_phase10_verification.md
+@@ -0,0 +1,11 @@
++# Task Log: Phase 10 Verification
++
++## Status
++Completed. Phase 10 implementation was already present; verification exposed and fixed a duplicate import.
++
++## Changes
++- Removed the duplicate `android.graphics.PixelFormat` import from `ScreenCaptureService.kt`.
++
++## Verification
++- `./gradlew :app:compileDebugKotlin` succeeded.
++- One pre-existing deprecation warning remains for `DisplayMetrics.scaledDensity` in `OverlayManager.kt`.
+diff --git a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+index 03f141e2181b1900d474190010d85179fdf2de34..e2a1d4b426dbf0f9d599243b932b10e9c72c5fc5
+--- a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -25,7 +25,6 @@
+ import android.graphics.Canvas
+ import android.graphics.Color
+ import android.graphics.Paint
+-import android.graphics.PixelFormat
+ import androidx.core.app.NotificationCompat
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
 
-**1. Rewrite tombol Start (`MainActivity.kt`)**
-- Root cause double-click: `onResume` menimpa listener dengan `{ setupPermissionsAndStart() }` yang cuma re-register tanpa start. Kini listener terdaftar tepat satu kali, routing via state machine `StartState { IDLE, PREPARING, RUNNING, BLOCKED }` (MainActivity.kt:84).
-- `createScreenCaptureIntent()` dipanggil instan di UI thread; permission di-evaluasi via coroutine IO; `getRunningServices` dipindah ke IO (`syncServiceState()`) → stop/start cepat. Tanpa `runBlocking`/`Thread.sleep`.
+exec
+/bin/bash -lc 'git status --short && git diff --check && git diff -- app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt ai_memory/00_INDEX.md ai_memory/task_20260822_0407_phase10_verification.md' in /home/runner/work/app-translator/app-translator
+ exited 2 in 0ms:
+ M ai-response-recap.txt
+ M ai_memory/00_INDEX.md
+ M app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+?? ai_memory/task_20260822_0407_phase10_verification.md
+ai-response-recap.txt:28: trailing whitespace.
++ 
+ai-response-recap.txt:56: trailing whitespace.
++ 
+ai-response-recap.txt:233: trailing whitespace.
++FAILURE: 
+ai-response-recap.txt:301: trailing whitespace.
++     2	
+ai-response-recap.txt:334: trailing whitespace.
++    35	
+ai-response-recap.txt:336: trailing whitespace.
++    37	
+ai-response-recap.txt:342: trailing whitespace.
++    43	
+ai-response-recap.txt:345: trailing whitespace.
++    46	
+ai-response-recap.txt:451: trailing whitespace.
++ 
+ai-response-recap.txt:529: new blank line at EOF.
 
-**2. Re-optimasi ML Kit (`TranslationEngine.kt`)**
-- Pre-load pindah ke `preloadScope` independen `Dispatchers.Default` (CPU-bound), terpisah dari pipeline capture.
-- `getRecognizer`/`getTranslator` dibuat lock-free: `TextRecognition.getClient()` kini berjalan di luar `synchronized`, jadi dummy call tidak pernah memblokir instansiasi saat capture nyata.
-- `showScanningIndicator()` memaksa bubble dirender (`withContext(Dispatchers.Main)` + `delay(50)`) sebelum OCR berat, dibersihkan di `finally`.
+diff --git a/ai_memory/00_INDEX.md b/ai_memory/00_INDEX.md
+index 3d6585b065291eea1d4a9f8e592a312e677d6eee..f6636c092d4262b73ff60a7ca4c09f730d509135
+--- a/ai_memory/00_INDEX.md
++++ b/ai_memory/00_INDEX.md
+@@ -9,6 +9,7 @@
+ 
+ | Tanggal | File Log | Ringkasan |
+ |---------|----------|-----------|
++| 2026-08-22 04:07 | [task_20260822_0407_phase10_verification.md](task_20260822_0407_phase10_verification.md) | Verifikasi fase 10: menghapus duplikasi import PixelFormat; compileDebugKotlin berhasil. |
+ | 2026-08-22 09:35 | [task_20260822_0935_phase10_ui_and_scraper.md](task_20260822_0935_phase10_ui_and_scraper.md) | Floating ball size + auto-hide, hard-pause cancellation/clear, Default Translator provider, dan asset JS lokal. Build terhalang Java tidak tersedia. |
+ | 2026-08-22 09:23 | [task_20260822_0923_phase9_ui_floating.md](task_20260822_0923_phase9_ui_floating.md) | Dynamic bubble border berbasis StaticLayout + floating control ball draggable untuk pause/play; build terhalang Java tidak tersedia. |
+ | 2026-08-21 08:02 | [task_20260821_0802_phase8_block_merging.md](task_20260821_0802_phase8_block_merging.md) | Smart OCR block merging (size & proximity aware) + anti-overlap SFX/dialog: data class MergedBlock + mergeBlocks() dengan 3 syarat (vertikal < 1.5×line height, horizontal overlap/<=25% gap, |ΔlineHeight| <= 30%); translateBlocks & onlineTranslate pakai mergedBlocks; coroutine & timeout Fase 7 utuh. Compile & spotless sukses. |
+diff --git a/ai_memory/task_20260822_0407_phase10_verification.md b/ai_memory/task_20260822_0407_phase10_verification.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..1e4f55a8972ce862141356892aa5851091ae97f2
+--- /dev/null
++++ b/ai_memory/task_20260822_0407_phase10_verification.md
+@@ -0,0 +1,11 @@
++# Task Log: Phase 10 Verification
++
++## Status
++Completed. Phase 10 implementation was already present; verification exposed and fixed a duplicate import.
++
++## Changes
++- Removed the duplicate `android.graphics.PixelFormat` import from `ScreenCaptureService.kt`.
++
++## Verification
++- `./gradlew :app:compileDebugKotlin` succeeded.
++- One pre-existing deprecation warning remains for `DisplayMetrics.scaledDensity` in `OverlayManager.kt`.
+diff --git a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+index 03f141e2181b1900d474190010d85179fdf2de34..e2a1d4b426dbf0f9d599243b932b10e9c72c5fc5
+--- a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -25,7 +25,6 @@
+ import android.graphics.Canvas
+ import android.graphics.Color
+ import android.graphics.Paint
+-import android.graphics.PixelFormat
+ import androidx.core.app.NotificationCompat
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
 
-**3. Verifikasi**
-- Fitur Phase 6 (Line Spacing `LINE_SPACING_ADD=4f`, Center Expansion Box) di OverlayManager tetap utuh; hanya formatting spotless (2 baris >140 char yang sudah ada).
-- Log `ai_memory/task_20260820_2254_phase7_rewrite.md` dibuat dan `00_INDEX.md` diperbarui.
+codex
+Instruksi dari `prompt.md` telah dieksekusi.
 
-Catatan: `ai-response-recap.txt` termodifikasi oleh harness lingkungan (session log), bukan perubahan kode saya.
+- Menghapus import `PixelFormat` yang duplikat di `ScreenCaptureService.kt`.
+- `./gradlew :app:compileDebugKotlin` berhasil.
+- Menambahkan log verifikasi dan memperbarui `ai_memory/00_INDEX.md`.
+- Tersisa satu warning deprecated yang sudah ada di `OverlayManager.kt`.
+- Perubahan sebelumnya pada `ai-response-recap.txt` tidak disentuh.
+diff --git a/ai_memory/00_INDEX.md b/ai_memory/00_INDEX.md
+index 3d6585b065291eea1d4a9f8e592a312e677d6eee..f6636c092d4262b73ff60a7ca4c09f730d509135
+--- a/ai_memory/00_INDEX.md
++++ b/ai_memory/00_INDEX.md
+@@ -9,6 +9,7 @@
+ 
+ | Tanggal | File Log | Ringkasan |
+ |---------|----------|-----------|
++| 2026-08-22 04:07 | [task_20260822_0407_phase10_verification.md](task_20260822_0407_phase10_verification.md) | Verifikasi fase 10: menghapus duplikasi import PixelFormat; compileDebugKotlin berhasil. |
+ | 2026-08-22 09:35 | [task_20260822_0935_phase10_ui_and_scraper.md](task_20260822_0935_phase10_ui_and_scraper.md) | Floating ball size + auto-hide, hard-pause cancellation/clear, Default Translator provider, dan asset JS lokal. Build terhalang Java tidak tersedia. |
+ | 2026-08-22 09:23 | [task_20260822_0923_phase9_ui_floating.md](task_20260822_0923_phase9_ui_floating.md) | Dynamic bubble border berbasis StaticLayout + floating control ball draggable untuk pause/play; build terhalang Java tidak tersedia. |
+ | 2026-08-21 08:02 | [task_20260821_0802_phase8_block_merging.md](task_20260821_0802_phase8_block_merging.md) | Smart OCR block merging (size & proximity aware) + anti-overlap SFX/dialog: data class MergedBlock + mergeBlocks() dengan 3 syarat (vertikal < 1.5×line height, horizontal overlap/<=25% gap, |ΔlineHeight| <= 30%); translateBlocks & onlineTranslate pakai mergedBlocks; coroutine & timeout Fase 7 utuh. Compile & spotless sukses. |
+diff --git a/ai_memory/task_20260822_0407_phase10_verification.md b/ai_memory/task_20260822_0407_phase10_verification.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..1e4f55a8972ce862141356892aa5851091ae97f2
+--- /dev/null
++++ b/ai_memory/task_20260822_0407_phase10_verification.md
+@@ -0,0 +1,11 @@
++# Task Log: Phase 10 Verification
++
++## Status
++Completed. Phase 10 implementation was already present; verification exposed and fixed a duplicate import.
++
++## Changes
++- Removed the duplicate `android.graphics.PixelFormat` import from `ScreenCaptureService.kt`.
++
++## Verification
++- `./gradlew :app:compileDebugKotlin` succeeded.
++- One pre-existing deprecation warning remains for `DisplayMetrics.scaledDensity` in `OverlayManager.kt`.
+diff --git a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+index 03f141e2181b1900d474190010d85179fdf2de34..e2a1d4b426dbf0f9d599243b932b10e9c72c5fc5
+--- a/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
++++ b/app/src/main/java/com/ervareza/screentranslator/ScreenCaptureService.kt
+@@ -25,7 +25,6 @@
+ import android.graphics.Canvas
+ import android.graphics.Color
+ import android.graphics.Paint
+-import android.graphics.PixelFormat
+ import androidx.core.app.NotificationCompat
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+
+tokens used
+73,015
+Instruksi dari `prompt.md` telah dieksekusi.
+
+- Menghapus import `PixelFormat` yang duplikat di `ScreenCaptureService.kt`.
+- `./gradlew :app:compileDebugKotlin` berhasil.
+- Menambahkan log verifikasi dan memperbarui `ai_memory/00_INDEX.md`.
+- Tersisa satu warning deprecated yang sudah ada di `OverlayManager.kt`.
+- Perubahan sebelumnya pada `ai-response-recap.txt` tidak disentuh.
