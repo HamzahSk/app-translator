@@ -6,6 +6,10 @@ import android.content.SharedPreferences
 class ConfigManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("ScreenTranslatorPrefs", Context.MODE_PRIVATE)
 
+    var floatingBallSizeDp: Int
+        get() = prefs.getInt("floatingBallSizeDp", 44)
+        set(value) = prefs.edit().putInt("floatingBallSizeDp", value.coerceIn(28, 72)).apply()
+
     // ---------- General ----------
     var inactivityDelayMs: Long
         get() = prefs.getLong("inactivityDelayMs", 1500L)

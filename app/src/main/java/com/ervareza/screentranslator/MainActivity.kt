@@ -246,13 +246,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         val providerSpinner = findViewById<AutoCompleteTextView>(R.id.spinnerApiProvider)
-        val providers = listOf("OpenAI (ChatGPT / compatible)", "Google Gemini")
+        val providers = listOf("OpenAI (ChatGPT / compatible)", "Google Gemini", "Default Translator (Free)")
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, providers)
         providerSpinner.setAdapter(adapter)
-        val providerIdx = if (config.apiProvider == "gemini") 1 else 0
+        val providerIdx = when (config.apiProvider) { "gemini" -> 1; "default" -> 2; else -> 0 }
         providerSpinner.setText(providers[providerIdx], false)
         providerSpinner.setOnItemClickListener { _, _, position, _ ->
-            config.apiProvider = if (position == 1) "gemini" else "openai"
+            config.apiProvider = when (position) { 1 -> "gemini"; 2 -> "default"; else -> "openai" }
             updateOnlineHint()
         }
 

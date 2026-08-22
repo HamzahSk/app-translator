@@ -45,6 +45,7 @@ class OnlineTranslator(context: Context) {
             when (provider) {
                 AiProvider.OPENAI -> translateWithOpenAi(model, prompt)
                 AiProvider.GEMINI -> translateWithGemini(model, prompt)
+                AiProvider.DEFAULT -> text
             }
         } catch (e: Exception) {
             Log.e("OnlineTranslator", "Translation request failed", e)
@@ -97,6 +98,7 @@ class OnlineTranslator(context: Context) {
     private fun defaultModelFor(provider: AiProvider): String = when (provider) {
         AiProvider.OPENAI -> "gpt-4o-mini"
         AiProvider.GEMINI -> "gemini-1.5-flash"
+        AiProvider.DEFAULT -> "local-script"
     }
 
     private fun langName(code: String): String {

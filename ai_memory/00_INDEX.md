@@ -9,6 +9,7 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 | Tanggal | File Log | Ringkasan |
 |---------|----------|-----------|
+| 2026-08-22 09:35 | [task_20260822_0935_phase10_ui_and_scraper.md](task_20260822_0935_phase10_ui_and_scraper.md) | Floating ball size + auto-hide, hard-pause cancellation/clear, Default Translator provider, dan asset JS lokal. Build terhalang Java tidak tersedia. |
 | 2026-08-22 09:23 | [task_20260822_0923_phase9_ui_floating.md](task_20260822_0923_phase9_ui_floating.md) | Dynamic bubble border berbasis StaticLayout + floating control ball draggable untuk pause/play; build terhalang Java tidak tersedia. |
 | 2026-08-21 08:02 | [task_20260821_0802_phase8_block_merging.md](task_20260821_0802_phase8_block_merging.md) | Smart OCR block merging (size & proximity aware) + anti-overlap SFX/dialog: data class MergedBlock + mergeBlocks() dengan 3 syarat (vertikal < 1.5×line height, horizontal overlap/<=25% gap, |ΔlineHeight| <= 30%); translateBlocks & onlineTranslate pakai mergedBlocks; coroutine & timeout Fase 7 utuh. Compile & spotless sukses. |
 | 2026-08-20 14:11 | [task_20260820_1411_phase6_refinement.md](task_20260820_1411_phase6_refinement.md) | Timeout 7 dtk pada ML Kit (anti-hang offline) + dummy preload, tombol Start dipindah ke IO (anti-ANR), line spacing & pemuaian sentris bubble. Compile debug sukses. |

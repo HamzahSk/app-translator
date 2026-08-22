@@ -229,7 +229,8 @@ class ScreenCaptureService : Service() {
     private var controlParams: WindowManager.LayoutParams? = null
     private fun showControlBall() {
         val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val size = (56 * resources.displayMetrics.density).toInt()
+        val ballConfig = ConfigManager(this)
+        val size = (ballConfig.floatingBallSizeDp * resources.displayMetrics.density).toInt()
         val view = object : View(this) {
             private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             override fun onDraw(canvas: Canvas) {
@@ -240,16 +241,20 @@ class ScreenCaptureService : Service() {
             }
         }
         var downX = 0f; var downY = 0f; var startX = 0; var startY = 0
+        val hideHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        val hideRunnable = Runnable { val edge = if ((controlParams?.x ?: 0) < resources.displayMetrics.widthPixels / 2) 0 else resources.displayMetrics.widthPixels - size; view.animate().translationX((edge - (controlParams?.x ?: 0)).toFloat()).alpha(.5f).setDuration(250).start() }
+        fun scheduleHide() { hideHandler.removeCallbacks(hideRunnable); hideHandler.postDelayed(hideRunnable, 5000) }
         view.setOnTouchListener { _, e ->
             when (e.action) {
-                MotionEvent.ACTION_DOWN -> { downX = e.rawX; downY = e.rawY; startX = controlParams?.x ?: 0; startY = controlParams?.y ?: 0; true }
+                MotionEvent.ACTION_DOWN -> { view.animate().translationX(0f).alpha(1f).setDuration(150).start(); downX = e.rawX; downY = e.rawY; startX = controlParams?.x ?: 0; startY = controlParams?.y ?: 0; true }
                 MotionEvent.ACTION_MOVE -> { controlParams?.let { it.x = startX + (e.rawX - downX).toInt(); it.y = startY + (e.rawY - downY).toInt(); wm.updateViewLayout(view, it) }; true }
-                MotionEvent.ACTION_UP -> { if (kotlin.math.abs(e.rawX - downX) < 12 && kotlin.math.abs(e.rawY - downY) < 12) { TranslationControlState.paused = !TranslationControlState.paused; view.invalidate() }; true }
+                MotionEvent.ACTION_UP -> { if (kotlin.math.abs(e.rawX - downX) < 12 && kotlin.math.abs(e.rawY - downY) < 12) { TranslationControlState.paused = !TranslationControlState.paused; if (TranslationControlState.paused) translationEngine.hardPause(); view.invalidate() }; scheduleHide(); true }
                 else -> true
             }
         }
         val params = WindowManager.LayoutParams(size, size, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, PixelFormat.TRANSLUCENT).apply { gravity = android.view.Gravity.TOP or android.view.Gravity.START; x = 24; y = 180 }
         runCatching { wm.addView(view, params); controlBall = view; controlParams = params }
+        scheduleHide()
     }
     private fun removeControlBall() { controlBall?.let { runCatching { (getSystemService(Context.WINDOW_SERVICE) as WindowManager).removeView(it) } }; controlBall = null }
 

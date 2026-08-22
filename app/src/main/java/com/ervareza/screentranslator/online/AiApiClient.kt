@@ -44,6 +44,7 @@ object AiApiClient {
                             builder.url(url)
                         }
                     }
+                    AiProvider.DEFAULT -> Unit
                 }
                 chain.proceed(builder.build())
             }

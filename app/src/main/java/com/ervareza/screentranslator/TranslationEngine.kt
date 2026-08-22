@@ -356,6 +356,12 @@ class TranslationEngine(private val context: Context) {
         overlayManager.clearOverlays()
     }
 
+    fun hardPause() {
+        activeJob?.cancel()
+        activeJob = null
+        overlayManager.clearOverlays()
+    }
+
     // PHASE 8 FIX: Smart OCR block merging.
     //
     // ML Kit often returns one speech bubble as several [Text.TextBlock] entries
