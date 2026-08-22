@@ -307,13 +307,12 @@ class TranslationEngine(private val context: Context) {
         val blocks = mergeBlocks(visionText.textBlocks)
             .filter { it.text.isNotBlank() && adjustedBoundingBox(it.rect) != null }
         if (blocks.isEmpty()) return
-        val delimiter = "\n<<<SCREEN_TRANSLATOR_SEGMENT>>>\n"
         blocks.forEachIndexed { index, block ->
             kotlinx.coroutines.currentCoroutineContext().ensureActive()
             overlayManager.drawLoadingBubble(adjustedBoundingBox(block.rect)!!, index.toString())
         }
         try {
-            val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage, delimiter)
+            val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage)
             if (translated == null) {
                 blocks.indices.forEach { overlayManager.removeLoading(it.toString()) }
                 return

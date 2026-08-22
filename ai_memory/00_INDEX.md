@@ -9,6 +9,7 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 | Tanggal | File Log | Ringkasan |
 |---------|----------|-----------|
+| 2026-08-22 05:39 | [task_20260822_0539_phase11_batch_and_ui.md](task_20260822_0539_phase11_batch_and_ui.md) | Batch online kini memakai JSON array parsing; layout toggle dipisahkan dari konfigurasi online; compileDebugKotlin berhasil. |
 | 2026-08-22 04:07 | [task_20260822_0407_phase10_verification.md](task_20260822_0407_phase10_verification.md) | Verifikasi fase 10: menghapus duplikasi import PixelFormat; compileDebugKotlin berhasil. |
 | 2026-08-22 10:15 | [task_20260822_1015_phase10_5_ui_scraper_fix.md](task_20260822_1015_phase10_5_ui_scraper_fix.md) | Fix toggle Offline/Online visibility, hide API fields for Default Translator, native Kotlin OkHttp scraper port; compile berhasil. |
 | 2026-08-22 09:35 | [task_20260822_0935_phase10_ui_and_scraper.md](task_20260822_0935_phase10_ui_and_scraper.md) | Floating ball size + auto-hide, hard-pause cancellation/clear, Default Translator provider, dan asset JS lokal. Build terhalang Java tidak tersedia. |

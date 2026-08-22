@@ -87,7 +87,7 @@ jobs:
       # --- INI ADALAH BAGIAN YANG SEBELUMNYA HILANG ---
       - uses: actions/upload-artifact@v4
         with:
-          name: opencode-output-${{ github.sha }}
+          name: codex-output-${{ github.sha }}
           path: output_artifact/
 
   build_app:
@@ -101,7 +101,7 @@ jobs:
       - name: Download AI Artifact
         uses: actions/download-artifact@v4
         with:
-          name: opencode-output-${{ github.sha }}
+          name: codex-output-${{ github.sha }}
           path: ai_changes
 
       - name: Apply AI Changes to Code

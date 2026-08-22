@@ -3,6 +3,7 @@ package com.ervareza.screentranslator.online
 import android.content.Context
 import android.util.Log
 import com.ervareza.screentranslator.ConfigManager
+import org.json.JSONArray
 import java.util.Locale
 
 /**
@@ -54,17 +55,27 @@ class OnlineTranslator(context: Context) {
         }
     }
 
-    suspend fun translateBatch(texts: List<String>, targetLang: String, delimiter: String): List<String>? {
+    suspend fun translateBatch(texts: List<String>, targetLang: String): List<String>? {
         if (texts.isEmpty()) return emptyList()
-        val joined = texts.joinToString(delimiter)
+        val sourceArray = JSONArray().apply { texts.forEach { put(it) } }
         val result = translate(
-            "Translate each segment independently. Preserve the delimiter exactly and return the same number of segments.\n" +
-                "Delimiter: $delimiter\n\n$joined",
+            "Translate each string independently into the target language. " +
+                "You MUST return ONLY a valid JSON array of strings, in the same order and count as the input. " +
+                "Do not use markdown, code fences, explanations, or any text outside the JSON array.\n\n" +
+                "Input JSON array:\n$sourceArray",
             targetLang,
         ) ?: return null
         return try {
-            result.split(delimiter).map { it.trim() }.takeIf { it.size == texts.size }
-        } catch (e: RuntimeException) {
+            val start = result.indexOf('[')
+            val end = result.lastIndexOf(']')
+            if (start < 0 || end <= start) return null
+            val array = JSONArray(result.substring(start, end + 1))
+            buildList(array.length()) {
+                for (index in 0 until array.length()) {
+                    add(if (array.isNull(index)) "" else array.optString(index))
+                }
+            }
+        } catch (e: Exception) {
             Log.e("OnlineTranslator", "Failed to parse batch response", e)
             null
         }
