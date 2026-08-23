@@ -36,7 +36,7 @@ class OverlayManager(private val context: Context) {
         runCatching { Typeface.createFromAsset(context.assets, "fonts/comic_font.ttf") }.getOrNull()
     }
 
-    data class Bubble(val text: String, val bounds: Rect)
+    data class Bubble(val text: String, val bounds: Rect, val rotation: Float = 0f)
 
     // FASE 6 FIX: Adjustable line-spacing so translated lines don't collide.
     private companion object {
@@ -153,6 +153,7 @@ class OverlayManager(private val context: Context) {
                             paint.style = Paint.Style.FILL
                         }
                         canvas.save()
+                        canvas.rotate(bubble.rotation, original.centerX().toFloat(), original.centerY().toFloat())
                         canvas.translate((r.left + padding).toFloat(), (r.top + padding).toFloat())
                         layout.draw(canvas)
                         canvas.restore()
@@ -175,6 +176,28 @@ class OverlayManager(private val context: Context) {
                 windowManager.addView(view, params)
                 batchView = view
                 activeViews.add(view)
+            }
+            val observer = View(context).apply {
+                setOnTouchListener { _, event ->
+                    if (event.action == android.view.MotionEvent.ACTION_OUTSIDE) {
+                        clearOverlaysInternal()
+                        true
+                    } else {
+                        false
+                    }
+                }
+            }
+            val observerParams = WindowManager.LayoutParams(
+                1,
+                1,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT,
+            ).apply { gravity = Gravity.TOP or Gravity.START }
+            runCatching {
+                windowManager.addView(observer, observerParams)
+                activeViews.add(observer)
             }
 
             val autoClear = config.autoClearSeconds

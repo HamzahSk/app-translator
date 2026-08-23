@@ -62,6 +62,19 @@ class ConfigManager(context: Context) {
         get() = prefs.getBoolean("autoTextFitEnabled", false)
         set(value) = prefs.edit().putBoolean("autoTextFitEnabled", value).apply()
 
+    var isAutoRotateEnabled: Boolean
+        get() = prefs.getBoolean("isAutoRotateEnabled", false)
+        set(value) = prefs.edit().putBoolean("isAutoRotateEnabled", value).apply()
+    var mergeVerticalGapMultiplier: Float
+        get() = prefs.getFloat("mergeVerticalGapMultiplier", 1.2f)
+        set(value) = prefs.edit().putFloat("mergeVerticalGapMultiplier", value.coerceIn(0.5f, 3f)).apply()
+    var mergeHorizontalGapRatio: Float
+        get() = prefs.getFloat("mergeHorizontalGapRatio", 0.15f)
+        set(value) = prefs.edit().putFloat("mergeHorizontalGapRatio", value.coerceIn(0f, 0.8f)).apply()
+    var mergeSizeTolerance: Float
+        get() = prefs.getFloat("mergeSizeTolerance", 0.45f)
+        set(value) = prefs.edit().putFloat("mergeSizeTolerance", value.coerceIn(0f, 1f)).apply()
+
     // Bubble background color as ARGB hex string (without alpha)
     var bubbleBgColor: String
         get() = prefs.getString("bubbleBgColor", "#FFFFFF") ?: "#FFFFFF"

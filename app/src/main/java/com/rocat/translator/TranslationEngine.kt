@@ -49,7 +49,7 @@ import kotlin.coroutines.resumeWithException
  *    downstream code (and the merge heuristic itself) can compare font sizes and
  *    refuse to fuse a tiny dialogue line with a giant SFX burst.
  */
-data class MergedBlock(val text: String, val rect: Rect, val lineHeight: Float)
+data class MergedBlock(val text: String, val rect: Rect, val lineHeight: Float, val rotation: Float = 0f)
 
 class TranslationEngine(private val context: Context) {
 
@@ -254,8 +254,8 @@ class TranslationEngine(private val context: Context) {
         val fullText = visionText.text
         try {
             var languageCode = mlKitCall("LanguageIdentify") { getLanguageIdentifier().identifyLanguage(fullText).await() }
-            
-            // FIX: Kalau ML Kit bingung ("und"), jangan dibatalkan! 
+
+            // FIX: Kalau ML Kit bingung ("und"), jangan dibatalkan!
             // Gunakan bahasa dari pengaturan sebagai cadangan.
             if (languageCode == null || languageCode == "und") {
                 languageCode = if (config.sourceLanguage != "auto") config.sourceLanguage else "en"
@@ -263,7 +263,7 @@ class TranslationEngine(private val context: Context) {
             } else {
                 Log.d("Translator", "Detected language: $languageCode")
             }
-    
+
             // Lanjut gas translate
             if (config.translationMode != "offline") {
                 onlineTranslate(visionText)
@@ -276,7 +276,7 @@ class TranslationEngine(private val context: Context) {
             Log.e("Translator", "Language identification failed", e)
         }
     }
-    
+
     private suspend fun translateBlocks(visionText: Text, sourceLangCode: String) {
         val targetLangCode = config.targetLanguage
 
@@ -299,7 +299,7 @@ class TranslationEngine(private val context: Context) {
                     val translatedText = mlKitCall("Translate") { translator.translate(block.text).await() }
                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
                     if (translatedText != null) {
-                        translatedBubbles += OverlayManager.Bubble(translatedText, rect)
+                        translatedBubbles += OverlayManager.Bubble(translatedText, rect, block.rotation)
                     }
                     overlayManager.removeLoading("offline_$index")
                 } catch (e: CancellationException) {
@@ -308,6 +308,10 @@ class TranslationEngine(private val context: Context) {
                     Log.e("Translator", "Block translation failed", e)
                 }
             }
+            if (activeJob == null || TranslationControlState.paused) {
+                return 
+            }
+
             if (translatedBubbles.isNotEmpty()) overlayManager.drawTranslationBatch(translatedBubbles)
         } catch (e: CancellationException) {
             throw e
@@ -338,9 +342,13 @@ class TranslationEngine(private val context: Context) {
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val text = translated.getOrNull(index) ?: return@forEachIndexed
                 adjustedBoundingBox(block.rect)?.let { box ->
-                    translatedBubbles += OverlayManager.Bubble(text, box)
+                    translatedBubbles += OverlayManager.Bubble(text, box, block.rotation)
                 }
             }
+            if (activeJob == null || TranslationControlState.paused) {
+                return 
+            }
+
             if (translatedBubbles.isNotEmpty()) overlayManager.drawTranslationBatch(translatedBubbles)
         } catch (e: CancellationException) {
             overlayManager.clearOverlays()
@@ -415,7 +423,14 @@ class TranslationEngine(private val context: Context) {
         val fragments = allLines.mapNotNull { line ->
             val rect = line.boundingBox ?: return@mapNotNull null
             if (line.text.isBlank() || rect.isEmpty) return@mapNotNull null
-            MergedBlock(line.text.trim(), Rect(rect), rect.height().toFloat())
+            val rotation = if (config.isAutoRotateEnabled) {
+                line.cornerPoints?.takeIf {
+                    it.size >= 2
+                }?.let { p -> Math.toDegrees(kotlin.math.atan2((p[1].y - p[0].y).toDouble(), (p[1].x - p[0].x).toDouble())).toFloat() } ?: 0f
+            } else {
+                0f
+            }
+            MergedBlock(line.text.trim(), Rect(rect), rect.height().toFloat(), rotation)
         }
         if (fragments.isEmpty()) return emptyList()
 
@@ -439,7 +454,7 @@ class TranslationEngine(private val context: Context) {
                 // Jarak vertikal dihitung dari ujung bawah grup (union) ke ujung atas baris baru
                 val verticalGap = (next.rect.top - current.rect.bottom).coerceAtLeast(0)
                 val closeVertically = verticalGap <=
-                    MERGE_VERTICAL_GAP_MULTIPLIER * avgLineHeight * config.paragraphGroupingMargin
+                    config.mergeVerticalGapMultiplier * avgLineHeight * config.paragraphGroupingMargin
 
                 val overlapHorizontally = next.rect.left <= current.rect.right &&
                     next.rect.right >= current.rect.left
@@ -454,8 +469,8 @@ class TranslationEngine(private val context: Context) {
                     else -> current.rect.left - next.rect.right
                 }
 
-                val closeHorizontally = horizontalGap < MERGE_HORIZONTAL_GAP_RATIO * maxWidth
-                val sizeTolerance = maxOf(current.lineHeight, next.lineHeight) * MERGE_SIZE_TOLERANCE
+                val closeHorizontally = horizontalGap < config.mergeHorizontalGapRatio * maxWidth
+                val sizeTolerance = maxOf(current.lineHeight, next.lineHeight) * config.mergeSizeTolerance
                 val similarSize = kotlin.math.abs(current.lineHeight - next.lineHeight) <= sizeTolerance
 
                 // Jika memenuhi syarat, gabungkan ke dalam grup ini
@@ -465,6 +480,7 @@ class TranslationEngine(private val context: Context) {
                         text = current.text + "\n" + next.text,
                         rect = union,
                         lineHeight = avgLineHeight,
+                        rotation = (current.rotation + next.rotation) / 2f,
                     )
                     mergedIntoExisting = true
                     break
@@ -494,9 +510,6 @@ class TranslationEngine(private val context: Context) {
         // PHASE 8 FIX: Smart merge tuning. Tuned empirically for manga/comic
         // dialogue vs SFX, but conservative enough to keep clearly distinct
         // bubbles separate.
-        const val MERGE_VERTICAL_GAP_MULTIPLIER = 1.2f
-        const val MERGE_HORIZONTAL_GAP_RATIO = 0.15f
-        const val MERGE_SIZE_TOLERANCE = 0.45f
     }
 }
 

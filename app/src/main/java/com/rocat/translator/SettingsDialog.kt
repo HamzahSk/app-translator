@@ -67,7 +67,15 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             isChecked = config.autoTextFitEnabled
             setOnCheckedChangeListener { _, value -> config.autoTextFitEnabled = value }
         }
+        findViewById<MaterialSwitch>(R.id.settingsAutoRotate).apply {
+            text = "Auto Rotate Canvas"
+            isChecked = config.isAutoRotateEnabled
+            setOnCheckedChangeListener { _, value -> config.isAutoRotateEnabled = value }
+        }
         bindSlider(R.id.sliderSettingsGrouping, R.id.tvSettingsGrouping, config.paragraphGroupingMargin, "Paragraph Grouping / Margin: %.1fx") { config.paragraphGroupingMargin = it }
+        bindSlider(R.id.sliderSettingsMergeVertical, R.id.tvSettingsMergeVertical, config.mergeVerticalGapMultiplier, "Vertical Gap: %.2fx") { config.mergeVerticalGapMultiplier = it }
+        bindSlider(R.id.sliderSettingsMergeHorizontal, R.id.tvSettingsMergeHorizontal, config.mergeHorizontalGapRatio, "Horizontal Gap: %.2fx") { config.mergeHorizontalGapRatio = it }
+        bindSlider(R.id.sliderSettingsMergeSize, R.id.tvSettingsMergeSize, config.mergeSizeTolerance, "Size Tolerance: %.2fx") { config.mergeSizeTolerance = it }
         findViewById<AutoCompleteTextView>(R.id.spinnerAppLanguage).apply {
             val labels = listOf("System Default", "English", "Indonesian")
             setAdapter(ArrayAdapter(context, android.R.layout.simple_list_item_1, labels))

@@ -181,10 +181,10 @@ class ScreenCaptureService : Service() {
     private fun captureScreen() {
         if (TranslationControlState.paused) return
         Log.d("Translator", "Capturing screen...")
-        
+
         // TAMBAHKAN BARIS INI: Paksa hapus canvas lama tiap mulai capture
         translationEngine.clearOverlays()
-    
+
         serviceScope.launch(Dispatchers.IO) {
             // Jika layar statis dan return null, seenggaknya canvas bug sudah dibersihkan
             val image = imageReader?.acquireLatestImage() ?: return@launch
@@ -194,14 +194,14 @@ class ScreenCaptureService : Service() {
                 val pixelStride = planes[0].pixelStride
                 val rowStride = planes[0].rowStride
                 val rowPadding = rowStride - pixelStride * image.width
-    
+
                 val bitmap = Bitmap.createBitmap(
                     image.width + rowPadding / pixelStride,
                     image.height,
                     Bitmap.Config.ARGB_8888,
                 )
                 bitmap.copyPixelsFromBuffer(buffer)
-    
+
                 translationEngine.processImage(bitmap)
             } catch (e: Exception) {
                 translationEngine.clearOverlays()
