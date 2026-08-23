@@ -7,6 +7,8 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 ## Riwayat (terbaru di atas)
 
+| 2026-08-23 05:00 | [task_20260823_0500_phase17_auto_bubble.md](task_20260823_0500_phase17_auto_bubble.md) | Auto font sizing berbasis OCR bounds, tight bubble wrap, toggle Settings, dan verifikasi build sukses. |
+
 | 2026-08-23 02:49 | [task_20260823_0249_phase16_bug_fixes.md](task_20260823_0249_phase16_bug_fixes.md) | Refinement merge OCR, presisi loading overlay, dan render bubble border; spotless serta assembleDebug sukses. |
 
 | 2026-08-22 23:02 | [task_20260822_2302_phase15_ui_revamp_and_features.md](task_20260822_2302_phase15_ui_revamp_and_features.md) | Revamp tema teal/azure, dropdown bahasa aplikasi, slider grouping margin, dan floating ball baru; build sukses. |

@@ -63,19 +63,24 @@ class OverlayManager(private val context: Context) {
                 override fun onDraw(canvas: Canvas) {
                     val bg = Color.parseColor(config.bubbleBgColor)
                     paint.typeface = customTypeface
-                    paint.textSize = config.overlayTextSize.toFloat() * resources.displayMetrics.scaledDensity
                     valid.forEach { bubble ->
                         val original = Rect(bubble.bounds)
                         val r = Rect(original)
                         // Placement controls text alignment inside the original box;
                         // the canvas/bubble anchor remains tied to the OCR bounds.
                         paint.color = Color.parseColor(config.bubbleTextColor)
+                        val padding = dpToPx(10)
+                        val maxWidth = (original.width() - if (config.autoTextFitEnabled) padding * 2 else 0).coerceAtLeast(1)
+                        val maxHeight = (original.height() - if (config.autoTextFitEnabled) padding * 2 else 0).coerceAtLeast(1)
+                        val density = resources.displayMetrics.scaledDensity
+                        val textSize = if (config.autoTextFitEnabled) findFittingTextSize(bubble.text, maxWidth, maxHeight, density) else config.overlayTextSize.toFloat() * density
+                        paint.textSize = textSize
                         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                             color = paint.color
-                            textSize = paint.textSize
+                            this.textSize = paint.textSize
                             typeface = paint.typeface
                         }
-                        val layout = StaticLayout.Builder.obtain(bubble.text, 0, bubble.text.length, textPaint, r.width().coerceAtLeast(1))
+                        var layout = StaticLayout.Builder.obtain(bubble.text, 0, bubble.text.length, textPaint, maxWidth)
                             .setAlignment(
                                 when (config.placementMode) {
                                     "left" -> Layout.Alignment.ALIGN_NORMAL
@@ -86,8 +91,27 @@ class OverlayManager(private val context: Context) {
                             .setIncludePad(false)
                             .setLineSpacing(LINE_SPACING_ADD, LINE_SPACING_MULTIPLIER)
                             .build()
-                        val padding = dpToPx(10)
-                        val width = layout.width + padding * 2
+                        val contentWidth = if (config.autoTextFitEnabled) {
+                            (0 until layout.lineCount).maxOfOrNull { line ->
+                                kotlin.math.ceil(layout.getLineWidth(line).toDouble()).toInt()
+                            }?.coerceIn(1, maxWidth) ?: 1
+                        } else {
+                            layout.width
+                        }
+                        if (config.autoTextFitEnabled && contentWidth != layout.width) {
+                            layout = StaticLayout.Builder.obtain(bubble.text, 0, bubble.text.length, textPaint, contentWidth)
+                                .setAlignment(
+                                    when (config.placementMode) {
+                                        "left" -> Layout.Alignment.ALIGN_NORMAL
+                                        "right" -> Layout.Alignment.ALIGN_OPPOSITE
+                                        else -> Layout.Alignment.ALIGN_CENTER
+                                    },
+                                )
+                                .setIncludePad(false)
+                                .setLineSpacing(LINE_SPACING_ADD, LINE_SPACING_MULTIPLIER)
+                                .build()
+                        }
+                        val width = contentWidth + padding * 2
                         val height = layout.height + padding * 2
                         r.left = original.centerX() - width / 2
                         r.right = r.left + width
@@ -161,6 +185,21 @@ class OverlayManager(private val context: Context) {
                 }, autoClear * 1000L)
             }
         }
+    }
+
+    private fun findFittingTextSize(text: String, maxWidth: Int, maxHeight: Int, density: Float): Float {
+        var low = 1f
+        var high = 48f * density
+        repeat(12) {
+            val mid = (low + high) / 2f
+            val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+                textSize = mid
+                typeface = customTypeface
+            }
+            val layout = StaticLayout.Builder.obtain(text, 0, text.length, paint, maxWidth).setIncludePad(false).setLineSpacing(LINE_SPACING_ADD, LINE_SPACING_MULTIPLIER).build()
+            if (layout.height <= maxHeight) low = mid else high = mid
+        }
+        return low
     }
 
     fun drawLoadingBubble(boundingBox: Rect, key: String) {

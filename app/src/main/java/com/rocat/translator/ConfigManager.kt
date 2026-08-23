@@ -58,6 +58,10 @@ class ConfigManager(context: Context) {
         get() = prefs.getInt("overlayTextSize", 14)
         set(value) = prefs.edit().putInt("overlayTextSize", value).apply()
 
+    var autoTextFitEnabled: Boolean
+        get() = prefs.getBoolean("autoTextFitEnabled", false)
+        set(value) = prefs.edit().putBoolean("autoTextFitEnabled", value).apply()
+
     // Bubble background color as ARGB hex string (without alpha)
     var bubbleBgColor: String
         get() = prefs.getString("bubbleBgColor", "#FFFFFF") ?: "#FFFFFF"

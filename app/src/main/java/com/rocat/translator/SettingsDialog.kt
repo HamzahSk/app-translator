@@ -62,6 +62,11 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             config.overlayTextSize.toFloat(),
             i18n.get("text_size", "Text Size: %dsp"),
         ) { config.overlayTextSize = it.toInt() }
+        findViewById<MaterialSwitch>(R.id.settingsAutoTextFit).apply {
+            text = i18n.get("auto_text_fit", "Auto Text Fit & Wrap")
+            isChecked = config.autoTextFitEnabled
+            setOnCheckedChangeListener { _, value -> config.autoTextFitEnabled = value }
+        }
         bindSlider(R.id.sliderSettingsGrouping, R.id.tvSettingsGrouping, config.paragraphGroupingMargin, "Paragraph Grouping / Margin: %.1fx") { config.paragraphGroupingMargin = it }
         findViewById<AutoCompleteTextView>(R.id.spinnerAppLanguage).apply {
             val labels = listOf("System Default", "English", "Indonesian")
