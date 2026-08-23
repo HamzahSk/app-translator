@@ -15,6 +15,8 @@
         <com.google.android.material.slider.Slider android:id="@+id/sliderSettingsTextSize" android:layout_width="match_parent" android:layout_height="wrap_content" android:valueFrom="8" android:valueTo="28" android:stepSize="1" />
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsAutoTextFit" android:layout_width="match_parent" android:layout_height="wrap_content" />
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsAutoRotate" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsTransparentMode" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsEraserMode" android:layout_width="match_parent" android:layout_height="wrap_content" />
         <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="App Language">
             <AutoCompleteTextView android:id="@+id/spinnerAppLanguage" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>

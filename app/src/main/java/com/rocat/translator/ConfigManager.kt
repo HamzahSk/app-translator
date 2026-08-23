@@ -65,6 +65,12 @@ class ConfigManager(context: Context) {
     var isAutoRotateEnabled: Boolean
         get() = prefs.getBoolean("isAutoRotateEnabled", false)
         set(value) = prefs.edit().putBoolean("isAutoRotateEnabled", value).apply()
+    var isTransparentModeEnabled: Boolean
+        get() = prefs.getBoolean("isTransparentModeEnabled", false)
+        set(value) = prefs.edit().putBoolean("isTransparentModeEnabled", value).apply()
+    var isEraserModeEnabled: Boolean
+        get() = prefs.getBoolean("isEraserModeEnabled", false)
+        set(value) = prefs.edit().putBoolean("isEraserModeEnabled", value).apply()
     var mergeVerticalGapMultiplier: Float
         get() = prefs.getFloat("mergeVerticalGapMultiplier", 1.2f)
         set(value) = prefs.edit().putFloat("mergeVerticalGapMultiplier", value.coerceIn(0.5f, 3f)).apply()

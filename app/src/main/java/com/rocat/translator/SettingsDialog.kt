@@ -72,6 +72,16 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             isChecked = config.isAutoRotateEnabled
             setOnCheckedChangeListener { _, value -> config.isAutoRotateEnabled = value }
         }
+        findViewById<MaterialSwitch>(R.id.settingsTransparentMode).apply {
+            text = "Transparent Mode"
+            isChecked = config.isTransparentModeEnabled
+            setOnCheckedChangeListener { _, value -> config.isTransparentModeEnabled = value }
+        }
+        findViewById<MaterialSwitch>(R.id.settingsEraserMode).apply {
+            text = "Smart Eraser (Hide Original Text)"
+            isChecked = config.isEraserModeEnabled
+            setOnCheckedChangeListener { _, value -> config.isEraserModeEnabled = value }
+        }
         bindSlider(R.id.sliderSettingsGrouping, R.id.tvSettingsGrouping, config.paragraphGroupingMargin, "Paragraph Grouping / Margin: %.1fx") { config.paragraphGroupingMargin = it }
         bindSlider(R.id.sliderSettingsMergeVertical, R.id.tvSettingsMergeVertical, config.mergeVerticalGapMultiplier, "Vertical Gap: %.2fx") { config.mergeVerticalGapMultiplier = it }
         bindSlider(R.id.sliderSettingsMergeHorizontal, R.id.tvSettingsMergeHorizontal, config.mergeHorizontalGapRatio, "Horizontal Gap: %.2fx") { config.mergeHorizontalGapRatio = it }

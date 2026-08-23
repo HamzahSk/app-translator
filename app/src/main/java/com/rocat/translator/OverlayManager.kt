@@ -36,7 +36,7 @@ class OverlayManager(private val context: Context) {
         runCatching { Typeface.createFromAsset(context.assets, "fonts/comic_font.ttf") }.getOrNull()
     }
 
-    data class Bubble(val text: String, val bounds: Rect, val rotation: Float = 0f)
+    data class Bubble(val text: String, val bounds: Rect, val rotation: Float = 0f, val sampledColor: Int = Color.WHITE)
 
     // FASE 6 FIX: Adjustable line-spacing so translated lines don't collide.
     private companion object {
@@ -122,17 +122,26 @@ class OverlayManager(private val context: Context) {
                         // Tentukan radius: pill shape (height/2) untuk auto, atau dari setting untuk manual
                         val cornerRadius = dpToPx(config.bubbleCornerRadius).toFloat()
 
+                        canvas.save()
+                        canvas.rotate(bubble.rotation, original.centerX().toFloat(), original.centerY().toFloat())
+                        if (config.isEraserModeEnabled && config.isTransparentModeEnabled) {
+                            paint.style = Paint.Style.FILL
+                            paint.color = bubble.sampledColor
+                            canvas.drawRect(original, paint)
+                        }
                         paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
-                        canvas.drawRoundRect(
-                            r.left.toFloat(),
-                            r.top.toFloat(),
-                            r.right.toFloat(),
-                            r.bottom.toFloat(),
-                            cornerRadius,
-                            cornerRadius,
-                            paint,
-                        )
-                        if (config.bubbleBorderEnabled) {
+                        if (!config.isTransparentModeEnabled) {
+                            canvas.drawRoundRect(
+                                r.left.toFloat(),
+                                r.top.toFloat(),
+                                r.right.toFloat(),
+                                r.bottom.toFloat(),
+                                cornerRadius,
+                                cornerRadius,
+                                paint,
+                            )
+                        }
+                        if (!config.isTransparentModeEnabled && config.bubbleBorderEnabled) {
                             paint.style = Paint.Style.STROKE
                             paint.strokeWidth = dpToPx(1).toFloat().coerceAtLeast(1f)
                             paint.color = Color.argb(
@@ -152,9 +161,17 @@ class OverlayManager(private val context: Context) {
                             )
                             paint.style = Paint.Style.FILL
                         }
-                        canvas.save()
-                        canvas.rotate(bubble.rotation, original.centerX().toFloat(), original.centerY().toFloat())
                         canvas.translate((r.left + padding).toFloat(), (r.top + padding).toFloat())
+                        if (config.isTransparentModeEnabled) {
+                            textPaint.style = Paint.Style.STROKE
+                            textPaint.strokeWidth = dpToPx(4).toFloat().coerceAtLeast(2f)
+                            textPaint.strokeJoin = Paint.Join.ROUND
+                            val textColor = Color.parseColor(config.bubbleTextColor)
+                            textPaint.color = if (Color.luminance(textColor) > 0.5f) Color.BLACK else Color.WHITE
+                            layout.draw(canvas)
+                            textPaint.style = Paint.Style.FILL
+                            textPaint.color = textColor
+                        }
                         layout.draw(canvas)
                         canvas.restore()
                     }

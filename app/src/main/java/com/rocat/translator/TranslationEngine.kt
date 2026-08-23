@@ -49,7 +49,7 @@ import kotlin.coroutines.resumeWithException
  *    downstream code (and the merge heuristic itself) can compare font sizes and
  *    refuse to fuse a tiny dialogue line with a giant SFX burst.
  */
-data class MergedBlock(val text: String, val rect: Rect, val lineHeight: Float, val rotation: Float = 0f)
+data class MergedBlock(val text: String, val rect: Rect, val lineHeight: Float, val rotation: Float = 0f, val sampledColor: Int = android.graphics.Color.WHITE)
 
 class TranslationEngine(private val context: Context) {
 
@@ -218,12 +218,12 @@ class TranslationEngine(private val context: Context) {
                     Log.e("Translator", "Auto-detect failed: No OCR models are installed!")
                     return
                 }
-                runFallbackChain(image, installedCodes, 0)
+                runFallbackChain(image, installedCodes, 0, bitmap)
             } else {
                 try {
                     val text = recognize(config.sourceLanguage, image, "OCR")
                     overlayManager.removeLoading(scanningIndicatorKey)
-                    if (text != null && text.text.isNotBlank()) identifyAndTranslate(text)
+                    if (text != null && text.text.isNotBlank()) identifyAndTranslate(text, bitmap)
                 } catch (e: Exception) {
                     Log.e("Translator", "OCR Failed", e)
                 }
@@ -233,24 +233,24 @@ class TranslationEngine(private val context: Context) {
         }
     }
 
-    private suspend fun runFallbackChain(image: InputImage, codes: List<String>, index: Int) {
+    private suspend fun runFallbackChain(image: InputImage, codes: List<String>, index: Int, bitmap: Bitmap) {
         if (index >= codes.size) return
         try {
             val text = recognize(codes[index], image, "OCR-${codes[index]}")
             if (text != null && text.text.isNotBlank()) {
                 overlayManager.removeLoading(scanningIndicatorKey)
-                identifyAndTranslate(text)
+                identifyAndTranslate(text, bitmap)
             } else {
-                runFallbackChain(image, codes, index + 1)
+                runFallbackChain(image, codes, index + 1, bitmap)
             }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            runFallbackChain(image, codes, index + 1)
+            runFallbackChain(image, codes, index + 1, bitmap)
         }
     }
 
-    private suspend fun identifyAndTranslate(visionText: Text) {
+    private suspend fun identifyAndTranslate(visionText: Text, bitmap: Bitmap) {
         val fullText = visionText.text
         try {
             var languageCode = mlKitCall("LanguageIdentify") { getLanguageIdentifier().identifyLanguage(fullText).await() }
@@ -266,9 +266,9 @@ class TranslationEngine(private val context: Context) {
 
             // Lanjut gas translate
             if (config.translationMode != "offline") {
-                onlineTranslate(visionText)
+                onlineTranslate(visionText, bitmap)
             } else {
-                translateBlocks(visionText, languageCode)
+                translateBlocks(visionText, languageCode, bitmap)
             }
         } catch (e: CancellationException) {
             throw e
@@ -277,14 +277,14 @@ class TranslationEngine(private val context: Context) {
         }
     }
 
-    private suspend fun translateBlocks(visionText: Text, sourceLangCode: String) {
+    private suspend fun translateBlocks(visionText: Text, sourceLangCode: String, bitmap: Bitmap) {
         val targetLangCode = config.targetLanguage
 
         // ISSUE-003 FIX: Reuse a single translator for the entire batch
         val translator = getTranslator(sourceLangCode, targetLangCode)
         // PHASE 8 FIX: Use merged blocks so neighbouring fragments of the same
         // speech bubble share one translation request and one bubble overlay.
-        val mergedBlocks = mergeBlocks(visionText.textBlocks)
+        val mergedBlocks = mergeBlocks(visionText.textBlocks, bitmap)
         mergedBlocks.forEachIndexed { index, block ->
             adjustedBoundingBox(block.rect)?.let { overlayManager.drawLoadingBubble(it, "offline_$index") }
         }
@@ -299,7 +299,7 @@ class TranslationEngine(private val context: Context) {
                     val translatedText = mlKitCall("Translate") { translator.translate(block.text).await() }
                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
                     if (translatedText != null) {
-                        translatedBubbles += OverlayManager.Bubble(translatedText, rect, block.rotation)
+                        translatedBubbles += OverlayManager.Bubble(translatedText, rect, block.rotation, block.sampledColor)
                     }
                     overlayManager.removeLoading("offline_$index")
                 } catch (e: CancellationException) {
@@ -309,7 +309,7 @@ class TranslationEngine(private val context: Context) {
                 }
             }
             if (activeJob == null || TranslationControlState.paused) {
-                return 
+                return
             }
 
             if (translatedBubbles.isNotEmpty()) overlayManager.drawTranslationBatch(translatedBubbles)
@@ -323,11 +323,11 @@ class TranslationEngine(private val context: Context) {
     }
 
     // ISSUE-012 FIX: Online translation mode (OpenAI / Gemini compatible APIs).
-    private suspend fun onlineTranslate(visionText: Text) {
+    private suspend fun onlineTranslate(visionText: Text, bitmap: Bitmap) {
         // PHASE 8 FIX: Merge neighbouring fragments into single bubbles before
         // sending them to the API so we get one translated result per bubble
         // and one overlay per bubble instead of overlapping duplicates.
-        val blocks = mergeBlocks(visionText.textBlocks)
+        val blocks = mergeBlocks(visionText.textBlocks, bitmap)
             .filter { it.text.isNotBlank() && adjustedBoundingBox(it.rect) != null }
         if (blocks.isEmpty()) return
         blocks.forEachIndexed { index, block ->
@@ -342,11 +342,11 @@ class TranslationEngine(private val context: Context) {
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val text = translated.getOrNull(index) ?: return@forEachIndexed
                 adjustedBoundingBox(block.rect)?.let { box ->
-                    translatedBubbles += OverlayManager.Bubble(text, box, block.rotation)
+                    translatedBubbles += OverlayManager.Bubble(text, box, block.rotation, block.sampledColor)
                 }
             }
             if (activeJob == null || TranslationControlState.paused) {
-                return 
+                return
             }
 
             if (translatedBubbles.isNotEmpty()) overlayManager.drawTranslationBatch(translatedBubbles)
@@ -418,7 +418,7 @@ class TranslationEngine(private val context: Context) {
     //
     // If merged, the text is joined with `\n` and the bounding box becomes the
     // union of both rectangles.
-    private fun mergeBlocks(blocks: List<Text.TextBlock>): List<MergedBlock> {
+    private fun mergeBlocks(blocks: List<Text.TextBlock>, bitmap: Bitmap): List<MergedBlock> {
         val allLines = blocks.flatMap { it.lines }
         val fragments = allLines.mapNotNull { line ->
             val rect = line.boundingBox ?: return@mapNotNull null
@@ -430,7 +430,7 @@ class TranslationEngine(private val context: Context) {
             } else {
                 0f
             }
-            MergedBlock(line.text.trim(), Rect(rect), rect.height().toFloat(), rotation)
+            MergedBlock(line.text.trim(), Rect(rect), rect.height().toFloat(), rotation, getDominantBackgroundColor(bitmap, rect))
         }
         if (fragments.isEmpty()) return emptyList()
 
@@ -481,6 +481,7 @@ class TranslationEngine(private val context: Context) {
                         rect = union,
                         lineHeight = avgLineHeight,
                         rotation = (current.rotation + next.rotation) / 2f,
+                        sampledColor = current.sampledColor,
                     )
                     mergedIntoExisting = true
                     break
@@ -494,6 +495,28 @@ class TranslationEngine(private val context: Context) {
         }
 
         return merged
+    }
+
+    private fun getDominantBackgroundColor(bitmap: Bitmap, rect: Rect): Int {
+        val left = rect.left.coerceIn(0, bitmap.width - 1)
+        val right = (rect.right - 1).coerceIn(0, bitmap.width - 1)
+        val top = rect.top.coerceIn(0, bitmap.height - 1)
+        val bottom = (rect.bottom - 1).coerceIn(0, bitmap.height - 1)
+        if (right < left || bottom < top) return android.graphics.Color.WHITE
+        val counts = HashMap<Int, Int>()
+        fun sample(x: Int, y: Int) {
+            val color = bitmap.getPixel(x, y)
+            counts[color] = (counts[color] ?: 0) + 1
+        }
+        for (x in left..right) {
+            sample(x, top)
+            sample(x, bottom)
+        }
+        for (y in (top + 1) until bottom) {
+            sample(left, y)
+            sample(right, y)
+        }
+        return counts.maxByOrNull { it.value }?.key ?: bitmap.getPixel(left, top)
     }
 
     private fun adjustedBoundingBox(original: Rect?): Rect? {

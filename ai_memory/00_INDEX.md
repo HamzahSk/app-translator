@@ -7,6 +7,8 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 ## Riwayat (terbaru di atas)
 
+| 2026-08-23 22:33 | [task_20260823_2233_phase20_transparent_eraser_fix.md](task_20260823_2233_phase20_transparent_eraser_fix.md) | Perbaikan rotasi seluruh bubble, Transparent Mode + outline teks, dan Smart Eraser berbasis color sampling; spotless serta assembleDebug sukses. |
+
 | 2026-08-24 00:00 | [task_20260824_0000_phase19_overlay_rotation_merge.md](task_20260824_0000_phase19_overlay_rotation_merge.md) | Observer outside-touch overlay cleanup, OCR corner-point rotation, dan kontrol Smart Merge dinamis di Settings; spotless serta assembleDebug sukses. |
 
 | 2026-08-23 14:48 | [task_20260823_1448_phase18_ocr_refactor.md](task_20260823_1448_phase18_ocr_refactor.md) | Refaktor pipeline OCR asinkron, pembatalan touch instan, serialisasi capture, dan cleanup Bitmap/recognizer agresif; spotless serta assembleDebug sukses. |
