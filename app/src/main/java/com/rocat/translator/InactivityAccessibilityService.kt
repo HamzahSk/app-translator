@@ -43,23 +43,25 @@ class InactivityAccessibilityService : AccessibilityService() {
         if (TranslationControlState.paused) return
         // Guard: do nothing if service is not fully initialized yet
         if (!serviceReady || config == null || event == null) return
-
+    
         // Ignore events from our own app so we don't clear overlays when we add them
         if (event.packageName == "com.rocat.translator") return
-
+    
+        // TAMBAHKAN TYPE_WINDOW_CONTENT_CHANGED DI BAWAH INI
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED ||
             event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
-            event.eventType == AccessibilityEvent.TYPE_TOUCH_INTERACTION_START
+            event.eventType == AccessibilityEvent.TYPE_TOUCH_INTERACTION_START ||
+            event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
         ) {
             // Clear current overlays immediately upon movement or app switch
             val clearIntent = Intent("com.rocat.translator.CLEAR_OVERLAY")
             clearIntent.setPackage("com.rocat.translator")
             sendBroadcast(clearIntent)
-
+    
             resetTimer()
         }
     }
-
+    
     private fun resetTimer() {
         handler.removeCallbacks(triggerTranslationRunnable)
         val delay = config?.inactivityDelayMs ?: 3000L

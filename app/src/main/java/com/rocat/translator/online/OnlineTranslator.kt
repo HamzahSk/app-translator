@@ -41,7 +41,6 @@ class OnlineTranslator(context: Context) {
         val prompt = "You are a professional Manga and Manhwa translator. " +
             "Translate the following text into $targetLangName using natural, casual language that fits everyday comic dialogue. " +
             "Preserve the original meaning, emotion, and character voice. " +
-            "Ensure the translation length is roughly similar to the source text (neither unnecessarily long nor too short). " +
             "Do not add explanations, notes, or quotation marks. Return only the translation.\n\n" +
             "Source text: $text"
 
