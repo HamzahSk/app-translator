@@ -1,6 +1,5 @@
 
 **TUGAS FASE 18: REKAYASA ULANG OCR & OPTIMASI MANAJEMEN MEMORI**
-
 ## 1. PROTOKOL SISTEM & MEMORI
  * Mengingat kamu beroperasi di lingkungan GitHub Actions yang bersifat stateless, protokol memori WAJIB dijaga ketat agar token tidak kelebihan beban.
  * **Cek Konteks:** Selalu baca file ai_memory/00_INDEX.md terlebih dahulu, dilanjutkan dengan membaca maksimal 2 file log terbaru di dalam folder ai_memory/.

@@ -129,7 +129,20 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build Debug APK
+      - name: 🔐 Decode Keystore
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          mkdir -p app/build
+          echo "$SIGNING_KEY" | base64 --decode > app/build/env-signing.jks
+
+      # PERBAIKAN: Teruskan environment variables dari GitHub Secrets ke Gradle
+      - name: 🚀 Build APK Variants (Debug & Release)
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          ALIAS: ${{ secrets.ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew assembleRelease --stacktrace --no-daemon -Dorg.gradle.jvmargs="-Xmx4g"
 
       - name: Upload release APK (arm64-v8a)
