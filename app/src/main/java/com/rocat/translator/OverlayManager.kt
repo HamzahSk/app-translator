@@ -70,8 +70,9 @@ class OverlayManager(private val context: Context) {
                         // the canvas/bubble anchor remains tied to the OCR bounds.
                         paint.color = Color.parseColor(config.bubbleTextColor)
                         val padding = dpToPx(10)
-                        val maxWidth = (original.width() - if (config.autoTextFitEnabled) padding * 2 else 0).coerceAtLeast(1)
-                        val maxHeight = (original.height() - if (config.autoTextFitEnabled) padding * 2 else 0).coerceAtLeast(1)
+                        // Gunakan ukuran kotak OCR seutuhnya agar teks tidak kekecilan
+                        val maxWidth = original.width().coerceAtLeast(1)
+                        val maxHeight = original.height().coerceAtLeast(1)
                         val density = resources.displayMetrics.scaledDensity
                         val textSize = if (config.autoTextFitEnabled) findFittingTextSize(bubble.text, maxWidth, maxHeight, density) else config.overlayTextSize.toFloat() * density
                         paint.textSize = textSize
@@ -117,14 +118,22 @@ class OverlayManager(private val context: Context) {
                         r.right = r.left + width
                         r.top = original.centerY() - height / 2
                         r.bottom = r.top + height
+
+                        // Tentukan radius: pill shape (height/2) untuk auto, atau dari setting untuk manual
+                        val cornerRadius = if (config.autoTextFitEnabled) {
+                            height / 2f
+                        } else {
+                            dpToPx(config.bubbleCornerRadius).toFloat()
+                        }
+
                         paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
                         canvas.drawRoundRect(
                             r.left.toFloat(),
                             r.top.toFloat(),
                             r.right.toFloat(),
                             r.bottom.toFloat(),
-                            dpToPx(config.bubbleCornerRadius).toFloat(),
-                            dpToPx(config.bubbleCornerRadius).toFloat(),
+                            cornerRadius,
+                            cornerRadius,
                             paint,
                         )
                         if (config.bubbleBorderEnabled) {
@@ -141,8 +150,8 @@ class OverlayManager(private val context: Context) {
                                 r.top.toFloat(),
                                 r.right.toFloat(),
                                 r.bottom.toFloat(),
-                                dpToPx(config.bubbleCornerRadius).toFloat(),
-                                dpToPx(config.bubbleCornerRadius).toFloat(),
+                                cornerRadius,
+                                cornerRadius,
                                 paint,
                             )
                             paint.style = Paint.Style.FILL
