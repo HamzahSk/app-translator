@@ -7,6 +7,8 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 ## Riwayat (terbaru di atas)
 
+| 2026-08-23 14:48 | [task_20260823_1448_phase18_ocr_refactor.md](task_20260823_1448_phase18_ocr_refactor.md) | Refaktor pipeline OCR asinkron, pembatalan touch instan, serialisasi capture, dan cleanup Bitmap/recognizer agresif; spotless serta assembleDebug sukses. |
+
 | 2026-08-23 05:00 | [task_20260823_0500_phase17_auto_bubble.md](task_20260823_0500_phase17_auto_bubble.md) | Auto font sizing berbasis OCR bounds, tight bubble wrap, toggle Settings, dan verifikasi build sukses. |
 
 | 2026-08-23 02:49 | [task_20260823_0249_phase16_bug_fixes.md](task_20260823_0249_phase16_bug_fixes.md) | Refinement merge OCR, presisi loading overlay, dan render bubble border; spotless serta assembleDebug sukses. |

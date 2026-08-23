@@ -43,6 +43,8 @@ class ScreenCaptureService : Service() {
     // ISSUE-011 FIX: Screen capture + bitmap conversion run on a background thread.
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    @Volatile private var captureJob: kotlinx.coroutines.Job? = null
+
     private val captureReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == "com.rocat.translator.CLEAR_OVERLAY") {
@@ -179,7 +181,12 @@ class ScreenCaptureService : Service() {
     private fun captureScreen() {
         if (TranslationControlState.paused) return
         Log.d("Translator", "Capturing screen...")
+        
+        // TAMBAHKAN BARIS INI: Paksa hapus canvas lama tiap mulai capture
+        translationEngine.clearOverlays()
+    
         serviceScope.launch(Dispatchers.IO) {
+            // Jika layar statis dan return null, seenggaknya canvas bug sudah dibersihkan
             val image = imageReader?.acquireLatestImage() ?: return@launch
             try {
                 val planes = image.planes
@@ -187,16 +194,18 @@ class ScreenCaptureService : Service() {
                 val pixelStride = planes[0].pixelStride
                 val rowStride = planes[0].rowStride
                 val rowPadding = rowStride - pixelStride * image.width
-
+    
                 val bitmap = Bitmap.createBitmap(
                     image.width + rowPadding / pixelStride,
                     image.height,
                     Bitmap.Config.ARGB_8888,
                 )
                 bitmap.copyPixelsFromBuffer(buffer)
-
-                // Pass to Translation Engine (itself coroutine-based)
+    
                 translationEngine.processImage(bitmap)
+            } catch (e: Exception) {
+                translationEngine.clearOverlays()
+                Log.e("Translator", "Capture failed", e)
             } finally {
                 image.close()
             }
@@ -217,6 +226,7 @@ class ScreenCaptureService : Service() {
         super.onDestroy()
         unregisterReceiver(captureReceiver)
         serviceScope.cancel()
+        captureJob?.cancel()
         translationEngine.close()
         virtualDisplay?.release()
         mediaProjection?.stop()
@@ -269,6 +279,7 @@ class ScreenCaptureService : Service() {
         view.setOnTouchListener { _, e ->
             when (e.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    translationEngine.hardPause()
                     view.animate().translationX(0f).alpha(1f).setDuration(150).start()
                     downX = e.rawX
                     downY = e.rawY

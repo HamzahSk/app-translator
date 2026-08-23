@@ -66,6 +66,8 @@ class TranslationEngine(private val context: Context) {
     private val preloadScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     @Volatile private var activeJob: Job? = null
+    private val bitmapLock = Any()
+    private var activeBitmap: Bitmap? = null
 
     private val statusBarHeight: Int by lazy {
         val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
@@ -75,8 +77,7 @@ class TranslationEngine(private val context: Context) {
     // Lazy: LanguageIdentification client is created on first use, inside an IO coroutine.
     private var languageIdentifier: LanguageIdentifier? = null
 
-    // ISSUE-004 FIX: Cache recognizers instead of creating new ones per call
-    private val recognizerCache = mutableMapOf<String, TextRecognizer>()
+    @Volatile private var activeRecognizer: TextRecognizer? = null
 
     // ISSUE-003 FIX: Cache translators per language pair to avoid per-block creation
     private val translatorCache = mutableMapOf<String, Translator>()
@@ -133,7 +134,7 @@ class TranslationEngine(private val context: Context) {
             val dummy = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
             try {
                 val dummyImage = InputImage.fromBitmap(dummy, 0)
-                mlKitCall("PreloadOCR") { getRecognizer(source).process(dummyImage).await() }
+                recognize(source, dummyImage, "PreloadOCR", trackAsActive = false)
                 mlKitCall("PreloadTranslate") { getTranslator(source, target).translate("test").await() }
             } finally {
                 dummy.recycle()
@@ -145,21 +146,23 @@ class TranslationEngine(private val context: Context) {
     // getClient() can take time on first call; previously it ran inside a
     // synchronized block, so a pre-load warm-up could block a real capture's
     // getRecognizer() and stall the first screenshot.
-    private fun getRecognizer(code: String): TextRecognizer {
-        val cached = synchronized(recognizerCache) { recognizerCache[code] }
-        if (cached != null) return cached
-        val created = createRecognizer(code)
-        return synchronized(recognizerCache) {
-            recognizerCache[code] ?: created.also { recognizerCache[code] = it }
-        }
-    }
-
     private fun createRecognizer(code: String): TextRecognizer = when (code) {
         "ja" -> TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
         "ko" -> TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
         "zh" -> TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
         "hi" -> TextRecognition.getClient(DevanagariTextRecognizerOptions.Builder().build())
         else -> TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    }
+
+    private suspend fun recognize(code: String, image: InputImage, tag: String, trackAsActive: Boolean = true): Text? {
+        val recognizer = createRecognizer(code)
+        if (trackAsActive) activeRecognizer = recognizer
+        return try {
+            mlKitCall(tag) { recognizer.process(image).await() }
+        } finally {
+            if (trackAsActive && activeRecognizer === recognizer) activeRecognizer = null
+            runCatching { recognizer.close() }
+        }
     }
 
     private fun getTranslator(sourceLang: String, targetLang: String): Translator {
@@ -180,7 +183,11 @@ class TranslationEngine(private val context: Context) {
     // ISSUE-011 FIX: Async pipeline. Bitmap conversion + OCR + translation all run
     // on Dispatchers.IO, so the main thread is never blocked.
     fun processImage(bitmap: Bitmap) {
-        activeJob?.cancel()
+        synchronized(bitmapLock) {
+            activeJob?.cancel()
+            activeBitmap?.takeUnless { it === bitmap }?.let { old -> runCatching { old.recycle() } }
+            activeBitmap = bitmap
+        }
         activeJob = scope.launch(Dispatchers.IO) {
             try {
                 processImageInternal(bitmap)
@@ -189,6 +196,11 @@ class TranslationEngine(private val context: Context) {
                 throw ce
             } catch (e: Exception) {
                 Log.e("Translator", "Processing failed", e)
+            } finally {
+                synchronized(bitmapLock) {
+                    if (activeBitmap === bitmap) activeBitmap = null
+                }
+                runCatching { if (!bitmap.isRecycled) bitmap.recycle() }
             }
         }
     }
@@ -208,9 +220,8 @@ class TranslationEngine(private val context: Context) {
                 }
                 runFallbackChain(image, installedCodes, 0)
             } else {
-                val recognizer = getRecognizer(config.sourceLanguage)
                 try {
-                    val text = mlKitCall("OCR") { recognizer.process(image).await() }
+                    val text = recognize(config.sourceLanguage, image, "OCR")
                     overlayManager.removeLoading(scanningIndicatorKey)
                     if (text != null && text.text.isNotBlank()) identifyAndTranslate(text)
                 } catch (e: Exception) {
@@ -225,8 +236,7 @@ class TranslationEngine(private val context: Context) {
     private suspend fun runFallbackChain(image: InputImage, codes: List<String>, index: Int) {
         if (index >= codes.size) return
         try {
-            val recognizer = getRecognizer(codes[index])
-            val text = mlKitCall("OCR-${codes[index]}") { recognizer.process(image).await() }
+            val text = recognize(codes[index], image, "OCR-${codes[index]}")
             if (text != null && text.text.isNotBlank()) {
                 overlayManager.removeLoading(scanningIndicatorKey)
                 identifyAndTranslate(text)
@@ -243,14 +253,22 @@ class TranslationEngine(private val context: Context) {
     private suspend fun identifyAndTranslate(visionText: Text) {
         val fullText = visionText.text
         try {
-            val languageCode = mlKitCall("LanguageIdentify") { getLanguageIdentifier().identifyLanguage(fullText).await() }
-            if (languageCode != null && languageCode != "und") {
+            var languageCode = mlKitCall("LanguageIdentify") { getLanguageIdentifier().identifyLanguage(fullText).await() }
+            
+            // FIX: Kalau ML Kit bingung ("und"), jangan dibatalkan! 
+            // Gunakan bahasa dari pengaturan sebagai cadangan.
+            if (languageCode == null || languageCode == "und") {
+                languageCode = if (config.sourceLanguage != "auto") config.sourceLanguage else "en"
+                Log.d("Translator", "Deteksi bahasa gagal (und), menggunakan fallback: $languageCode")
+            } else {
                 Log.d("Translator", "Detected language: $languageCode")
-                if (config.translationMode != "offline") {
-                    onlineTranslate(visionText)
-                } else {
-                    translateBlocks(visionText, languageCode)
-                }
+            }
+    
+            // Lanjut gas translate
+            if (config.translationMode != "offline") {
+                onlineTranslate(visionText)
+            } else {
+                translateBlocks(visionText, languageCode)
             }
         } catch (e: CancellationException) {
             throw e
@@ -258,6 +276,7 @@ class TranslationEngine(private val context: Context) {
             Log.e("Translator", "Language identification failed", e)
         }
     }
+    
     private suspend fun translateBlocks(visionText: Text, sourceLangCode: String) {
         val targetLangCode = config.targetLanguage
 
@@ -343,22 +362,30 @@ class TranslationEngine(private val context: Context) {
         preloadScope.cancel()
         runCatching { languageIdentifier?.close() }
         languageIdentifier = null
-        recognizerCache.values.forEach { runCatching { it.close() } }
-        recognizerCache.clear()
+        runCatching { activeRecognizer?.close() }
+        activeRecognizer = null
         translatorCache.values.forEach { runCatching { it.close() } }
         translatorCache.clear()
+        synchronized(bitmapLock) {
+            activeBitmap?.let { runCatching { if (!it.isRecycled) it.recycle() } }
+            activeBitmap = null
+        }
         overlayManager.clearOverlays()
     }
 
     fun clearOverlays() {
         activeJob?.cancel()
         activeJob = null
+        runCatching { activeRecognizer?.close() }
+        activeRecognizer = null
         overlayManager.clearOverlays()
     }
 
     fun hardPause() {
         activeJob?.cancel()
         activeJob = null
+        runCatching { activeRecognizer?.close() }
+        activeRecognizer = null
         overlayManager.clearOverlays()
     }
 
@@ -400,56 +427,56 @@ class TranslationEngine(private val context: Context) {
         )
 
         val merged = mutableListOf<MergedBlock>()
-        
+
         for (next in sorted) {
             var mergedIntoExisting = false
-            
+
             // Cek dari grup terbaru ke terlama agar lebih akurat secara spasial
             for (i in merged.indices.reversed()) {
                 val current = merged[i]
                 val avgLineHeight = maxOf(current.lineHeight, next.lineHeight)
-                
+
                 // Jarak vertikal dihitung dari ujung bawah grup (union) ke ujung atas baris baru
                 val verticalGap = (next.rect.top - current.rect.bottom).coerceAtLeast(0)
-                val closeVertically = verticalGap <= 
+                val closeVertically = verticalGap <=
                     MERGE_VERTICAL_GAP_MULTIPLIER * avgLineHeight * config.paragraphGroupingMargin
-                    
-                val overlapHorizontally = next.rect.left <= current.rect.right && 
+
+                val overlapHorizontally = next.rect.left <= current.rect.right &&
                     next.rect.right >= current.rect.left
-                    
+
                 val widthA = current.rect.width()
                 val widthB = next.rect.width()
                 val maxWidth = maxOf(widthA, widthB).coerceAtLeast(1)
-                
+
                 val horizontalGap = when {
                     overlapHorizontally -> 0
                     next.rect.left > current.rect.right -> next.rect.left - current.rect.right
                     else -> current.rect.left - next.rect.right
                 }
-                
+
                 val closeHorizontally = horizontalGap < MERGE_HORIZONTAL_GAP_RATIO * maxWidth
                 val sizeTolerance = maxOf(current.lineHeight, next.lineHeight) * MERGE_SIZE_TOLERANCE
                 val similarSize = kotlin.math.abs(current.lineHeight - next.lineHeight) <= sizeTolerance
-        
+
                 // Jika memenuhi syarat, gabungkan ke dalam grup ini
                 if (closeVertically && closeHorizontally && similarSize) {
                     val union = Rect(current.rect).apply { union(next.rect) }
                     merged[i] = MergedBlock(
                         text = current.text + "\n" + next.text,
                         rect = union,
-                        lineHeight = avgLineHeight
+                        lineHeight = avgLineHeight,
                     )
                     mergedIntoExisting = true
                     break
                 }
             }
-            
+
             // Jika tidak cocok dengan grup mana pun, buat grup/balon baru
             if (!mergedIntoExisting) {
                 merged.add(next)
             }
         }
-        
+
         return merged
     }
 
