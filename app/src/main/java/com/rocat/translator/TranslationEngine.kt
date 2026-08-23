@@ -400,45 +400,56 @@ class TranslationEngine(private val context: Context) {
         )
 
         val merged = mutableListOf<MergedBlock>()
-        var current = sorted.first()
-        for (i in 1 until sorted.size) {
-            val next = sorted[i]
-            val avgLineHeight = maxOf(current.lineHeight, next.lineHeight)
-            // OCR line boxes can overlap slightly (or contain unusually large
-            // leading). Treat overlap as zero gap and use the larger box height
-            // as the stable spacing baseline.
-            val verticalGap = (next.rect.top - current.rect.bottom).coerceAtLeast(0)
-            val closeVertically = verticalGap <=
-                MERGE_VERTICAL_GAP_MULTIPLIER * avgLineHeight * config.paragraphGroupingMargin
-            val overlapHorizontally = next.rect.left <= current.rect.right &&
-                next.rect.right >= current.rect.left
-            val widthA = current.rect.width()
-            val widthB = next.rect.width()
-            val maxWidth = maxOf(widthA, widthB).coerceAtLeast(1)
-            val horizontalGap = when {
-                overlapHorizontally -> 0
-                next.rect.left > current.rect.right -> next.rect.left - current.rect.right
-                else -> current.rect.left - next.rect.right
+        
+        for (next in sorted) {
+            var mergedIntoExisting = false
+            
+            // Cek dari grup terbaru ke terlama agar lebih akurat secara spasial
+            for (i in merged.indices.reversed()) {
+                val current = merged[i]
+                val avgLineHeight = maxOf(current.lineHeight, next.lineHeight)
+                
+                // Jarak vertikal dihitung dari ujung bawah grup (union) ke ujung atas baris baru
+                val verticalGap = (next.rect.top - current.rect.bottom).coerceAtLeast(0)
+                val closeVertically = verticalGap <= 
+                    MERGE_VERTICAL_GAP_MULTIPLIER * avgLineHeight * config.paragraphGroupingMargin
+                    
+                val overlapHorizontally = next.rect.left <= current.rect.right && 
+                    next.rect.right >= current.rect.left
+                    
+                val widthA = current.rect.width()
+                val widthB = next.rect.width()
+                val maxWidth = maxOf(widthA, widthB).coerceAtLeast(1)
+                
+                val horizontalGap = when {
+                    overlapHorizontally -> 0
+                    next.rect.left > current.rect.right -> next.rect.left - current.rect.right
+                    else -> current.rect.left - next.rect.right
+                }
+                
+                val closeHorizontally = horizontalGap < MERGE_HORIZONTAL_GAP_RATIO * maxWidth
+                val sizeTolerance = maxOf(current.lineHeight, next.lineHeight) * MERGE_SIZE_TOLERANCE
+                val similarSize = kotlin.math.abs(current.lineHeight - next.lineHeight) <= sizeTolerance
+        
+                // Jika memenuhi syarat, gabungkan ke dalam grup ini
+                if (closeVertically && closeHorizontally && similarSize) {
+                    val union = Rect(current.rect).apply { union(next.rect) }
+                    merged[i] = MergedBlock(
+                        text = current.text + "\n" + next.text,
+                        rect = union,
+                        lineHeight = avgLineHeight
+                    )
+                    mergedIntoExisting = true
+                    break
+                }
             }
-            val closeHorizontally = horizontalGap < MERGE_HORIZONTAL_GAP_RATIO * maxWidth
-            val sizeTolerance = maxOf(current.lineHeight, next.lineHeight) * MERGE_SIZE_TOLERANCE
-            val similarSize = kotlin.math.abs(current.lineHeight - next.lineHeight) <= sizeTolerance
-
-            if (closeVertically && closeHorizontally && similarSize) {
-                val union = Rect(current.rect).apply { union(next.rect) }
-                current = MergedBlock(
-                    text = current.text + "\n" + next.text,
-                    rect = union,
-                    // Use the larger line height so a tall fragment keeps the
-                    // merge window generous for any subsequent nearby block.
-                    lineHeight = avgLineHeight,
-                )
-            } else {
-                merged += current
-                current = next
+            
+            // Jika tidak cocok dengan grup mana pun, buat grup/balon baru
+            if (!mergedIntoExisting) {
+                merged.add(next)
             }
         }
-        merged += current
+        
         return merged
     }
 

@@ -70,14 +70,14 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
                 labels[
                     when (config.appLanguage) {
                         "en" -> 1
-                        "id" -> 2
+                        "in" -> 2
                         else -> 0
                     },
                 ],
                 false,
             )
             setOnItemClickListener { _, _, position, _ ->
-                config.appLanguage = listOf("system", "en", "id")[position]
+                config.appLanguage = listOf("system", "en", "in")[position]
                 Toast.makeText(context, "Language updated. Restart to apply.", Toast.LENGTH_SHORT).show()
             }
         }
