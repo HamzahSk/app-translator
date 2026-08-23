@@ -120,11 +120,7 @@ class OverlayManager(private val context: Context) {
                         r.bottom = r.top + height
 
                         // Tentukan radius: pill shape (height/2) untuk auto, atau dari setting untuk manual
-                        val cornerRadius = if (config.autoTextFitEnabled) {
-                            height / 2f
-                        } else {
-                            dpToPx(config.bubbleCornerRadius).toFloat()
-                        }
+                        val cornerRadius = dpToPx(config.bubbleCornerRadius).toFloat()
 
                         paint.color = Color.argb(config.overlayOpacity, Color.red(bg), Color.green(bg), Color.blue(bg))
                         canvas.drawRoundRect(
