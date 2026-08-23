@@ -144,11 +144,11 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
                 label.text = if (format.contains("%s")) {
                     format.replace("%s", if (v == 0f) i18n.get("off") else "${v.toInt()}s")
                 } else {
-                if (format.matches(".*%\\.?\\d*f.*".toRegex())) {
-                    String.format(format, v)
-                } else {
-                    String.format(format, v.toInt())
-                }
+                    if (format.matches(".*%\\.?\\d*f.*".toRegex())) {
+                        String.format(format, v)
+                    } else {
+                        String.format(format, v.toInt())
+                    }
                 }
             }
         }

@@ -103,6 +103,26 @@ class OverlayManager(private val context: Context) {
                             dpToPx(config.bubbleCornerRadius).toFloat(),
                             paint,
                         )
+                        if (config.bubbleBorderEnabled) {
+                            paint.style = Paint.Style.STROKE
+                            paint.strokeWidth = dpToPx(1).toFloat().coerceAtLeast(1f)
+                            paint.color = Color.argb(
+                                220,
+                                Color.red(Color.parseColor(config.bubbleTextColor)),
+                                Color.green(Color.parseColor(config.bubbleTextColor)),
+                                Color.blue(Color.parseColor(config.bubbleTextColor)),
+                            )
+                            canvas.drawRoundRect(
+                                r.left.toFloat(),
+                                r.top.toFloat(),
+                                r.right.toFloat(),
+                                r.bottom.toFloat(),
+                                dpToPx(config.bubbleCornerRadius).toFloat(),
+                                dpToPx(config.bubbleCornerRadius).toFloat(),
+                                paint,
+                            )
+                            paint.style = Paint.Style.FILL
+                        }
                         canvas.save()
                         canvas.translate((r.left + padding).toFloat(), (r.top + padding).toFloat())
                         layout.draw(canvas)
@@ -157,15 +177,15 @@ class OverlayManager(private val context: Context) {
                 }
             }
             val params = WindowManager.LayoutParams(
-                boundingBox.width().coerceAtLeast(dpToPx(100)),
-                boundingBox.height().coerceAtLeast(dpToPx(32)),
+                boundingBox.width().coerceAtLeast(1),
+                boundingBox.height().coerceAtLeast(1),
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT,
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
-                x = boundingBox.left
-                y = boundingBox.top
+                x = boundingBox.left.coerceAtLeast(0)
+                y = boundingBox.top.coerceAtLeast(0)
             }
             runCatching {
                 windowManager.addView(view, params)
