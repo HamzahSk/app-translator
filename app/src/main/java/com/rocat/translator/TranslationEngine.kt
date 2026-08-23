@@ -467,7 +467,7 @@ class TranslationEngine(private val context: Context) {
         // PHASE 8 FIX: Smart merge tuning. Tuned empirically for manga/comic
         // dialogue vs SFX, but conservative enough to keep clearly distinct
         // bubbles separate.
-        const val MERGE_VERTICAL_GAP_MULTIPLIER = 2.2f
+        const val MERGE_VERTICAL_GAP_MULTIPLIER = 1.2f
         const val MERGE_HORIZONTAL_GAP_RATIO = 0.25f
         const val MERGE_SIZE_TOLERANCE = 0.45f
     }
