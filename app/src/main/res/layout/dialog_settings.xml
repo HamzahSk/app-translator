@@ -16,15 +16,12 @@
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsAutoTextFit" android:layout_width="match_parent" android:layout_height="wrap_content" />
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsAutoRotate" android:layout_width="match_parent" android:layout_height="wrap_content" />
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsTransparentMode" android:layout_width="match_parent" android:layout_height="wrap_content" />
-        <LinearLayout android:id="@+id/outlineSettings" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
-            <TextView android:id="@+id/tvSettingsOutlineThickness" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
-            <com.google.android.material.slider.Slider android:id="@+id/sliderSettingsOutlineThickness" android:layout_width="match_parent" android:layout_height="wrap_content" android:valueFrom="1" android:valueTo="10" android:stepSize="1" />
-            <EditText android:id="@+id/editSettingsOutlineColor" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:hint="Outline color (#RRGGBB)" android:inputType="text" />
-        </LinearLayout>
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsEraserMode" android:layout_width="match_parent" android:layout_height="wrap_content" />
         <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="App Language">
             <AutoCompleteTextView android:id="@+id/spinnerAppLanguage" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
+        <TextView android:id="@+id/tvSettingsGrouping" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" />
+        <com.google.android.material.slider.Slider android:id="@+id/sliderSettingsGrouping" android:layout_width="match_parent" android:layout_height="wrap_content" android:valueFrom="1" android:valueTo="4" android:stepSize="0.1" />
         <TextView android:id="@+id/tvSettingsMergeVertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" />
         <com.google.android.material.slider.Slider android:id="@+id/sliderSettingsMergeVertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:valueFrom="0.5" android:valueTo="3" />
         <TextView android:id="@+id/tvSettingsMergeHorizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" />

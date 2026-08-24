@@ -58,3 +58,13 @@ target/
 # ==========================
 
 *.class
+
+# ADB / Debug artifacts
+adb/
+*.adb.log
+*.dump
+*.trace
+*.hprof
+*.log
+screenshots/
+test-results/
