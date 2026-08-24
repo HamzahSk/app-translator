@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.transition.TransitionManager
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -16,10 +17,12 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.AttrRes
+import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
+import com.google.android.material.textfield.TextInputEditText
 
 class SettingsDialog(context: Context, private val config: ConfigManager) : Dialog(context) {
     private val i18n = I18nManager(context)
@@ -56,33 +59,56 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             config.bubbleCornerRadius.toFloat(),
             i18n.get("corner_radius", "Corner Radius: %ddp"),
         ) { config.bubbleCornerRadius = it.toInt() }
+        val textSizeSlider = findViewById<Slider>(R.id.sliderSettingsTextSize)
         bindSlider(
             R.id.sliderSettingsTextSize,
             R.id.tvSettingsTextSize,
             config.overlayTextSize.toFloat(),
             i18n.get("text_size", "Text Size: %dsp"),
         ) { config.overlayTextSize = it.toInt() }
+        textSizeSlider.isEnabled = !config.autoTextFitEnabled
         findViewById<MaterialSwitch>(R.id.settingsAutoTextFit).apply {
             text = i18n.get("auto_text_fit", "Auto Text Fit & Wrap")
             isChecked = config.autoTextFitEnabled
-            setOnCheckedChangeListener { _, value -> config.autoTextFitEnabled = value }
+            setOnCheckedChangeListener { _, value ->
+                config.autoTextFitEnabled = value
+                textSizeSlider.isEnabled = !value
+            }
         }
         findViewById<MaterialSwitch>(R.id.settingsAutoRotate).apply {
             text = "Auto Rotate Canvas"
             isChecked = config.isAutoRotateEnabled
             setOnCheckedChangeListener { _, value -> config.isAutoRotateEnabled = value }
         }
+        val outlineConfig = findViewById<View>(R.id.layoutOutlineConfig)
+        outlineConfig.visibility = if (config.isTransparentModeEnabled) View.VISIBLE else View.GONE
         findViewById<MaterialSwitch>(R.id.settingsTransparentMode).apply {
             text = "Transparent Mode"
             isChecked = config.isTransparentModeEnabled
-            setOnCheckedChangeListener { _, value -> config.isTransparentModeEnabled = value }
+            setOnCheckedChangeListener { _, value ->
+                config.isTransparentModeEnabled = value
+                TransitionManager.beginDelayedTransition(this@SettingsDialog.findViewById(R.id.settingsDialogRoot))
+                outlineConfig.visibility = if (value) View.VISIBLE else View.GONE
+            }
+        }
+        bindSlider(
+            R.id.sliderSettingsOutlineThickness,
+            R.id.tvSettingsOutlineThickness,
+            config.outlineThickness,
+            "Outline Thickness: %.1fdp",
+        ) { config.outlineThickness = it }
+        findViewById<TextInputEditText>(R.id.inputSettingsOutlineColor).apply {
+            setText(config.outlineColor)
+            doAfterTextChanged { value ->
+                val color = value?.toString().orEmpty()
+                if (runCatching { Color.parseColor(color) }.isSuccess) config.outlineColor = color
+            }
         }
         findViewById<MaterialSwitch>(R.id.settingsEraserMode).apply {
             text = "Smart Eraser (Hide Original Text)"
             isChecked = config.isEraserModeEnabled
             setOnCheckedChangeListener { _, value -> config.isEraserModeEnabled = value }
         }
-        bindSlider(R.id.sliderSettingsGrouping, R.id.tvSettingsGrouping, config.paragraphGroupingMargin, "Paragraph Grouping / Margin: %.1fx") { config.paragraphGroupingMargin = it }
         bindSlider(R.id.sliderSettingsMergeVertical, R.id.tvSettingsMergeVertical, config.mergeVerticalGapMultiplier, "Vertical Gap: %.2fx") { config.mergeVerticalGapMultiplier = it }
         bindSlider(R.id.sliderSettingsMergeHorizontal, R.id.tvSettingsMergeHorizontal, config.mergeHorizontalGapRatio, "Horizontal Gap: %.2fx") { config.mergeHorizontalGapRatio = it }
         bindSlider(R.id.sliderSettingsMergeSize, R.id.tvSettingsMergeSize, config.mergeSizeTolerance, "Size Tolerance: %.2fx") { config.mergeSizeTolerance = it }

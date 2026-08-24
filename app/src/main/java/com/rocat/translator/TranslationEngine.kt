@@ -453,8 +453,7 @@ class TranslationEngine(private val context: Context) {
 
                 // Jarak vertikal dihitung dari ujung bawah grup (union) ke ujung atas baris baru
                 val verticalGap = (next.rect.top - current.rect.bottom).coerceAtLeast(0)
-                val closeVertically = verticalGap <=
-                    config.mergeVerticalGapMultiplier * avgLineHeight * config.paragraphGroupingMargin
+                val closeVertically = verticalGap <= config.mergeVerticalGapMultiplier * avgLineHeight
 
                 val overlapHorizontally = next.rect.left <= current.rect.right &&
                     next.rect.right >= current.rect.left

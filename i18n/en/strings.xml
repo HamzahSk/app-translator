@@ -59,6 +59,5 @@
     <string name="provider_gemini">Google Gemini</string>
     <string name="provider_default">Default Translator (Free)</string>
     <string name="app_language">App Language</string>
-    <string name="paragraph_grouping">Paragraph Grouping / Margin: %.1fx</string>
     <string name="auto_text_fit">Auto Text Fit &amp; Wrap</string>
 </resources>
