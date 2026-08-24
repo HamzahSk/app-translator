@@ -31,10 +31,12 @@ android {
 
     defaultConfig {
         applicationId = "com.rocat.translator"
-        minSdk = 26
+        // Android 7.0 (API 24) remains compatible with the AndroidX and ML Kit
+        // dependencies used by this application.
+        minSdk = 24
         targetSdk = 34
-        versionCode = 7
-        versionName = "1.0.6"
+        versionCode = 8
+        versionName = "1.1.2"
     }
 
     buildTypes {
@@ -63,6 +65,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    lint {
+        // Treat security and manifest regressions as CI failures.
+        checkReleaseBuilds = true
+        abortOnError = true
+        warningsAsErrors = false
     }
 
     // ISSUE-014 FIX: Split APK by CPU ABI (arm64-v8a, armeabi-v7a, x86, x86_64) + universal APK.

@@ -102,7 +102,11 @@ class MainActivity : AppCompatActivity() {
                     putExtra("resultCode", result.resultCode)
                     putExtra("data", result.data)
                 }
-                startForegroundService(serviceIntent)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent)
+                } else {
+                    startService(serviceIntent)
+                }
                 startState = StartState.RUNNING
                 renderStartButton()
                 Snackbar.make(fabStart, i18n.get("service_started"), Snackbar.LENGTH_LONG).show()
@@ -149,11 +153,12 @@ class MainActivity : AppCompatActivity() {
         syncServiceState()
 
         val filter = android.content.IntentFilter("com.rocat.translator.SERVICE_STOPPED")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(serviceStopReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(serviceStopReceiver, filter)
-        }
+        ContextCompat.registerReceiver(
+            this,
+            serviceStopReceiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
     }
 
     override fun onPause() {

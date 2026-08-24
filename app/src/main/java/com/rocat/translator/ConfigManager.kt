@@ -7,7 +7,7 @@ class ConfigManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("ScreenTranslatorPrefs", Context.MODE_PRIVATE)
 
     var floatingBallSizeDp: Int
-        get() = prefs.getInt("floatingBallSizeDp", 44)
+        get() = prefs.getInt("floatingBallSizeDp", 35)
         set(value) = prefs.edit().putInt("floatingBallSizeDp", value.coerceIn(28, 72)).apply()
 
     // ---------- General ----------
@@ -46,12 +46,12 @@ class ConfigManager(context: Context) {
 
     // Bubble corner radius in dp
     var bubbleCornerRadius: Int
-        get() = prefs.getInt("bubbleCornerRadius", 16)
+        get() = prefs.getInt("bubbleCornerRadius", 12)
         set(value) = prefs.edit().putInt("bubbleCornerRadius", value).apply()
 
     // Translated text size in sp
     var overlayTextSize: Int
-        get() = prefs.getInt("overlayTextSize", 14)
+        get() = prefs.getInt("overlayTextSize", 12)
         set(value) = prefs.edit().putInt("overlayTextSize", value).apply()
 
     var autoTextFitEnabled: Boolean
@@ -65,22 +65,22 @@ class ConfigManager(context: Context) {
         get() = prefs.getBoolean("isTransparentModeEnabled", false)
         set(value) = prefs.edit().putBoolean("isTransparentModeEnabled", value).apply()
     var outlineThickness: Float
-        get() = prefs.getFloat("outlineThickness", 1f)
+        get() = prefs.getFloat("outlineThickness", 2f)
         set(value) = prefs.edit().putFloat("outlineThickness", value.coerceIn(1f, 10f)).apply()
     var outlineColor: String
-        get() = prefs.getString("outlineColor", "#00FFFFFF") ?: "#00FFFFFF"
+        get() = prefs.getString("outlineColor", "#80FFFFFF") ?: "#80FFFFFF"
         set(value) = prefs.edit().putString("outlineColor", value).apply()
     var isEraserModeEnabled: Boolean
         get() = prefs.getBoolean("isEraserModeEnabled", false)
         set(value) = prefs.edit().putBoolean("isEraserModeEnabled", value).apply()
     var mergeVerticalGapMultiplier: Float
-        get() = prefs.getFloat("mergeVerticalGapMultiplier", 1.2f)
+        get() = prefs.getFloat("mergeVerticalGapMultiplier", 1.25f)
         set(value) = prefs.edit().putFloat("mergeVerticalGapMultiplier", value.coerceIn(0.5f, 3f)).apply()
     var mergeHorizontalGapRatio: Float
-        get() = prefs.getFloat("mergeHorizontalGapRatio", 0.15f)
+        get() = prefs.getFloat("mergeHorizontalGapRatio", 0.12f)
         set(value) = prefs.edit().putFloat("mergeHorizontalGapRatio", value.coerceIn(0f, 0.8f)).apply()
     var mergeSizeTolerance: Float
-        get() = prefs.getFloat("mergeSizeTolerance", 0.45f)
+        get() = prefs.getFloat("mergeSizeTolerance", 0.30f)
         set(value) = prefs.edit().putFloat("mergeSizeTolerance", value.coerceIn(0f, 1f)).apply()
 
     // Bubble background color as ARGB hex string (without alpha)
