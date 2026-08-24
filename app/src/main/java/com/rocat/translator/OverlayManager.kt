@@ -164,10 +164,10 @@ class OverlayManager(private val context: Context) {
                         canvas.translate((r.left + padding).toFloat(), (r.top + padding).toFloat())
                         if (config.isTransparentModeEnabled) {
                             textPaint.style = Paint.Style.STROKE
-                            textPaint.strokeWidth = dpToPx(4).toFloat().coerceAtLeast(2f)
+                            textPaint.strokeWidth = (config.outlineThickness * density).coerceAtLeast(1f)
                             textPaint.strokeJoin = Paint.Join.ROUND
                             val textColor = Color.parseColor(config.bubbleTextColor)
-                            textPaint.color = if (Color.luminance(textColor) > 0.5f) Color.BLACK else Color.WHITE
+                            textPaint.color = Color.parseColor(config.outlineColor)
                             layout.draw(canvas)
                             textPaint.style = Paint.Style.FILL
                             textPaint.color = textColor

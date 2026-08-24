@@ -32,10 +32,6 @@ class ConfigManager(context: Context) {
         get() = prefs.getString("appLanguage", "system") ?: "system"
         set(value) = prefs.edit().putString("appLanguage", value).apply()
 
-    var paragraphGroupingMargin: Float
-        get() = prefs.getFloat("paragraphGroupingMargin", 2.0f)
-        set(value) = prefs.edit().putFloat("paragraphGroupingMargin", value.coerceIn(1f, 4f)).apply()
-
     // ---------- Overlay Customization ----------
 
     // "direct" = over original text, "left" = bubble to the left, "right" = bubble to the right
@@ -68,6 +64,12 @@ class ConfigManager(context: Context) {
     var isTransparentModeEnabled: Boolean
         get() = prefs.getBoolean("isTransparentModeEnabled", false)
         set(value) = prefs.edit().putBoolean("isTransparentModeEnabled", value).apply()
+    var outlineThickness: Float
+        get() = prefs.getFloat("outlineThickness", 4f)
+        set(value) = prefs.edit().putFloat("outlineThickness", value.coerceIn(1f, 10f)).apply()
+    var outlineColor: String
+        get() = prefs.getString("outlineColor", "#000000") ?: "#000000"
+        set(value) = prefs.edit().putString("outlineColor", value).apply()
     var isEraserModeEnabled: Boolean
         get() = prefs.getBoolean("isEraserModeEnabled", false)
         set(value) = prefs.edit().putBoolean("isEraserModeEnabled", value).apply()
