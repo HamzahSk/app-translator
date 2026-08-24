@@ -65,10 +65,10 @@ class ConfigManager(context: Context) {
         get() = prefs.getBoolean("isTransparentModeEnabled", false)
         set(value) = prefs.edit().putBoolean("isTransparentModeEnabled", value).apply()
     var outlineThickness: Float
-        get() = prefs.getFloat("outlineThickness", 4f)
+        get() = prefs.getFloat("outlineThickness", 1f)
         set(value) = prefs.edit().putFloat("outlineThickness", value.coerceIn(1f, 10f)).apply()
     var outlineColor: String
-        get() = prefs.getString("outlineColor", "#000000") ?: "#000000"
+        get() = prefs.getString("outlineColor", "#00FFFFFF") ?: "#00FFFFFF"
         set(value) = prefs.edit().putString("outlineColor", value).apply()
     var isEraserModeEnabled: Boolean
         get() = prefs.getBoolean("isEraserModeEnabled", false)
