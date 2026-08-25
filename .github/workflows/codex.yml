@@ -3,8 +3,8 @@ name: Codex DB Fixer
 on:
   workflow_dispatch:
   push:
-    tags-ignore:
-      - '**' 
+    branches:
+      - main
     paths:
       - "prompt.md"
 

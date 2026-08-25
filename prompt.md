@@ -1,4 +1,3 @@
-
 ### TUGAS FASE 23: KUSTOMISASI UI (WARNA TEKS) & SISTEM FALLBACK TRANSLASI OFFLINE
 **1. PROTOKOL SISTEM & MEMORI**
  * Mengingat operasi berjalan di lingkungan GitHub Actions yang *stateless*, wajib jaga protokol memori dengan membaca ai_memory/00_INDEX.md dan maksimal 2 log terbaru sebelum mulai.
