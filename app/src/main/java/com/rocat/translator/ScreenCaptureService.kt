@@ -18,6 +18,9 @@ import android.hardware.display.VirtualDisplay
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.IBinder
 import android.util.DisplayMetrics
@@ -25,6 +28,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +44,18 @@ class ScreenCaptureService : Service() {
     private var virtualDisplay: VirtualDisplay? = null
     private var imageReader: ImageReader? = null
     private lateinit var translationEngine: TranslationEngine
+    private lateinit var connectivityManager: ConnectivityManager
+    private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
+
+    @Volatile private var networkAvailable = false
+
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) = refreshConnectivity()
+
+        override fun onLost(network: Network) = refreshConnectivity()
+
+        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) = refreshConnectivity()
+    }
 
     // ISSUE-011 FIX: Screen capture + bitmap conversion run on a background thread.
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -60,6 +76,10 @@ class ScreenCaptureService : Service() {
         super.onCreate()
         createNotificationChannel()
         translationEngine = TranslationEngine(this)
+        connectivityManager = getSystemService(ConnectivityManager::class.java)
+        networkAvailable = hasInternetConnection()
+        translationEngine.onConnectivityChanged(networkAvailable)
+        connectivityManager.registerDefaultNetworkCallback(networkCallback)
         showControlBall()
 
         // Register broadcast receiver for the Accessibility Service trigger
@@ -225,9 +245,34 @@ class ScreenCaptureService : Service() {
         manager.createNotificationChannel(channel)
     }
 
+    private fun refreshConnectivity() {
+        mainHandler.post {
+            val available = hasInternetConnection()
+            val disconnected = networkAvailable && !available
+            networkAvailable = available
+            translationEngine.onConnectivityChanged(available)
+            if (disconnected && ConfigManager(this).translationMode != "offline") {
+                Toast.makeText(
+                    this,
+                    "Koneksi terputus, beralih ke mode offline otomatis",
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+        }
+    }
+
+    private fun hasInternetConnection(): Boolean {
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(captureReceiver)
+        runCatching { connectivityManager.unregisterNetworkCallback(networkCallback) }
+        mainHandler.removeCallbacksAndMessages(null)
         serviceScope.cancel()
         captureJob?.cancel()
         translationEngine.close()

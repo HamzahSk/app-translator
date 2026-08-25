@@ -7,6 +7,8 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 ## Riwayat (terbaru di atas)
 
+| 2026-08-25 12:35 | [task_20260825_1235_phase23_ui_color_offline_fallback.md](task_20260825_1235_phase23_ui_color_offline_fallback.md) | Warna teks manual/Auto-Detect dengan filter body glyph, listener konektivitas real-time, fallback ML Kit saat offline sebelum/di tengah proses, Toast transisi, dan assembleDebug sukses. |
+
 | 2026-08-24 00:00 | [task_20260824_0000_phase22_security_os_compatibility.md](task_20260824_0000_phase22_security_os_compatibility.md) | Min SDK 24, lint security hardening, API 24 compatibility fixes, receiver flags, dan workflow emulator ADB Monkey test; spotless, assembleDebug, lintDebug sukses. |
 
 | 2026-08-24 02:30 | [task_20260824_0230_phase21_ui_ux_improvements.md](task_20260824_0230_phase21_ui_ux_improvements.md) | Cleanup Paragraph Grouping, Auto Text Fit menonaktifkan slider ukuran, serta konfigurasi outline dinamis dengan animasi; spotless dan assembleDebug sukses. |

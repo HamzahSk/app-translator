@@ -36,7 +36,13 @@ class OverlayManager(private val context: Context) {
         runCatching { Typeface.createFromAsset(context.assets, "fonts/comic_font.ttf") }.getOrNull()
     }
 
-    data class Bubble(val text: String, val bounds: Rect, val rotation: Float = 0f, val sampledColor: Int = Color.WHITE)
+    data class Bubble(
+        val text: String,
+        val bounds: Rect,
+        val rotation: Float = 0f,
+        val sampledColor: Int = Color.WHITE,
+        val detectedTextColor: Int = Color.BLACK,
+    )
 
     // FASE 6 FIX: Adjustable line-spacing so translated lines don't collide.
     private companion object {
@@ -68,7 +74,8 @@ class OverlayManager(private val context: Context) {
                         val r = Rect(original)
                         // Placement controls text alignment inside the original box;
                         // the canvas/bubble anchor remains tied to the OCR bounds.
-                        paint.color = Color.parseColor(config.bubbleTextColor)
+                        val resolvedTextColor = if (config.autoDetectTextColor) bubble.detectedTextColor else Color.parseColor(config.bubbleTextColor)
+                        paint.color = resolvedTextColor
                         val padding = dpToPx(10)
                         // Gunakan ukuran kotak OCR seutuhnya agar teks tidak kekecilan
                         val maxWidth = original.width().coerceAtLeast(1)
@@ -146,9 +153,9 @@ class OverlayManager(private val context: Context) {
                             paint.strokeWidth = dpToPx(1).toFloat().coerceAtLeast(1f)
                             paint.color = Color.argb(
                                 220,
-                                Color.red(Color.parseColor(config.bubbleTextColor)),
-                                Color.green(Color.parseColor(config.bubbleTextColor)),
-                                Color.blue(Color.parseColor(config.bubbleTextColor)),
+                                Color.red(resolvedTextColor),
+                                Color.green(resolvedTextColor),
+                                Color.blue(resolvedTextColor),
                             )
                             canvas.drawRoundRect(
                                 r.left.toFloat(),
@@ -166,7 +173,7 @@ class OverlayManager(private val context: Context) {
                             textPaint.style = Paint.Style.STROKE
                             textPaint.strokeWidth = dpToPx(config.outlineThickness.toInt()).toFloat()
                             textPaint.strokeJoin = Paint.Join.ROUND
-                            val textColor = Color.parseColor(config.bubbleTextColor)
+                            val textColor = resolvedTextColor
                             textPaint.color = Color.parseColor(config.outlineColor)
                             layout.draw(canvas)
                             textPaint.style = Paint.Style.FILL

@@ -14,6 +14,10 @@
         <TextView android:id="@+id/tvSettingsTextSize" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" />
         <com.google.android.material.slider.Slider android:id="@+id/sliderSettingsTextSize" android:layout_width="match_parent" android:layout_height="wrap_content" android:valueFrom="8" android:valueTo="28" android:stepSize="1" />
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsAutoTextFit" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsAutoTextColor" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <com.google.android.material.textfield.TextInputLayout android:id="@+id/layoutSettingsTextColor" style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:hint="Text Color (#RRGGBB)">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/inputSettingsTextColor" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" android:maxLength="9" android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsAutoRotate" android:layout_width="match_parent" android:layout_height="wrap_content" />
         <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/settingsTransparentMode" android:layout_width="match_parent" android:layout_height="wrap_content" />
         <LinearLayout android:id="@+id/layoutOutlineConfig" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">

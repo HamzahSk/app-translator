@@ -49,7 +49,14 @@ import kotlin.coroutines.resumeWithException
  *    downstream code (and the merge heuristic itself) can compare font sizes and
  *    refuse to fuse a tiny dialogue line with a giant SFX burst.
  */
-data class MergedBlock(val text: String, val rect: Rect, val lineHeight: Float, val rotation: Float = 0f, val sampledColor: Int = android.graphics.Color.WHITE)
+data class MergedBlock(
+    val text: String,
+    val rect: Rect,
+    val lineHeight: Float,
+    val rotation: Float = 0f,
+    val sampledColor: Int = android.graphics.Color.WHITE,
+    val detectedTextColor: Int = android.graphics.Color.BLACK,
+)
 
 class TranslationEngine(private val context: Context) {
 
@@ -66,6 +73,8 @@ class TranslationEngine(private val context: Context) {
     private val preloadScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     @Volatile private var activeJob: Job? = null
+
+    @Volatile private var networkAvailable = true
     private val bitmapLock = Any()
     private var activeBitmap: Bitmap? = null
 
@@ -121,8 +130,8 @@ class TranslationEngine(private val context: Context) {
         null
     }
 
-    private suspend fun preloadOfflineModel() {
-        if (config.translationMode != "offline") return
+    private suspend fun preloadOfflineModel(force: Boolean = false) {
+        if (!force && config.translationMode != "offline") return
         val source = config.sourceLanguage.takeUnless { it == "auto" } ?: "en"
         val target = config.targetLanguage
         runCatching { getTranslator(source, target).downloadModelIfNeeded().await() }
@@ -265,8 +274,8 @@ class TranslationEngine(private val context: Context) {
             }
 
             // Lanjut gas translate
-            if (config.translationMode != "offline") {
-                onlineTranslate(visionText, bitmap)
+            if (config.translationMode != "offline" && networkAvailable) {
+                onlineTranslate(visionText, languageCode, bitmap)
             } else {
                 translateBlocks(visionText, languageCode, bitmap)
             }
@@ -299,7 +308,7 @@ class TranslationEngine(private val context: Context) {
                     val translatedText = mlKitCall("Translate") { translator.translate(block.text).await() }
                     kotlinx.coroutines.currentCoroutineContext().ensureActive()
                     if (translatedText != null) {
-                        translatedBubbles += OverlayManager.Bubble(translatedText, rect, block.rotation, block.sampledColor)
+                        translatedBubbles += OverlayManager.Bubble(translatedText, rect, block.rotation, block.sampledColor, block.detectedTextColor)
                     }
                     overlayManager.removeLoading("offline_$index")
                 } catch (e: CancellationException) {
@@ -323,7 +332,7 @@ class TranslationEngine(private val context: Context) {
     }
 
     // ISSUE-012 FIX: Online translation mode (OpenAI / Gemini compatible APIs).
-    private suspend fun onlineTranslate(visionText: Text, bitmap: Bitmap) {
+    private suspend fun onlineTranslate(visionText: Text, sourceLangCode: String, bitmap: Bitmap) {
         // PHASE 8 FIX: Merge neighbouring fragments into single bubbles before
         // sending them to the API so we get one translated result per bubble
         // and one overlay per bubble instead of overlapping duplicates.
@@ -336,13 +345,16 @@ class TranslationEngine(private val context: Context) {
         }
         try {
             val translated = onlineTranslator.translateBatch(blocks.map { it.text }, config.targetLanguage)
-            if (translated == null) return
+            if (translated == null) {
+                if (!networkAvailable) translateBlocks(visionText, sourceLangCode, bitmap)
+                return
+            }
             val translatedBubbles = mutableListOf<OverlayManager.Bubble>()
             blocks.forEachIndexed { index, block ->
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val text = translated.getOrNull(index) ?: return@forEachIndexed
                 adjustedBoundingBox(block.rect)?.let { box ->
-                    translatedBubbles += OverlayManager.Bubble(text, box, block.rotation, block.sampledColor)
+                    translatedBubbles += OverlayManager.Bubble(text, box, block.rotation, block.sampledColor, block.detectedTextColor)
                 }
             }
             if (activeJob == null || TranslationControlState.paused) {
@@ -359,6 +371,9 @@ class TranslationEngine(private val context: Context) {
             Log.e("Translator", "Online batch segment count mismatch", e)
         } catch (e: Exception) {
             Log.e("Translator", "Online batch translation failed", e)
+            if (!networkAvailable) {
+                translateBlocks(visionText, sourceLangCode, bitmap)
+            }
         } finally {
             blocks.indices.forEach { overlayManager.removeLoading(it.toString()) }
         }
@@ -387,6 +402,13 @@ class TranslationEngine(private val context: Context) {
         runCatching { activeRecognizer?.close() }
         activeRecognizer = null
         overlayManager.clearOverlays()
+    }
+
+    fun onConnectivityChanged(available: Boolean) {
+        networkAvailable = available
+        if (!available && config.translationMode != "offline") {
+            preloadScope.launch(Dispatchers.IO) { preloadOfflineModel(force = true) }
+        }
     }
 
     fun hardPause() {
@@ -430,7 +452,15 @@ class TranslationEngine(private val context: Context) {
             } else {
                 0f
             }
-            MergedBlock(line.text.trim(), Rect(rect), rect.height().toFloat(), rotation, getDominantBackgroundColor(bitmap, rect))
+            val backgroundColor = getDominantBackgroundColor(bitmap, rect)
+            MergedBlock(
+                line.text.trim(),
+                Rect(rect),
+                rect.height().toFloat(),
+                rotation,
+                backgroundColor,
+                getBodyTextColor(bitmap, rect, backgroundColor),
+            )
         }
         if (fragments.isEmpty()) return emptyList()
 
@@ -481,6 +511,7 @@ class TranslationEngine(private val context: Context) {
                         lineHeight = avgLineHeight,
                         rotation = (current.rotation + next.rotation) / 2f,
                         sampledColor = current.sampledColor,
+                        detectedTextColor = current.detectedTextColor,
                     )
                     mergedIntoExisting = true
                     break
@@ -516,6 +547,53 @@ class TranslationEngine(private val context: Context) {
             sample(right, y)
         }
         return counts.maxByOrNull { it.value }?.key ?: bitmap.getPixel(left, top)
+    }
+
+    /**
+     * Finds the glyph fill instead of its outline. Colors are quantized to absorb
+     * antialiasing, background-like pixels are rejected, and candidates touching
+     * the background frequently are penalized because those pixels are normally
+     * the outer stroke or shadow. The fill sits inside that stroke and therefore
+     * has substantially fewer background neighbours.
+     */
+    private fun getBodyTextColor(bitmap: Bitmap, rect: Rect, backgroundColor: Int): Int {
+        val left = rect.left.coerceIn(0, bitmap.width - 1)
+        val right = (rect.right - 1).coerceIn(left, bitmap.width - 1)
+        val top = rect.top.coerceIn(0, bitmap.height - 1)
+        val bottom = (rect.bottom - 1).coerceIn(top, bitmap.height - 1)
+        val insetX = ((right - left + 1) * 0.08f).toInt()
+        val insetY = ((bottom - top + 1) * 0.08f).toInt()
+        val counts = HashMap<Int, Int>()
+        val backgroundTouches = HashMap<Int, Int>()
+
+        fun quantize(color: Int): Int = android.graphics.Color.rgb(
+            android.graphics.Color.red(color) and 0xE0,
+            android.graphics.Color.green(color) and 0xE0,
+            android.graphics.Color.blue(color) and 0xE0,
+        )
+        fun distance(a: Int, b: Int): Double {
+            val dr = android.graphics.Color.red(a) - android.graphics.Color.red(b)
+            val dg = android.graphics.Color.green(a) - android.graphics.Color.green(b)
+            val db = android.graphics.Color.blue(a) - android.graphics.Color.blue(b)
+            return kotlin.math.sqrt((dr * dr + dg * dg + db * db).toDouble())
+        }
+        val bg = quantize(backgroundColor)
+        for (y in (top + insetY)..(bottom - insetY).coerceAtLeast(top + insetY)) {
+            for (x in (left + insetX)..(right - insetX).coerceAtLeast(left + insetX)) {
+                val color = quantize(bitmap.getPixel(x, y))
+                if (distance(color, bg) < 56.0) continue
+                counts[color] = (counts[color] ?: 0) + 1
+                val touchesBackground = listOf(x - 1 to y, x + 1 to y, x to y - 1, x to y + 1).any { (nx, ny) ->
+                    nx !in 0 until bitmap.width || ny !in 0 until bitmap.height || distance(quantize(bitmap.getPixel(nx, ny)), bg) < 48.0
+                }
+                if (touchesBackground) backgroundTouches[color] = (backgroundTouches[color] ?: 0) + 1
+            }
+        }
+        val winner = counts.maxByOrNull { (color, count) ->
+            val exposedRatio = (backgroundTouches[color] ?: 0).toDouble() / count.coerceAtLeast(1)
+            count * distance(color, bg) * (1.0 - exposedRatio.coerceIn(0.0, 0.9))
+        }?.key ?: return android.graphics.Color.BLACK
+        return winner or 0xFF000000.toInt()
     }
 
     private fun adjustedBoundingBox(original: Rect?): Rect? {

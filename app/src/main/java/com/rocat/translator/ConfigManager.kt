@@ -93,6 +93,10 @@ class ConfigManager(context: Context) {
         get() = prefs.getString("bubbleTextColor", "#000000") ?: "#000000"
         set(value) = prefs.edit().putString("bubbleTextColor", value).apply()
 
+    var autoDetectTextColor: Boolean
+        get() = prefs.getBoolean("autoDetectTextColor", false)
+        set(value) = prefs.edit().putBoolean("autoDetectTextColor", value).apply()
+
     // Show border on bubble
     var bubbleBorderEnabled: Boolean
         get() = prefs.getBoolean("bubbleBorderEnabled", true)

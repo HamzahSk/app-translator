@@ -23,6 +23,7 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
 class SettingsDialog(context: Context, private val config: ConfigManager) : Dialog(context) {
     private val i18n = I18nManager(context)
@@ -73,6 +74,24 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             setOnCheckedChangeListener { _, value ->
                 config.autoTextFitEnabled = value
                 textSizeSlider.isEnabled = !value
+            }
+        }
+        val textColorLayout = findViewById<TextInputLayout>(R.id.layoutSettingsTextColor)
+        val textColorInput = findViewById<TextInputEditText>(R.id.inputSettingsTextColor).apply {
+            setText(config.bubbleTextColor)
+            doAfterTextChanged { value ->
+                val color = value?.toString().orEmpty()
+                if (runCatching { Color.parseColor(color) }.isSuccess) config.bubbleTextColor = color
+            }
+        }
+        findViewById<MaterialSwitch>(R.id.settingsAutoTextColor).apply {
+            text = i18n.get("auto_detect_text_color", "Auto-Detect Source Text Color")
+            isChecked = config.autoDetectTextColor
+            textColorLayout.isEnabled = !isChecked
+            setOnCheckedChangeListener { _, value ->
+                config.autoDetectTextColor = value
+                textColorLayout.isEnabled = !value
+                textColorInput.isEnabled = !value
             }
         }
         findViewById<MaterialSwitch>(R.id.settingsAutoRotate).apply {
