@@ -3,6 +3,8 @@ name: OpenCode AI & Build Pipeline
 on:
   workflow_dispatch:
   push:
+    tags-ignore:
+      - '**' 
     paths:
       - "prompt.md"
 

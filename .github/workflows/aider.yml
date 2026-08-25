@@ -3,6 +3,8 @@ name: Aider AI Fixer
 on:
   workflow_dispatch:
   push:
+    tags-ignore:
+      - '**' 
     paths:
       - "prompt.md"
 
