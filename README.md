@@ -34,7 +34,7 @@ No more manually cropping screenshots or switching apps! Just read, pause, and l
 *   **Smart Inactivity Sensor**: Translates the screen automatically if you don't scroll or touch the screen for a specific duration (default: 3 seconds).
 *   **Dynamic Bubble Overlay**: Translations feature rounded corners mapped directly over the original text bubbles.
 *   **Draggable UI**: If a translation bubble covers a character's face, simply touch and drag it out of the way!
-*   **100% On-Device & Offline**: Uses Google ML Kit's on-device models. Fast, private, and requires no internet connection once the models are downloaded.
+*   **Offline After Model Download**: OCR modules and ML Kit translation models are delivered on demand. Translation runs on-device after the required models have been installed.
 *   **Online Mode (Custom AI API)**: Optional online translation via OpenAI or Google Gemini APIs (any OpenAI-compatible endpoint supported) for higher quality translations.
 *   **Splash Screen**: Lightweight VectorDrawable-based animated splash screen on app launch.
 
@@ -50,6 +50,17 @@ No more manually cropping screenshots or switching apps! Just read, pause, and l
     *   ModuleInstall API for on-demand model delivery.
     *   On-Device Translation.
 
+## Model Management and Translation Modes
+
+The Smart Model Manager separates the two ML Kit model types used by the app:
+
+* **OCR modules** recognize Latin, Japanese, Korean, Chinese, and Devanagari scripts. They are supplied as thin Google Play Services modules and resolved when needed.
+* **Translation models** are managed through ML Kit's `RemoteModelManager`. The app checks installed language models, shows their status, and downloads missing models on demand.
+
+Offline mode performs OCR, language identification, and translation on the device. An internet connection is required only for the initial model download. Online mode keeps OCR on-device but sends recognized text to the selected Default, OpenAI-compatible, or Gemini provider. If connectivity is lost, the active workflow falls back to offline translation when the required ML Kit model is available.
+
+The Kotlin source follows responsibility-based packages: reusable online provider code lives in `com.rocat.translator.online`, dialog UI lives in `com.rocat.translator.ui.dialogs`, and the capture/translation orchestration remains in the application package.
+
 ## How to Install and Run
 
 1.  Clone this repository:
@@ -60,7 +71,7 @@ No more manually cropping screenshots or switching apps! Just read, pause, and l
 2.  Open the project in **Android Studio** or **Google Antigravity IDE**.
 3.  Let Gradle sync and download the required dependencies.
 4.  Run `./gradlew assembleDebug` to build the APK.
-5.  Install the APK on an Android device running Android 8+ (API 26+).
+5.  Install the APK on an Android device running Android 7+ (API 24+).
 
 ### Required Permissions
 Upon first launch, the app will ask you to manually grant:

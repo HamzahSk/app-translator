@@ -37,6 +37,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
+/**
+ * Foreground service that owns MediaProjection capture and delegates each frame to
+ * [TranslationEngine]. It also tracks connectivity so online mode can fall back to ML Kit.
+ */
 class ScreenCaptureService : Service() {
     private val i18n by lazy { I18nManager(this) }
 
@@ -203,8 +207,6 @@ class ScreenCaptureService : Service() {
 
     private fun captureScreen() {
         if (TranslationControlState.paused) return
-        Log.d("Translator", "Capturing screen...")
-
         // TAMBAHKAN BARIS INI: Paksa hapus canvas lama tiap mulai capture
         translationEngine.clearOverlays()
 

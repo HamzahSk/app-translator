@@ -1,4 +1,4 @@
-package com.rocat.translator
+package com.rocat.translator.ui.dialogs
 
 import android.app.Dialog
 import android.content.Context
@@ -24,7 +24,16 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.slider.Slider
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.rocat.translator.ConfigManager
+import com.rocat.translator.I18nManager
+import com.rocat.translator.R
 
+/**
+ * Modal editor for overlay appearance and OCR grouping preferences.
+ *
+ * Values are persisted immediately through [ConfigManager], allowing the active translation
+ * service to consume updated settings without coupling the dialog to service lifecycle state.
+ */
 class SettingsDialog(context: Context, private val config: ConfigManager) : Dialog(context) {
     private val i18n = I18nManager(context)
     override fun onCreate(savedInstanceState: Bundle?) {

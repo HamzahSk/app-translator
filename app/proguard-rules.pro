@@ -17,7 +17,7 @@
 # R8 must not rename/remove the online API models & service interface.
 # Gson serializes/deserializes these classes via reflection, and Retrofit
 # resolves the endpoint methods via reflection too.
--keep class com.ervareza.screentranslator.online.** { *; }
+-keep class com.rocat.translator.online.** { *; }
 
 # Attributes needed by Retrofit/Gson reflection
 -keepattributes Signature, InnerClasses, EnclosingMethod, Exceptions, Annotation

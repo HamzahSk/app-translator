@@ -7,6 +7,10 @@ import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 
+/**
+ * Detects the end of screen interaction and requests a capture after the configured delay.
+ * Interaction events also clear stale overlays immediately.
+ */
 class InactivityAccessibilityService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
 
@@ -16,7 +20,6 @@ class InactivityAccessibilityService : AccessibilityService() {
     private var serviceReady = false
 
     private val triggerTranslationRunnable = Runnable {
-        Log.d("Translator", "Inactivity detected. Triggering translation...")
         try {
             // Explicit broadcast with package name so it reaches RECEIVER_NOT_EXPORTED
             val intent = Intent("com.rocat.translator.TRIGGER_CAPTURE")
@@ -32,7 +35,6 @@ class InactivityAccessibilityService : AccessibilityService() {
         try {
             config = ConfigManager(this)
             serviceReady = true
-            Log.d("Translator", "Accessibility Service Connected")
             resetTimer()
         } catch (e: Exception) {
             Log.e("Translator", "Error in onServiceConnected", e)

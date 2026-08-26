@@ -58,6 +58,12 @@ data class MergedBlock(
     val detectedTextColor: Int = android.graphics.Color.BLACK,
 )
 
+/**
+ * Coordinates OCR, language identification, offline/online translation, and overlay rendering.
+ *
+ * ML Kit clients are cached lazily and all public processing is cancellation-aware so a new
+ * screen interaction can stop stale work before it renders an overlay.
+ */
 class TranslationEngine(private val context: Context) {
 
     private val overlayManager = OverlayManager(context)
@@ -268,9 +274,6 @@ class TranslationEngine(private val context: Context) {
             // Gunakan bahasa dari pengaturan sebagai cadangan.
             if (languageCode == null || languageCode == "und") {
                 languageCode = if (config.sourceLanguage != "auto") config.sourceLanguage else "en"
-                Log.d("Translator", "Deteksi bahasa gagal (und), menggunakan fallback: $languageCode")
-            } else {
-                Log.d("Translator", "Detected language: $languageCode")
             }
 
             // Lanjut gas translate

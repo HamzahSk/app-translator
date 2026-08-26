@@ -43,10 +43,17 @@ import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.rocat.translator.ui.dialogs.SettingsDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Main configuration screen and lifecycle owner for starting screen capture.
+ *
+ * The activity coordinates permissions, translation mode settings, and the ML Kit model
+ * manager UI. Long-running OCR and translation work remains owned by [ScreenCaptureService].
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var config: ConfigManager

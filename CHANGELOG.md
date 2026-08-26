@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- Smart Model Manager untuk memeriksa dan mengunduh model terjemahan ML Kit sesuai bahasa, lengkap dengan status pemasangan dan notifikasi progres.
+- Dukungan katalog i18n Inggris dan Indonesia untuk kontrol utama, Settings, notifikasi service, status model, dan pesan fallback.
+
+### Changed
+- Pipeline OCR menggunakan model pengenal tulisan Latin, Jepang, Korea, Tiongkok, dan Devanagari melalui Google Play Services, dengan pemilihan model dan fallback yang sadar status instalasi.
+- Dokumentasi menjelaskan batas antara OCR, terjemahan offline ML Kit, dan provider terjemahan online.
+- Dialog Settings dipindahkan ke package `ui.dialogs` dan komponen utama mendapat dokumentasi KDoc untuk maintenance.
+
+### Fixed
+- Visibilitas dan pembersihan overlay OCR diperbaiki agar indikator/loading lama tidak tertinggal ketika capture dibatalkan, layar bergerak, atau koneksi berubah.
+- Aturan R8 untuk model Retrofit/Gson diperbarui agar memakai package aplikasi saat ini.
+
 ## [v1.0.7] - 2026-08-20
 ### Added
 - Mode "Online" untuk terjemahan menggunakan Custom AI API (OpenAI & Google Gemini) via Retrofit/OkHttp. Mendukung endpoint dan payload format OpenAI Chat Completions (`/chat/completions`) dan Gemini `generateContent` (`/v1beta/models/{model}:generateContent`), termasuk custom base URL untuk endpoint yang kompatibel (OpenRouter, Groq, Ollama, dll).

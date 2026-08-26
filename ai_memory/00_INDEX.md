@@ -7,6 +7,8 @@ Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit vi
 
 ## Riwayat (terbaru di atas)
 
+| 2026-08-27 05:32 | [task_20260827_0532_phase26_release_prep.md](task_20260827_0532_phase26_release_prep.md) | Persiapan rilis 1.1.3: dokumentasi Smart Model Manager, package dialog, KDoc, cleanup debug log, koreksi R8, dan verifikasi release. |
+
 | 2026-08-25 13:00 | [task_20260825_1300_phase24_i18n.md](task_20260825_1300_phase24_i18n.md) | Migrasi string service notification, offline fallback Toast, dan kontrol Settings ke katalog i18n en/id. |
 
 | 2026-08-25 12:35 | [task_20260825_1235_phase23_ui_color_offline_fallback.md](task_20260825_1235_phase23_ui_color_offline_fallback.md) | Warna teks manual/Auto-Detect dengan filter body glyph, listener konektivitas real-time, fallback ML Kit saat offline sebelum/di tengah proses, Toast transisi, dan assembleDebug sukses. |
