@@ -42,7 +42,7 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
         val delayLabel = findViewById<TextView>(R.id.tvSettingsDelay)
         fun setDelay(value: Float) {
             val v = (value * 2).toInt() / 2f
-            delayLabel.text = String.format(i18n.get("inactivity_delay", "Inactivity Delay: %.1fs"), v)
+            delayLabel.text = String.format(i18n.get("inactivity_delay"), v)
             config.inactivityDelayMs = (v * 1000).toLong()
         }
         delay.value = (config.inactivityDelayMs / 1000f).coerceIn(.5f, 10f)
@@ -52,24 +52,24 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             R.id.sliderSettingsOpacity,
             R.id.tvSettingsOpacity,
             (config.overlayOpacity * 100 / 255 / 5 * 5).toFloat(),
-            i18n.get("bubble_opacity", "Bubble Opacity: %d%%"),
+            i18n.get("bubble_opacity"),
         ) { config.overlayOpacity = (it * 255 / 100).toInt() }
         bindSlider(
             R.id.sliderSettingsCorner,
             R.id.tvSettingsCorner,
             config.bubbleCornerRadius.toFloat(),
-            i18n.get("corner_radius", "Corner Radius: %ddp"),
+            i18n.get("corner_radius"),
         ) { config.bubbleCornerRadius = it.toInt() }
         val textSizeSlider = findViewById<Slider>(R.id.sliderSettingsTextSize)
         bindSlider(
             R.id.sliderSettingsTextSize,
             R.id.tvSettingsTextSize,
             config.overlayTextSize.toFloat(),
-            i18n.get("text_size", "Text Size: %dsp"),
+            i18n.get("text_size"),
         ) { config.overlayTextSize = it.toInt() }
         textSizeSlider.isEnabled = !config.autoTextFitEnabled
         findViewById<MaterialSwitch>(R.id.settingsAutoTextFit).apply {
-            text = i18n.get("auto_text_fit", "Auto Text Fit & Wrap")
+            text = i18n.get("auto_text_fit")
             isChecked = config.autoTextFitEnabled
             setOnCheckedChangeListener { _, value ->
                 config.autoTextFitEnabled = value
@@ -85,7 +85,7 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             }
         }
         findViewById<MaterialSwitch>(R.id.settingsAutoTextColor).apply {
-            text = i18n.get("auto_detect_text_color", "Auto-Detect Source Text Color")
+            text = i18n.get("auto_detect_text_color")
             isChecked = config.autoDetectTextColor
             textColorLayout.isEnabled = !isChecked
             setOnCheckedChangeListener { _, value ->
@@ -95,14 +95,14 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             }
         }
         findViewById<MaterialSwitch>(R.id.settingsAutoRotate).apply {
-            text = "Auto Rotate Canvas"
+            text = i18n.get("auto_rotate_canvas")
             isChecked = config.isAutoRotateEnabled
             setOnCheckedChangeListener { _, value -> config.isAutoRotateEnabled = value }
         }
         val outlineConfig = findViewById<View>(R.id.layoutOutlineConfig)
         outlineConfig.visibility = if (config.isTransparentModeEnabled) View.VISIBLE else View.GONE
         findViewById<MaterialSwitch>(R.id.settingsTransparentMode).apply {
-            text = "Transparent Mode"
+            text = i18n.get("transparent_mode")
             isChecked = config.isTransparentModeEnabled
             setOnCheckedChangeListener { _, value ->
                 config.isTransparentModeEnabled = value
@@ -114,7 +114,7 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             R.id.sliderSettingsOutlineThickness,
             R.id.tvSettingsOutlineThickness,
             config.outlineThickness,
-            "Outline Thickness: %.1fdp",
+            i18n.get("outline_thickness"),
         ) { config.outlineThickness = it }
         findViewById<TextInputEditText>(R.id.inputSettingsOutlineColor).apply {
             setText(config.outlineColor)
@@ -124,15 +124,15 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             }
         }
         findViewById<MaterialSwitch>(R.id.settingsEraserMode).apply {
-            text = "Smart Eraser (Hide Original Text)"
+            text = i18n.get("smart_eraser")
             isChecked = config.isEraserModeEnabled
             setOnCheckedChangeListener { _, value -> config.isEraserModeEnabled = value }
         }
-        bindSlider(R.id.sliderSettingsMergeVertical, R.id.tvSettingsMergeVertical, config.mergeVerticalGapMultiplier, "Vertical Gap: %.2fx") { config.mergeVerticalGapMultiplier = it }
-        bindSlider(R.id.sliderSettingsMergeHorizontal, R.id.tvSettingsMergeHorizontal, config.mergeHorizontalGapRatio, "Horizontal Gap: %.2fx") { config.mergeHorizontalGapRatio = it }
-        bindSlider(R.id.sliderSettingsMergeSize, R.id.tvSettingsMergeSize, config.mergeSizeTolerance, "Size Tolerance: %.2fx") { config.mergeSizeTolerance = it }
+        bindSlider(R.id.sliderSettingsMergeVertical, R.id.tvSettingsMergeVertical, config.mergeVerticalGapMultiplier, i18n.get("vertical_gap")) { config.mergeVerticalGapMultiplier = it }
+        bindSlider(R.id.sliderSettingsMergeHorizontal, R.id.tvSettingsMergeHorizontal, config.mergeHorizontalGapRatio, i18n.get("horizontal_gap")) { config.mergeHorizontalGapRatio = it }
+        bindSlider(R.id.sliderSettingsMergeSize, R.id.tvSettingsMergeSize, config.mergeSizeTolerance, i18n.get("size_tolerance")) { config.mergeSizeTolerance = it }
         findViewById<AutoCompleteTextView>(R.id.spinnerAppLanguage).apply {
-            val labels = listOf("System Default", "English", "Indonesian")
+            val labels = listOf(i18n.get("system_default"), i18n.get("english"), i18n.get("indonesian"))
             setAdapter(ArrayAdapter(context, android.R.layout.simple_list_item_1, labels))
             setText(
                 labels[
@@ -146,14 +146,14 @@ class SettingsDialog(context: Context, private val config: ConfigManager) : Dial
             )
             setOnItemClickListener { _, _, position, _ ->
                 config.appLanguage = listOf("system", "en", "in")[position]
-                Toast.makeText(context, "Language updated. Restart to apply.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, i18n.get("language_updated"), Toast.LENGTH_SHORT).show()
             }
         }
         bindSlider(
             R.id.sliderSettingsAutoClear,
             R.id.tvSettingsAutoClear,
             config.autoClearSeconds.toFloat(),
-            i18n.get("auto_clear", "Auto-Clear: %s"),
+            i18n.get("auto_clear"),
         ) { config.autoClearSeconds = it.toInt() }
         bindSlider(R.id.sliderSettingsBall, null, config.floatingBallSizeDp.toFloat(), null) {
             config.floatingBallSizeDp = it.toInt()

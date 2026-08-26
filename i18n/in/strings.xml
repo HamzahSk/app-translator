@@ -61,4 +61,18 @@
     <string name="app_language">Bahasa Aplikasi</string>
     <string name="auto_text_fit">Sesuaikan Teks &amp; Wrap Otomatis</string>
     <string name="auto_detect_text_color">Deteksi Otomatis Warna Teks Sumber</string>
+    <string name="auto_rotate_canvas">Putar Kanvas Otomatis</string>
+    <string name="transparent_mode">Mode Transparan</string>
+    <string name="outline_thickness">Ketebalan Outline: %.1fdp</string>
+    <string name="smart_eraser">Penghapus Cerdas (Sembunyikan Teks Asli)</string>
+    <string name="vertical_gap">Jarak Vertikal: %.2fx</string>
+    <string name="horizontal_gap">Jarak Horizontal: %.2fx</string>
+    <string name="size_tolerance">Toleransi Ukuran: %.2fx</string>
+    <string name="language_updated">Bahasa diperbarui. Mulai ulang untuk menerapkan.</string>
+    <string name="system_default">Bawaan Sistem</string>
+    <string name="english">Inggris</string>
+    <string name="service_notification_title">Rocat Translator Aktif</string>
+    <string name="service_notification_text">Memantau layar untuk terjemahan...</string>
+    <string name="service_notification_channel">Layanan Screen Translator</string>
+    <string name="offline_fallback_toast">Koneksi terputus, beralih ke mode offline otomatis</string>
 </resources>

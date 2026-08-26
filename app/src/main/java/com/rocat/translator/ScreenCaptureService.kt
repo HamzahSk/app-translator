@@ -38,6 +38,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class ScreenCaptureService : Service() {
+    private val i18n by lazy { I18nManager(this) }
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var mediaProjection: MediaProjection? = null
@@ -120,8 +121,8 @@ class ScreenCaptureService : Service() {
 
         val notification = NotificationCompat.Builder(this, "ScreenTranslatorChannel")
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("Screen Translator Active")
-            .setContentText("Monitoring screen for translations...")
+            .setContentTitle(i18n.get("service_notification_title"))
+            .setContentText(i18n.get("service_notification_text"))
             .setOngoing(true)
             .addAction(android.R.drawable.ic_media_pause, "Stop", stopPendingIntent)
             .build()
@@ -238,7 +239,7 @@ class ScreenCaptureService : Service() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(
             "ScreenTranslatorChannel",
-            "Screen Translator Service",
+            i18n.get("service_notification_channel"),
             NotificationManager.IMPORTANCE_LOW,
         )
         val manager = getSystemService(NotificationManager::class.java)
@@ -254,7 +255,7 @@ class ScreenCaptureService : Service() {
             if (disconnected && ConfigManager(this).translationMode != "offline") {
                 Toast.makeText(
                     this,
-                    "Koneksi terputus, beralih ke mode offline otomatis",
+                    i18n.get("offline_fallback_toast"),
                     Toast.LENGTH_LONG,
                 ).show()
             }

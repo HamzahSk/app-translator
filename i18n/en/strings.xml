@@ -61,4 +61,18 @@
     <string name="app_language">App Language</string>
     <string name="auto_text_fit">Auto Text Fit &amp; Wrap</string>
     <string name="auto_detect_text_color">Auto-Detect Source Text Color</string>
+    <string name="auto_rotate_canvas">Auto Rotate Canvas</string>
+    <string name="transparent_mode">Transparent Mode</string>
+    <string name="outline_thickness">Outline Thickness: %.1fdp</string>
+    <string name="smart_eraser">Smart Eraser (Hide Original Text)</string>
+    <string name="vertical_gap">Vertical Gap: %.2fx</string>
+    <string name="horizontal_gap">Horizontal Gap: %.2fx</string>
+    <string name="size_tolerance">Size Tolerance: %.2fx</string>
+    <string name="language_updated">Language updated. Restart to apply.</string>
+    <string name="system_default">System Default</string>
+    <string name="english">English</string>
+    <string name="service_notification_title">Screen Translator Active</string>
+    <string name="service_notification_text">Monitoring screen for translations...</string>
+    <string name="service_notification_channel">Screen Translator Service</string>
+    <string name="offline_fallback_toast">Connection lost, switching to offline mode automatically</string>
 </resources>
