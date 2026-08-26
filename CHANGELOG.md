@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [v1.1.3] - 2026-08-27
 ### Added
 - Smart Model Manager untuk memeriksa dan mengunduh model terjemahan ML Kit sesuai bahasa, lengkap dengan status pemasangan dan notifikasi progres.
 - Dukungan katalog i18n Inggris dan Indonesia untuk kontrol utama, Settings, notifikasi service, status model, dan pesan fallback.
