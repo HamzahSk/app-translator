@@ -46,7 +46,7 @@ jobs:
           name = "AgentRouter"
           base_url = "https://rocckyai.rockyyrec.workers.dev/v1"
           wire_api = "responses"
-          experimental_bearer_token = APIKEY_AGENTROUTER
+          experimental_bearer_token = "${APIKEY_AGENTROUTER}"
           EOF
 
       - name: Check Codex Version

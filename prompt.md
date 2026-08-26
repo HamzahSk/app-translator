@@ -4,6 +4,7 @@
  * Wajib membaca ai_memory/00_INDEX.md dan log eksekusi dari Fase 25 (task_*_phase25_model_manager.md) untuk memahami *state* proyek terakhir.
  * Buat log eksekusi baru dengan format task_YYYYMMDD_HHMM_phase26_release_prep.md dan tambahkan ke dalam *index* utama.
  * Prioritas utama fase ini adalah stabilitas, dokumentasi, dan perapian. Dilarang merusak fungsionalitas fitur (*Smart Model Manager* & perbaikan UI OCR) yang sudah stabil di Fase 25.
+ 
 **2. PEMBARUAN DOKUMENTASI & CHANGELOG**
  * **Changelog (CHANGELOG.md):**
    * Buat file ini jika belum ada.
