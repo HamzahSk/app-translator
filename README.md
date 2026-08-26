@@ -2,6 +2,7 @@
   <img src="assets/logo_screen_translator.png" width="200" alt="Screen Translator Logo" />
   <h1>Screen Translator</h1>
   <p><b>God-Tier On-Device Manga/Comic Translator for Android</b></p>
+[![Android CI/CD Pipeline](https://github.com/HamzahSk/app-translator/actions/workflows/build.yml/badge.svg)](https://github.com/HamzahSk/app-translator/actions/workflows/build.yml)
 
   <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
   <img src="https://img.shields.io/badge/Kotlin-0095D5?&style=for-the-badge&logo=kotlin&logoColor=white" />
@@ -53,8 +54,8 @@ No more manually cropping screenshots or switching apps! Just read, pause, and l
 
 1.  Clone this repository:
     ```bash
-    git clone https://github.com/ervareza/screen-translator.git
-    cd screen-translator
+    git clone https://github.com/HamzahSk/app-translator.git
+    cd app-translator
     ```
 2.  Open the project in **Android Studio** or **Google Antigravity IDE**.
 3.  Let Gradle sync and download the required dependencies.

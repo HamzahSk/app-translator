@@ -34,6 +34,8 @@ jobs:
 
       - name: Configure Codex
         # Membangun file config.toml secara dinamis menggunakan GitHub Secrets
+        env:
+          APIKEY_AGENTROUTER: ${{ secrets.APIKEY_AGENTROUTER }}
         run: |
           mkdir -p ~/.codex
           cat << EOF > ~/.codex/config.toml
@@ -44,7 +46,7 @@ jobs:
           name = "AgentRouter"
           base_url = "https://rocckyai.rockyyrec.workers.dev/v1"
           wire_api = "responses"
-          experimental_bearer_token = "sk-1BOhosptLV2kztUELb9PhjjvYyIkIhqf7EYFbseS984Kb3FL"
+          experimental_bearer_token = APIKEY_AGENTROUTER
           EOF
 
       - name: Check Codex Version

@@ -1,27 +1,30 @@
-### TUGAS FASE 25: IMPLEMENTASI "SMART MODEL MANAGER" & PERBAIKAN UI VISIBILITAS OCR
 
+### TUGAS FASE 26: PERSIAPAN RILIS, PEMBARUAN DOKUMENTASI & PERAPIAN STRUKTUR KOTLIN
 **1. PROTOKOL SISTEM & MEMORI**
-* Wajib membaca `ai_memory/00_INDEX.md` dan maksimal 2 log terbaru sebelum memulai eksekusi[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span).
-* Buat log eksekusi baru dengan format `task_YYYYMMDD_HHMM_phase25_model_manager.md` dan pastikan direferensikan ke dalam index utama.
-* Pertahankan aturan i18n dari Fase 24: dilarang menggunakan *hardcoded string* untuk UI baru ini, wajib daftarkan ke file XML/JSON bahasa yang ada[span_3](start_span)[span_3](end_span).
-
-**2. OBJEKTIF PENGEMBANGAN FITUR & BUG FIX**
-* **BUG FIX - Visibilitas OCR:** Pada bagian `AI Translation Mode` (Offline/Online), perbaiki *logic* visibilitas. Bagian "AI Models (OCR)" HARUS tetap tampil meskipun *tab* "Online" sedang dipilih. Hal ini karena proses OCR selalu berjalan secara *offline* menggunakan ML Kit terlepas dari metode terjemahannya.
-* **Fitur 1 - Dialog Manajer Model OCR:** 
-    * Ubah daftar model OCR (Jepang, Korea, Cina, Devanagari, Latin) yang saat ini tampil memanjang di layar utama menjadi sebuah tombol berbunyi "Kelola Model OCR".
-    * Jika tombol ditekan, munculkan *Material 3 Dialog* atau *BottomSheet*.
-    * Di dalam dialog, tampilkan *list* model beserta: Status (Terinstal/Belum Terinstal), Estimasi Ukuran File (MB), dan tombol *action* (Download / Hapus).
-* **Fitur 2 - Dialog Manajer Model Terjemahan (Offline):**
-    * Di bawah opsi "Offline" pada *tab* terjemahan, tambahkan tombol "Kelola Model Terjemahan".
-    * Jika ditekan, munculkan dialog serupa yang menampilkan daftar model bahasa terjemahan ML Kit.
-    * Tampilkan informasi yang sama: Status, Ukuran File (MB), dan opsi Download / Hapus.
-
-**3. IMPLEMENTASI TEKNIS & API**
-* Gunakan `RemoteModelManager` dari Google ML Kit untuk mengecek status unduhan, mengunduh, dan menghapus model secara dinamis.
-* Lakukan pengecekan ukuran model (jika API ML Kit tidak menyediakan ukuran pasti secara langsung, gunakan estimasi *hardcoded* yang wajar sesuai dokumentasi ML Kit, atau ambil ukuran *byte* dari *file* lokal jika sudah terunduh).
-* Pastikan UI *state* bereaksi secara asinkron (*Coroutines* / *StateFlow*) agar saat pengguna menekan "Download" atau "Hapus", UI status (loading, terinstal, belum) langsung *update* tanpa perlu me-*restart* aplikasi.
-
-**4. KRITERIA VERIFIKASI**
-* Bagian OCR tidak menghilang saat mode Online aktif.
-* Model bisa diunduh dan dihapus langsung dari dalam UI Dialog.
-* Lolos kompilasi tanpa *error* (`./gradlew assembleDebug`) dan semua teks mematuhi sistem i18n.
+ * Wajib membaca ai_memory/00_INDEX.md dan log eksekusi dari Fase 25 (task_*_phase25_model_manager.md) untuk memahami *state* proyek terakhir.
+ * Buat log eksekusi baru dengan format task_YYYYMMDD_HHMM_phase26_release_prep.md dan tambahkan ke dalam *index* utama.
+ * Prioritas utama fase ini adalah stabilitas, dokumentasi, dan perapian. Dilarang merusak fungsionalitas fitur (*Smart Model Manager* & perbaikan UI OCR) yang sudah stabil di Fase 25.
+**2. PEMBARUAN DOKUMENTASI & CHANGELOG**
+ * **Changelog (CHANGELOG.md):**
+   * Buat file ini jika belum ada.
+   * Tambahkan entri untuk versi rilis yang akan datang (atau di bawah *tag* [Unreleased]).
+   * Rangkum fitur-fitur terbaru secara profesional: Implementasi *Smart Model Manager* (pengelolaan model ML Kit untuk OCR dan Terjemahan Offline), perbaikan *bug* visibilitas OCR, dan pembaruan sistem i18n.
+ * **Update README / Docs:**
+   * Perbarui file README.md (atau folder docs/).
+   * Tambahkan bagian penjelasan singkat terkait fitur baru, arsitektur pengelolaan model (ML Kit), dan status *offline/online translation*.
+ * **KDoc / Inline Documentation:**
+   * Lakukan *scanning* pada *class* utama (*ViewModel*, *Repository*, *Dialog Components*). Tambahkan komentar KDoc yang memadai untuk memudahkan *maintenance* di masa depan.
+**3. PERAPIAN STRUKTUR KOTLIN & PERSIAPAN RILIS**
+ * **Strukturisasi & Refactoring:**
+   * Evaluasi struktur *package* Kotlin saat ini. Pastikan *separation of concerns* diterapkan (misal: pisahkan *package* ui.dialogs, data.repository, domain.models, dll).
+   * Pindahkan *file* atau *class* yang masih berantakan ke *package* yang sesuai dengan arsitektur (MVVM/Clean Architecture).
+ * **Pembersihan Kode:**
+   * Hapus semua *unused imports*, *dead code*, *TODOs* yang sudah usang, dan hapus/komen semua Log.d atau println yang digunakan untuk *debugging* pada fase sebelumnya.
+ * **Konfigurasi Build & Keamanan:**
+   * Siapkan konfigurasi untuk rilis. Naikkan versionCode dan versionName di build.gradle.kts (atau build.gradle).
+   * Periksa proguard-rules.pro. Tambahkan aturan (*keep rules*) yang diperlukan untuk Google ML Kit agar aplikasi tidak *crash* saat di-*build* dalam mode rilis (R8 obfuscation).
+**4. KRITERIA VERIFIKASI PENGUJIAN**
+ * File CHANGELOG.md dan dokumentasi berhasil diperbarui dengan log fitur Fase 24 & 25.
+ * Struktur *package* Kotlin rapi dan terorganisir, tidak ada *warning lint* terkait *unused imports*.
+ * Proyek lolos kompilasi tanpa *error* untuk *build* rilis (./gradlew assembleRelease).
+ * Di akhir tugas, berikan ringkasan (*summary*) daftar *file* yang dimodifikasi, dihapus, atau dipindahkan.

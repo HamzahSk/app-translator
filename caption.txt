@@ -1,0 +1,14 @@
+
+📱 Baca manga, manhwa, atau manhua jadi makin asyik!
+Kenalin Screen Translator — aplikasi penerjemah layar tanpa iklan!
+
+✅ Bebas iklan — fokus baca tanpa gangguan
+✅ Support Offline & Online
+✅ Bisa pakai custom API (OpenAI, Groq, Ollama, dll.)
+✅ Pilih model AI OCR untuk Jepang, Korea, Cina
+✅ Mode Auto Translate — langsung terjemah saat layar berubah
+✅ Overlay rapi, teks bisa diatur ukuran, warna, opacity, outline
+
+Cocok banget buat kamu yang suka baca komik impor atau konten asing.
+Ringan, cepat, dan hasil terjemahan enak dilihat!
+
