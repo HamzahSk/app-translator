@@ -46,10 +46,18 @@ jobs:
         # Build khusus versi release, tidak usah buang waktu build debug[span_3](start_span)[span_3](end_span)
         run: ./gradlew assembleRelease --stacktrace --no-daemon -Dorg.gradle.jvmargs="-Xmx4g"
 
+      - name: 📖 Baca Changelog
+        id: changelog
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ github.ref_name }} # Otomatis pakai tag saat ini (contoh: v1.0.7)
+          path: ./CHANGELOG.md
+          
       - name: 📦 Create GitHub Release & Upload APKs
         uses: softprops/action-gh-release@v2
         with:
           # Ambil semua file APK release yang ada di folder output, termasuk split APK dan universal[span_4](start_span)[span_4](end_span)
           files: app/build/outputs/apk/release/**/*.apk
           # Otomatis buat Release Notes berdasarkan PR atau commit terbaru
+          body: ${{ steps.changelog.outputs.changes }}
           generate_release_notes: true
