@@ -29,3 +29,4 @@
  * Struktur *package* Kotlin rapi dan terorganisir, tidak ada *warning lint* terkait *unused imports*.
  * Proyek lolos kompilasi tanpa *error* untuk *build* rilis (./gradlew assembleRelease).
  * Di akhir tugas, berikan ringkasan (*summary*) daftar *file* yang dimodifikasi, dihapus, atau dipindahkan.
+ 
