@@ -1,32 +1,26 @@
 
-### TUGAS FASE 26: PERSIAPAN RILIS, PEMBARUAN DOKUMENTASI & PERAPIAN STRUKTUR KOTLIN
+**TUGAS FASE 27: IMPLEMENTASI HALAMAN DEBUG & MONITORING PROSES**
+
 **1. PROTOKOL SISTEM & MEMORI**
- * Wajib membaca ai_memory/00_INDEX.md dan log eksekusi dari Fase 25 (task_*_phase25_model_manager.md) untuk memahami *state* proyek terakhir.
- * Buat log eksekusi baru dengan format task_YYYYMMDD_HHMM_phase26_release_prep.md dan tambahkan ke dalam *index* utama.
- * Prioritas utama fase ini adalah stabilitas, dokumentasi, dan perapian. Dilarang merusak fungsionalitas fitur (*Smart Model Manager* & perbaikan UI OCR) yang sudah stabil di Fase 25.
+ * Wajib membaca log eksekusi dari Fase 26 yang berfokus pada persiapan rilis dan perapian struktur Kotlin.
+ * Buat log eksekusi baru dengan format task_YYYYMMDD_HHMM_phase27_debug_monitor.md dan tambahkan ke dalam indeks utama.
+ * Prioritas utama fase ini adalah memberikan visibilitas terhadap proses *background* yang berjalan untuk menganalisis dan mengatasi masalah *delay* akibat penumpukan proses.
  
-**2. PEMBARUAN DOKUMENTASI & CHANGELOG**
- * **Changelog (CHANGELOG.md):**
-   * Buat file ini jika belum ada.
-   * Tambahkan entri untuk versi rilis yang akan datang (atau di bawah *tag* [Unreleased]).
-   * Rangkum fitur-fitur terbaru secara profesional: Implementasi *Smart Model Manager* (pengelolaan model ML Kit untuk OCR dan Terjemahan Offline), perbaikan *bug* visibilitas OCR, dan pembaruan sistem i18n.
- * **Update README / Docs:**
-   * Perbarui file README.md (atau folder docs/).
-   * Tambahkan bagian penjelasan singkat terkait fitur baru, arsitektur pengelolaan model (ML Kit), dan status *offline/online translation*.
- * **KDoc / Inline Documentation:**
-   * Lakukan *scanning* pada *class* utama (*ViewModel*, *Repository*, *Dialog Components*). Tambahkan komentar KDoc yang memadai untuk memudahkan *maintenance* di masa depan.
-**3. PERAPIAN STRUKTUR KOTLIN & PERSIAPAN RILIS**
- * **Strukturisasi & Refactoring:**
-   * Evaluasi struktur *package* Kotlin saat ini. Pastikan *separation of concerns* diterapkan (misal: pisahkan *package* ui.dialogs, data.repository, domain.models, dll).
-   * Pindahkan *file* atau *class* yang masih berantakan ke *package* yang sesuai dengan arsitektur (MVVM/Clean Architecture).
- * **Pembersihan Kode:**
-   * Hapus semua *unused imports*, *dead code*, *TODOs* yang sudah usang, dan hapus/komen semua Log.d atau println yang digunakan untuk *debugging* pada fase sebelumnya.
- * **Konfigurasi Build & Keamanan:**
-   * Siapkan konfigurasi untuk rilis. Naikkan versionCode dan versionName di build.gradle.kts (atau build.gradle).
-   * Periksa proguard-rules.pro. Tambahkan aturan (*keep rules*) yang diperlukan untuk Google ML Kit agar aplikasi tidak *crash* saat di-*build* dalam mode rilis (R8 obfuscation).
-**4. KRITERIA VERIFIKASI PENGUJIAN**
- * File CHANGELOG.md dan dokumentasi berhasil diperbarui dengan log fitur Fase 24 & 25.
- * Struktur *package* Kotlin rapi dan terorganisir, tidak ada *warning lint* terkait *unused imports*.
- * Proyek lolos kompilasi tanpa *error* untuk *build* rilis (./gradlew assembleRelease).
- * Di akhir tugas, berikan ringkasan (*summary*) daftar *file* yang dimodifikasi, dihapus, atau dipindahkan.
- 
+**2. MODIFIKASI ANTARMUKA UTAMA (UI)**
+ * Buka MainActivity atau komponen UI utama tempat tombol **Setting** berada.
+ * Tambahkan tombol **Debug** baru tepat di samping tombol **Setting**.
+ * Pastikan desain tombol selaras dengan panduan Material Design 3 yang sudah digunakan pada aplikasi.
+ * Hubungkan *listener* tombol ini untuk menavigasikan pengguna ke DebugActivity atau DebugFragment yang baru dibuat.
+**3. PEMBUATAN HALAMAN DEBUG (DEBUG SCREEN)**
+ * **Manajemen Cache:** Sediakan tombol khusus di dalam halaman Debug untuk menghapus seluruh *cache* aplikasi secara manual.
+ * **Monitoring Proses (Process Viewer):** Buat antarmuka berbasis daftar (*list*) yang menampilkan status *real-time* dari *coroutine* atau *thread* yang sedang berjalan.
+ * **Visibilitas OCR & Translator:** Integrasikan pemantauan langsung ke dalam TranslationEngine. Tampilkan semua status antrean atau eksekusi proses OCR (Google ML Kit) dan API penerjemah (Offline/Online) secara mendetail.
+**4. FITUR KENDALI PROSES (PROCESS CLEARING)**
+ * Tambahkan fungsi **Clear All Processes** pada halaman Debug.
+ * Fungsi ini harus dapat menghentikan (*cancel*) semua tugas di dalam TranslationEngine atau operasi *capture* dari ScreenCaptureService yang tertunda atau berjalan ganda.
+ * Pastikan pembersihan proses ini dilakukan dengan aman (*graceful shutdown*) menggunakan *Coroutine Scope cancellation* agar aplikasi tidak *crash* dan mencegah memori *leak*.
+**5. KRITERIA VERIFIKASI PENGUJIAN**
+ * Tombol Debug muncul di samping tombol Setting pada layar utama dan berfungsi membuka halaman Debug.
+ * Halaman Debug berhasil menampilkan daftar proses OCR dan Translator yang sedang aktif.
+ * Menekan tombol "Clear Processes" sukses menghentikan penumpukan *job* tanpa menyebabkan aplikasi *force close*.
+ * Fungsi penghapusan *cache* bekerja dengan benar dan membebaskan ruang penyimpanan aplikasi.
