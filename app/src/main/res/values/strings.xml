@@ -3,4 +3,14 @@
     <string name="app_name">Rocat Translator</string>
     <string name="accessibility_service_description">Service ini memantau aktivitas layar (seperti scroll) untuk menerjemahkan teks jika layar diam selama beberapa detik.</string>
     <string name="app_language">App Language</string>
+    <string name="debug_title">Debug</string>
+    <string name="debug_clear_processes">Clear Processes</string>
+    <string name="debug_clear_cache">Clear Cache</string>
+    <string name="debug_active_processes">OCR and Translator Processes</string>
+    <string name="debug_no_processes">No process activity recorded.</string>
+    <string name="debug_process_title">%1$s - %2$s</string>
+    <string name="debug_process_duration">Elapsed: %.1f s</string>
+    <string name="debug_cancelled_manually">Cancelled from Debug screen</string>
+    <string name="debug_processes_cleared">Active processes cleared</string>
+    <string name="debug_cache_cleared">Cache cleared: %s freed</string>
 </resources>

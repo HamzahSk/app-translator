@@ -2,10 +2,12 @@
 
 ## Status Proyek Terkini
 Aplikasi **Screen Translator** (Android, Kotlin, AGP 8.2.1, targetSdk 34, minSdk 26).
-Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit via Coroutines, Screen Capture Service, Accessibility trigger, Overlay translation bubble, OCR multi-bahasa (ja/ko/zh/hi/en), mode terjemahan offline (ML Kit) dan online (OpenAI/Gemini via Retrofit), serta Split APK per ABI.
+Fitur inti sudah lengkap: Splash berbasis VectorDrawable, lazy loading ML Kit via Coroutines, Screen Capture Service, Accessibility trigger, Overlay translation bubble, OCR multi-bahasa (ja/ko/zh/hi/en), mode terjemahan offline (ML Kit) dan online (OpenAI/Gemini via Retrofit), serta Split APK per ABI. Fase 27 menambahkan halaman Debug dengan monitoring real-time untuk capture/OCR/translator, pembatalan seluruh proses aktif, dan pembersihan cache manual.
 **Build debug SUCCESS; release R8 terhenti karena heap daemon 512 MiB.** Runtime cache online/ML Kit, overlay thread handling, batch parsing, dan global crash reporting sudah di-hardening. Seluruh Material Slider kini continuous. Fase 4 selesai: offset status bar/filter OCR, debounce default 1,5 detik, dan cancellation job saat aktivitas layar sudah diterapkan. Fase 6 selesai: semua panggilan ML Kit dibungkus timeout 7 detik (anti-hang offline) + dummy preload model ke RAM, alur tombol Start dipindah ke thread IO (anti-ANR/multi-click), dan teks bubble diberi line spacing + pemuaian vertikal sentris. Fase 7 selesai: tombol Start ditulis ulang dengan state machine bersih (IDLE/PREPARING/RUNNING/BLOCKED, listener tunggal, hilangkan bug klik dua kali), pre-load… **Fase 8 selesai:** smart OCR block merging (size & proximity aware) via `MergedBlock` + `mergeBlocks()` dengan syarat vertikal < 1.5×line-height, horizontal overlap/≤25% gap, dan toleransi ukuran 30% — dialog kecil tidak lagi ke-fuse dengan SFX besar; `translateBlocks` & `onlineTranslate` memakai mergedBlocks; coroutine & timeout Fase 7 tetap utuh.
 
 ## Riwayat (terbaru di atas)
+
+| 2026-08-30 23:38 | [task_20260830_2338_phase27_debug_monitor.md](task_20260830_2338_phase27_debug_monitor.md) | Halaman Debug Material 3, monitoring proses capture/OCR/translator real-time, Clear Processes, serialisasi capture job, dan pembersihan cache. |
 
 | 2026-08-27 05:32 | [task_20260827_0532_phase26_release_prep.md](task_20260827_0532_phase26_release_prep.md) | Persiapan rilis 1.1.3: dokumentasi Smart Model Manager, package dialog, KDoc, cleanup debug log, koreksi R8, dan verifikasi release. |
 

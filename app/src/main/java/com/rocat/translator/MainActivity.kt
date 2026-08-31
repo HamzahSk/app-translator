@@ -332,6 +332,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupSettingsButton() {
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        val debugItem = toolbar.menu.add(getString(R.string.debug_title))
+        debugItem.setIcon(android.R.drawable.ic_menu_info_details)
+        debugItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+        debugItem.setOnMenuItemClickListener {
+            startActivity(Intent(this, DebugActivity::class.java))
+            true
+        }
         val settingsItem = toolbar.menu.add(i18n.get("menu_settings"))
         settingsItem.setIcon(android.R.drawable.ic_menu_preferences)
         settingsItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)

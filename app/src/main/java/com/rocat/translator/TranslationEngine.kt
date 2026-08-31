@@ -80,6 +80,10 @@ class TranslationEngine(private val context: Context) {
 
     @Volatile private var activeJob: Job? = null
 
+    @Volatile private var activeProcessId: String? = null
+
+    @Volatile private var preloadJob: Job? = null
+
     @Volatile private var networkAvailable = true
     private val bitmapLock = Any()
     private var activeBitmap: Bitmap? = null
@@ -105,7 +109,7 @@ class TranslationEngine(private val context: Context) {
     private val onlineTranslator by lazy { OnlineTranslator(context) }
 
     init {
-        preloadScope.launch(Dispatchers.Default) { preloadOfflineModel() }
+        preloadJob = preloadScope.launch(Dispatchers.Default) { preloadOfflineModel() }
     }
 
     private val scanningIndicatorKey = "phase7_scanning"
@@ -170,6 +174,7 @@ class TranslationEngine(private val context: Context) {
     }
 
     private suspend fun recognize(code: String, image: InputImage, tag: String, trackAsActive: Boolean = true): Text? {
+        activeProcessId?.let { ProcessMonitor.update(it, "OCR", "$tag using $code recognizer", "RUNNING") }
         val recognizer = createRecognizer(code)
         if (trackAsActive) activeRecognizer = recognizer
         return try {
@@ -200,18 +205,26 @@ class TranslationEngine(private val context: Context) {
     fun processImage(bitmap: Bitmap) {
         synchronized(bitmapLock) {
             activeJob?.cancel()
+            activeProcessId?.let { ProcessMonitor.finish(it, "Superseded by a newer capture", "CANCELLED") }
             activeBitmap?.takeUnless { it === bitmap }?.let { old -> runCatching { old.recycle() } }
             activeBitmap = bitmap
         }
+        val processId = "translation-${System.nanoTime()}"
+        activeProcessId = processId
+        ProcessMonitor.start(processId, "Pipeline", "Queued for OCR")
         activeJob = scope.launch(Dispatchers.IO) {
             try {
                 processImageInternal(bitmap)
+                ProcessMonitor.finish(processId, "OCR and translation pipeline completed")
             } catch (ce: CancellationException) {
+                ProcessMonitor.finish(processId, "Pipeline cancelled", "CANCELLED")
                 overlayManager.clearOverlays()
                 throw ce
             } catch (e: Exception) {
+                ProcessMonitor.finish(processId, e.message ?: "Pipeline failed", "FAILED")
                 Log.e("Translator", "Processing failed", e)
             } finally {
+                if (activeProcessId == processId) activeProcessId = null
                 synchronized(bitmapLock) {
                     if (activeBitmap === bitmap) activeBitmap = null
                 }
@@ -268,6 +281,7 @@ class TranslationEngine(private val context: Context) {
     private suspend fun identifyAndTranslate(visionText: Text, bitmap: Bitmap) {
         val fullText = visionText.text
         try {
+            activeProcessId?.let { ProcessMonitor.update(it, "OCR", "Identifying source language", "RUNNING") }
             var languageCode = mlKitCall("LanguageIdentify") { getLanguageIdentifier().identifyLanguage(fullText).await() }
 
             // FIX: Kalau ML Kit bingung ("und"), jangan dibatalkan!
@@ -278,8 +292,10 @@ class TranslationEngine(private val context: Context) {
 
             // Lanjut gas translate
             if (config.translationMode != "offline" && networkAvailable) {
+                activeProcessId?.let { ProcessMonitor.update(it, "Translator", "Online batch request via ${config.apiProvider}", "RUNNING") }
                 onlineTranslate(visionText, languageCode, bitmap)
             } else {
+                activeProcessId?.let { ProcessMonitor.update(it, "Translator", "Offline ML Kit: $languageCode to ${config.targetLanguage}", "RUNNING") }
                 translateBlocks(visionText, languageCode, bitmap)
             }
         } catch (e: CancellationException) {
@@ -384,6 +400,7 @@ class TranslationEngine(private val context: Context) {
 
     // ISSUE-010 FIX: Clean up all resources
     fun close() {
+        cancelAllProcesses()
         scope.cancel()
         preloadScope.cancel()
         runCatching { languageIdentifier?.close() }
@@ -400,25 +417,35 @@ class TranslationEngine(private val context: Context) {
     }
 
     fun clearOverlays() {
+        cancelActivePipeline()
+        overlayManager.clearOverlays()
+    }
+
+    fun cancelAllProcesses() {
+        cancelActivePipeline()
+        preloadJob?.cancel()
+        preloadJob = null
+    }
+
+    private fun cancelActivePipeline() {
         activeJob?.cancel()
         activeJob = null
+        activeProcessId?.let { ProcessMonitor.finish(it, "Cancelled by process control", "CANCELLED") }
+        activeProcessId = null
         runCatching { activeRecognizer?.close() }
         activeRecognizer = null
-        overlayManager.clearOverlays()
     }
 
     fun onConnectivityChanged(available: Boolean) {
         networkAvailable = available
         if (!available && config.translationMode != "offline") {
-            preloadScope.launch(Dispatchers.IO) { preloadOfflineModel(force = true) }
+            preloadJob?.cancel()
+            preloadJob = preloadScope.launch(Dispatchers.IO) { preloadOfflineModel(force = true) }
         }
     }
 
     fun hardPause() {
-        activeJob?.cancel()
-        activeJob = null
-        runCatching { activeRecognizer?.close() }
-        activeRecognizer = null
+        cancelAllProcesses()
         overlayManager.clearOverlays()
     }
 

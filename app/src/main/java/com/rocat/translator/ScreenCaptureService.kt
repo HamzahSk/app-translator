@@ -69,10 +69,10 @@ class ScreenCaptureService : Service() {
 
     private val captureReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == "com.rocat.translator.CLEAR_OVERLAY") {
-                translationEngine.clearOverlays()
-            } else {
-                captureScreen()
+            when (intent?.action) {
+                "com.rocat.translator.CLEAR_OVERLAY" -> translationEngine.clearOverlays()
+                ACTION_CLEAR_PROCESSES -> clearAllProcesses()
+                else -> captureScreen()
             }
         }
     }
@@ -91,6 +91,7 @@ class ScreenCaptureService : Service() {
         val filter = IntentFilter().apply {
             addAction("com.rocat.translator.TRIGGER_CAPTURE")
             addAction("com.rocat.translator.CLEAR_OVERLAY")
+            addAction(ACTION_CLEAR_PROCESSES)
         }
         ContextCompat.registerReceiver(
             this,
@@ -207,13 +208,19 @@ class ScreenCaptureService : Service() {
 
     private fun captureScreen() {
         if (TranslationControlState.paused) return
-        // TAMBAHKAN BARIS INI: Paksa hapus canvas lama tiap mulai capture
         translationEngine.clearOverlays()
-
-        serviceScope.launch(Dispatchers.IO) {
+        captureJob?.cancel()
+        val processId = "capture-${System.nanoTime()}"
+        ProcessMonitor.start(processId, "Capture", "Waiting for latest screen frame")
+        captureJob = serviceScope.launch(Dispatchers.IO) {
             // Jika layar statis dan return null, seenggaknya canvas bug sudah dibersihkan
-            val image = imageReader?.acquireLatestImage() ?: return@launch
+            val image = imageReader?.acquireLatestImage()
+            if (image == null) {
+                ProcessMonitor.finish(processId, "No new screen frame available", "SKIPPED")
+                return@launch
+            }
             try {
+                ProcessMonitor.update(processId, "Capture", "Converting screen frame to bitmap", "RUNNING")
                 val planes = image.planes
                 val buffer = planes[0].buffer
                 val pixelStride = planes[0].pixelStride
@@ -228,13 +235,25 @@ class ScreenCaptureService : Service() {
                 bitmap.copyPixelsFromBuffer(buffer)
 
                 translationEngine.processImage(bitmap)
+                ProcessMonitor.finish(processId, "Frame passed to TranslationEngine")
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                ProcessMonitor.finish(processId, "Capture cancelled", "CANCELLED")
+                throw e
             } catch (e: Exception) {
+                ProcessMonitor.finish(processId, e.message ?: "Capture failed", "FAILED")
                 translationEngine.clearOverlays()
                 Log.e("Translator", "Capture failed", e)
             } finally {
                 image.close()
             }
         }
+    }
+
+    private fun clearAllProcesses() {
+        captureJob?.cancel()
+        captureJob = null
+        translationEngine.cancelAllProcesses()
+        ProcessMonitor.cancelActive("Cancelled from Debug screen")
     }
 
     private fun createNotificationChannel() {
@@ -382,4 +401,8 @@ class ScreenCaptureService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    companion object {
+        const val ACTION_CLEAR_PROCESSES = "com.rocat.translator.CLEAR_PROCESSES"
+    }
 }
